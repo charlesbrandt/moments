@@ -1,0 +1,14 @@
+Why Moments?
+===============
+
+Computers are at the heart of modern day record keeping.  There are a number of different systems and formats for organizing your information.  Unfortunately, many of these are proprietary, or very narrow in the focus of what type of information they store.  
+
+This results in fragmentation of information across many different types of systems, both local and remote.  When we want to change solutions (or worse yet, the services disappear) we often must leave the information associated with that service behind.  If you trust these memories to a computer, this can result in big gaps in your digital history.  
+
+Enter Moments.
+
+Moments is a simple, open and portable format for storing and merging different sources of information in the form of entries.  It is a tool that lets you organize these notes in a way that makes sense to you, and change that organization as your outlook changes. 
+
+The moment log format is easy to read and create without special software.  The moments python module gives developers a quick way to create software that utilize the format. 
+
+I like to start by thinking about moments in terms of a personal journal or diary.  From there it is easy to expand to other applications.

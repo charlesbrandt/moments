@@ -1,0 +1,21 @@
+Context uses the following format convention for journal entries:
+
+description
+[blank line]
+
+or more compactly:
+
+description
+\n
+
+It really is as simple as that!  :)
+
+If you would like further clarification, please see the python module included to process Moment Logs (Journals):
+code/python/moments
+
+The moment object definition (Entry) is defined in:
+code/python/moments/moments/entry.py 
+
+The object that reads in text files and generates Entry objects is defined in:
+code/python/moments/moments/log.py 
+

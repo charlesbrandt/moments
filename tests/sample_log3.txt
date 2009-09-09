@@ -1,0 +1,8 @@
+*2008.06.14 10:51 
+test entry
+
+*2008.02.25 00:35 
+dummy log file for testing Log module (and eventually others)
+
+
+

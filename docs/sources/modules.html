@@ -1,0 +1,24 @@
+<h3>Python Modules:</h3>
+<h4>Moments:</h4>
+<p>Moments is a python module to parse text based journal log files.  These files use a simple micro-format to organize journal entries. This format can be summarized as each entry having:</p>
+<p>*YYYY.MM.DD [mm:hh:ss] [space separated list of tags]<br />entry data<br />\n</p>
+<p>The Moments module also provides a higher level object called a Journal which allows multiple logs to be merged together, and separated based on tags or times.</p>
+<p>These logs are meant to be easy to create with simple text editors. Making new entries can be simplified further by extending your text editor to create the timestamp for you.  In emacs, this can be done with the following emacs lisp file.  It binds the new timestamp function to the keystroke Ctl-x j</p>
+<p><a href="journal.el">journal.el</a></p>
+<p>Download Moments (20KB): <a href="moments.tgz">moments.tgz</a></p>
+<p>&nbsp;</p>
+<h4>OSBrowser:</h4>
+<p>OSBrowser is a python module that provides an object oriented interface to your computer's local filesystem.&nbsp; It leverages python's native os and os.path libraries to give a higher level interface to the system.&nbsp; Starting at the level of Nodes on a filesystem, it works up to higher level objects such as Images and Playlists.&nbsp;</p>
+<p>I like to think of it as a python based file system explorer/browser/finder without a graphical user interface.</p>
+<p>OSBrowser can utilize the Moments module for logging and meta data generation.&nbsp; This ensures metadata will not get locked into proprietary formats.&nbsp;</p>
+<p>Download OSBrowser (40KB): <a href="osbrowser.tgz">osbrowser.tgz</a></p>
+<p>&nbsp;</p>
+<h4>Pose:</h4>
+<p>Pose started as a python based image gallery utilizing the Pylons framework. </p>
+<p>Since then, Pose has evolved into a more general purpose content management system based on the Pylons framework.&nbsp; It utilizes the OSBrowser module as an interface to the local filesystem being served by Pose.&nbsp; OSBrowser is essentially the model in terms of MVC. In this way, Pose could be considered a web based filesytem browser.</p>
+<p>Pose should allow you to quickly organize a collection of data into a structure and see how that structure will work.&nbsp; Then, as custom functionality is needed, Pylons is right there to adapt the system to your needs.</p>
+<p>Pose now includes tiny_mce, a few open source flash based audio players, and S5 rendering javascripts in the public directory.&nbsp; This has caused the size to go up to 1.8MB:</p>
+<p>Download Pose (1.8MB): <a href="pose.tgz">pose.tgz</a></p>
+<p>Also available at the <a href="http://pypi.python.org/pypi/pose">Python Package Index (PyPi) (CheeseShop)</a></p>
+<p>&nbsp;</p>
+<p>(the context is you!)</p>

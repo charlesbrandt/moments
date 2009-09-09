@@ -1,0 +1,113 @@
+"""
+An entry is the foundation for a moment.  It does not require a date.
+
+An entry can have more parts, but its most simple form is:
+::
+
+  * tags
+  data
+  \\n
+
+should either data or a tag should be required?
+(otherwise no way to tie it in... although a tag could be implied by location)
+
+"""
+
+import re
+from tags import Tags
+
+class Entry(object):
+    """
+    Object to hold a unique Journal Entry
+    """
+    def __init__(self, data=u'', tags=[], source_file=u''):
+        self.data = data        
+        self.tags = Tags(tags)
+        #could rename this to path potentially
+        self.source_file = None
+
+    def tag_links(self):
+        """
+        return a list of tuples for each tag's association with all other tags
+        """
+        links = []
+        if len(self.tags) > 1:
+            for i in range(len(self.tags)-1):
+                for j in range(i+1, len(self.tags)):
+                    if self.tags[i] != self.tags[j]:
+                        tmplist = [self.tags[i], self.tags[i+1]]
+                        tmplist.sort()
+                        link = tuple(tmplist)
+                        if not link in links:
+                            links.append(link)
+
+        return links
+
+    def omit_tags(self, tags):
+        """
+        remove tags from current set of tags if they exist
+        
+        scan entries.tags for each omit_tag
+        remove it if found
+        """
+        if tags:
+            for omit_tag in tags:
+                if omit_tag in self.tags:
+                    self.tags.remove(omit_tag)
+
+    def change_newlines(self):
+        """
+        go through and convert all \\r\\n to \\n
+        """
+        filtered_data = ''
+        for line in self.data.splitlines():
+            #[ line ] = multi_filter( [line], updates)
+            #[ line ] = multi_filter( [line], path_updates)
+            filtered_data += line + '\n'
+
+        self.data = filtered_data
+
+    def render_first_line(self):
+        """
+        return a textual representation of the first line only
+        """
+        line = '* ' + ' '.join(self.tags) + "\n"
+        return unicode(line)
+
+    def render_data(self):
+        """
+        return a textual representation of the entry data only
+        """
+        if self.data:
+            #make sure that data is buffered with a blank line at the end
+            #makes the resulting log easier to read.
+            #if there are more than one blanklines, can leave them
+            last_line = self.data.splitlines()[-1]
+            #not re.match('\s', last_line) and
+            
+            #are there characters in the last line?  need to adjust if so:
+            if re.search('\S', last_line):
+                if re.search('\n$', last_line):
+                    self.data += "\n"
+                else:
+                    #self.data += "\n"
+                    #web entries added will end up with 3 newlines somehow
+                    #but other entries created with a single string
+                    #won't have enough new lines...
+                    #should troubleshoot web entries
+                    self.data += "\n\n"
+                   
+            return unicode(self.data)
+        else:
+            #print "no data in this entry! : %s" % self.render_first_line()
+            return ''
+
+    def render(self):
+        """
+        return a textual representation of the entry
+        """
+        entry = u''
+        entry += self.render_first_line()
+        entry += self.render_data()
+        return entry
+

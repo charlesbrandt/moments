@@ -1,0 +1,82 @@
+*2009.01.15 15:13:32 todo
+Move everything here to your journal, one by one, as you complete them.
+You can also update the time in the journal to reflect when you finished the task.
+
+*2009.01.15 14:04:38 music
+I find it nice to work to some music. 
+Consider the mood of the music.
+
+Bethany has some great mixes at:
+http://www.rawkawn.com/mix/
+Thanks Bethany!
+
+If you're online, you can't go wrong with the Intergalactic FM streams!
+http://intergalacticfm.com
+Great stuff!
+
+Peace and quiet is good too!
+
+*2009.01.15 15:16:17 
+Stand up, take a break, get a glass of water, 
+wash your hands, etc.
+
+*2009.01.15 13:30:46 
+Come back to the breath.
+Deep Breath... Inhale.... Exhale.... :)
+
+*2009.01.23 09:42:47 
+Check email, communicate with family and friends. 
+
+*2009.01.15 13:45:46 
+Keep good posture!
+
+*2009.01.15 15:22:01 
+After following along in README_FIRST.txt, you should have at least two text editor windows open: 
+-your journal (journal.txt)
+-this todo list (todo.txt)
+
+*2009.01.21 13:52:26 
+If you skipped the introduction and tools documents mentioned in README_FIRST.txt, now would be a good time to read those:
+journal/introduction.txt
+journal/tools.txt
+
+*2009.01.21 14:35:45 daily
+If you're working in a temporary Context, start a new journal with the current date and place it in the outgoing directory for later retrieval.  An example is provided:
+outgoing/20090117.txt
+
+*2009.01.17 13:29:24 
+Start pose.
+code/python/pose/STARTUP.txt
+
+*2009.01.21 14:38:35 media
+Link in / import / configure any other data you may need in your new context. 
+(instead of, or in addition to journal.txt)
+This includes importing pictures, and other journals from temporary contexts.
+
+*2009.01.16 02:15:28 
+That's it!
+At this point you should have a functional journaling system. 
+
+*2009.01.21 14:03:48 
+dream, think, create, grow, improve, be positive. 
+
+*2009.01.21 14:20:02 
+Come back to the breath.
+Deep Breath... Inhale.... Exhale.... :)
+
+*2009.01.23 11:18:14 food
+Grab a bite to eat.  Brush your teeth.
+
+*2009.01.17 13:34:32 
+Check in changes to mercurial / version control system.
+
+*2009.01.21 14:24:13 
+Create a new instance (optional)
+Publish it! Share it!
+journal/publish.txt
+
+*2009.01.21 14:06:21 
+shut down
+rest
+try again later.
+

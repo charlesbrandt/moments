@@ -1,0 +1,26 @@
+*2009.01.16 00:51:18 moment entry format
+Context uses the following format convention for journal entries:
+
+*Year.Month.Day Hour:Minute:Seconds [keywords]
+description
+[blank line]
+
+or more compactly:
+
+*YYYY.MM.DD hh:mm:ss [keywords]
+description
+\n
+
+*2009.01.16 00:57:54 
+It really is as simple as that!  :)
+
+*2009.01.22 10:30:37 
+If you would like further clarification, please see the python module included to process Moment Logs (Journals):
+code/python/moments
+
+The moment object definition (Entry) is defined in:
+code/python/moments/moments/entry.py 
+
+The object that reads in text files and generates Entry objects is defined in:
+code/python/moments/moments/log.py 
+

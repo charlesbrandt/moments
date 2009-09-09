@@ -1,0 +1,43 @@
+*2009.01.17 16:50:44 startup
+/c/instances.txt
+/c/system/shutdown.txt
+/c/administrator/publish.txt
+/c/system/new_instance.txt
+/c/journal.txt
+/c/todo.txt
+/c/README_FIRST.txt
+
+select region
+copy region
+m-x jo (journal open)
+
+-OR-
+
+m-x jof (journal open in frames)
+
+*2009.01.22 18:48:00 development
+/c/code/python/pose/pose/config/routing.py
+/c/code/python/pose/pose/tests/functional/test_journal.py
+
+/c/code/python/pose/pose/templates/header.mako
+/c/code/python/pose/pose/templates/directory/directory.mako
+
+/c/code/python/moments/moments/journal.py
+/c/code/python/medialist/medialist/medialist.py
+/c/code/python/osbrowser/osbrowser/node.py
+
+/c/code/python/pose/pose/controllers/journal.py
+/c/code/python/pose/pose/controllers/playlist.py
+
+*2009.02.06 17:42:31 pose
+/c/code/python/pose/STARTUP.txt
+
+*2009.01.23 16:20:14 design
+/c/home.html
+/c/code/python/modules.html
+
+cd /c
+firefox home.html &
+
+
+

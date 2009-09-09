@@ -1,0 +1,42 @@
+EMACS:
+-------------
+
+Emacs is a cross platform, open-sourced (GPL) text editor that is easy to customize.  With a few simple customizations included with Context, Emacs will create timestamps in your journal for you. 
+
+http://www.gnu.org/software/emacs/
+
+Windows:
+http://www.gnu.org/software/emacs/windows/Getting-Emacs.html#Getting-Emacs
+http://ftp.gnu.org/gnu/emacs/windows/
+http://ftp.gnu.org/gnu/emacs/windows/emacs-22.3-bin-i386.zip
+
+Mac OS X:
+I personally use Carbon Emacs:
+http://homepage.mac.com/zenitani/emacs-e.html
+Aquamacs Emacs is another great option:
+http://aquamacs.org/
+
+Ubuntu:
+Instructions for installing emacs on Ubuntu are also included in the system/startup.txt file and system/startup.sh script.
+
+The code needed to customize Emacs to automatically create timestamps and new journal entries is included in:
+code/lisp/.emacs
+and 
+code/lisp/.emacs.d
+
+Specifically, the code to print journal stamps is available in:
+code/lisp/.emacs.d/journal.el
+
+Link or copy these files to your home directory, or your C:\ drive in windows.
+
+*2009.01.15 17:24:22 
+make that transition
+
+m-x reload
+
+m-x now
+
+*2009.01.16 01:21:06 
+we have timestamps!
+
+

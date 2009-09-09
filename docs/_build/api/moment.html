@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The entry Module &mdash; Moments v1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments v1.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The log Module" href="log.html" />
+    <link rel="prev" title="The journal Module" href="journal.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="log.html" title="The log Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="journal.html" title="The journal Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments v1.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.entry">
+<h1>The <tt class="xref docutils literal"><span class="pre">entry</span></tt> Module<a class="headerlink" href="#module-moments.entry" title="Permalink to this headline">¶</a></h1>
+<p>An entry is the foundation for a moment.  It does not require a date.</p>
+<p>An entry can have more parts, but its most simple form is:</p>
+<div class="highlight-python"><pre>* tags
+data
+\n</pre>
+</div>
+<p>should either data or a tag should be required?
+(otherwise no way to tie it in... although a tag could be implied by location)</p>
+<dl class="class">
+<dt id="moments.entry.Entry">
+<em class="property">
+class </em><tt class="descclassname">moments.entry.</tt><tt class="descname">Entry</tt><big>(</big><em>data=u''</em>, <em>tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>source_file=u''</em><big>)</big><a class="headerlink" href="#moments.entry.Entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object to hold a unique Journal Entry</p>
+<dl class="method">
+<dt id="moments.entry.Entry.change_newlines">
+<tt class="descname">change_newlines</tt><big>(</big><big>)</big><a class="headerlink" href="#moments.entry.Entry.change_newlines" title="Permalink to this definition">¶</a></dt>
+<dd>go through and convert all rn to n</dd></dl>
+
+<dl class="method">
+<dt id="moments.entry.Entry.omit_tags">
+<tt class="descname">omit_tags</tt><big>(</big><em>tags</em><big>)</big><a class="headerlink" href="#moments.entry.Entry.omit_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove tags from current set of tags if they exist</p>
+<p>scan entries.tags for each omit_tag
+remove it if found</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.entry.Entry.render">
+<tt class="descname">render</tt><big>(</big><big>)</big><a class="headerlink" href="#moments.entry.Entry.render" title="Permalink to this definition">¶</a></dt>
+<dd>return a textual representation of the entry</dd></dl>
+
+<dl class="method">
+<dt id="moments.entry.Entry.render_data">
+<tt class="descname">render_data</tt><big>(</big><big>)</big><a class="headerlink" href="#moments.entry.Entry.render_data" title="Permalink to this definition">¶</a></dt>
+<dd>return a textual representation of the entry data only</dd></dl>
+
+<dl class="method">
+<dt id="moments.entry.Entry.render_first_line">
+<tt class="descname">render_first_line</tt><big>(</big><big>)</big><a class="headerlink" href="#moments.entry.Entry.render_first_line" title="Permalink to this definition">¶</a></dt>
+<dd>return a textual representation of the first line only</dd></dl>
+
+<dl class="method">
+<dt id="moments.entry.Entry.tag_links">
+<tt class="descname">tag_links</tt><big>(</big><big>)</big><a class="headerlink" href="#moments.entry.Entry.tag_links" title="Permalink to this definition">¶</a></dt>
+<dd>return a list of tuples for each tag&#8217;s association with all other tags</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-moments.moment">
+<h1>The <tt class="xref docutils literal"><span class="pre">moment</span></tt> Module<a class="headerlink" href="#module-moments.moment" title="Permalink to this headline">¶</a></h1>
+<p>A Moment object is a subclass of Entry</p>
+<p>Adds a timestamp and corresponding helper functions to an Entry</p>
+<dl class="class">
+<dt id="moments.moment.Moment">
+<em class="property">
+class </em><tt class="descclassname">moments.moment.</tt><tt class="descname">Moment</tt><big>(</big><em>data=u''</em>, <em>tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>created=None</em>, <em>closed=None</em>, <em>placeholder=False</em>, <em>source_file=u''</em><big>)</big><a class="headerlink" href="#moments.moment.Moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object to hold a unique Moment (Journal Entry with Time)</p>
+<dl class="method">
+<dt id="moments.moment.Moment.render_first_line">
+<tt class="descname">render_first_line</tt><big>(</big><big>)</big><a class="headerlink" href="#moments.moment.Moment.render_first_line" title="Permalink to this definition">¶</a></dt>
+<dd>render the date and the tags for the entry</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">The <tt class="docutils literal"><span class="pre">entry</span></tt> Module</a></li>
+<li><a class="reference external" href="#module-moments.moment">The <tt class="docutils literal"><span class="pre">moment</span></tt> Module</a></li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="journal.html"
+                                  title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">journal</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="log.html"
+                                  title="next chapter">The <tt class="docutils literal"><span class="pre">log</span></tt> Module</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/moment.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="log.html" title="The log Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="journal.html" title="The journal Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments v1.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

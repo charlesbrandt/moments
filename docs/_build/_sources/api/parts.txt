@@ -1,0 +1,11 @@
+The :mod:`timestamp` Module
+-----------------------------
+
+.. automodule:: moments.timestamp
+   :members:
+
+The :mod:`tag` Module
+-----------------------------
+
+.. automodule:: moments.tag
+   :members:

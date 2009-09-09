@@ -1,0 +1,64 @@
+*2009.01.21 10:01:51 python
+Python is included with many operating systems.  
+
+An easy way to check if your system already has Python is to open up a terminal / command prompt and type:
+
+python -V
+
+for example:
+python -V
+Python 2.5.2
+
+If your operating system does not have Python installed, please visit:
+http://www.python.org
+For more information on downloading and installing Python for your system. 
+
+*2009.01.21 10:13:12 imaging pil
+The other component that you will need to install is the Python Imaging Library (often abbreviated as PIL). 
+
+http://www.pythonware.com/products/pil/
+
+Binaries for windows are available at the main site.  Binary packages are much easier to install than from source.   
+
+For Mac OS X you can use ports, or find a binary package like the following:
+http://pythonmac.org/packages/py25-fat/index.html
+This also requires the 2.5 version of Python from python.org. (The one distributed with Leopard won't work)
+
+also [2009.06.26 13:19:06] 
+after installing the python from python.org, make sure that the python in the default path is using the latest python
+which python
+python -V
+should be 2.5.4
+
+sudo rm /usr/bin/python
+sudo ln -s /usr/local/bin/python /usr/bin/python
+
+sudo rm /usr/bin/pythonw
+sudo ln -s /usr/local/bin/pythonw /usr/bin/pythonw
+
+
+See also:
+http://code.google.com/appengine/docs/python/images/installingPIL.html
+
+*2009.06.22 08:58:19 easy_install
+be sure to set up easy_install for the new python instance
+this can be done by running 
+ez_setup.py
+available at:
+http://peak.telecommunity.com/dist/ez_setup.py
+
+*2009.01.21 10:23:06 virtualenv
+If you are on a shared system, Virtual Env may help isolate your Python instance from other Python instances on the system.
+
+*2009.02.04 19:50:06 
+nosetests
+http://somethingaboutorange.com/mrl/projects/nose/
+sudo easy_install nose
+
+*2009.06.22 09:08:16 mercurial
+notes for this are elsewhere
+but this is also a good time to install mercurial
+easy_install mercurial
+
+on Mac OS X this does require Xcode to be up to date
+(can still download an executable for mac)

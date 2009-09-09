@@ -1,0 +1,18 @@
+*2008.12.18 21:00:57 foo bar
+another test, need more for limiting
+
+*2008.10.22 11:15:42 foo
+another test entry, this one has seconds
+
+*2008.02.25 00:35 foo bar
+
+dummy log file for testing Log module (and eventually others)
+
+2009.03.03 14:41:56 
+the previous timestamp should not trigger a new entry
+it does not begin with a "*", which is no longer valid for a moment log entry
+should be part of [2008.02.25 00:35]
+
+be sure that this file ends in a blank line:
+
+

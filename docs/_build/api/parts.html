@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The timestamp Module &mdash; Moments v1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_MODINDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments v1.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="Editors" href="../editors.html" />
+    <link rel="prev" title="The entry Module" href="moment.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             accesskey="M">modules</a> |</li>
+        <li class="right" >
+          <a href="../editors.html" title="Editors"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="moment.html" title="The entry Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments v1.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.timestamp">
+<h1>The <tt class="xref docutils literal"><span class="pre">timestamp</span></tt> Module<a class="headerlink" href="#module-moments.timestamp" title="Permalink to this headline">¶</a></h1>
+<p>Timestamps have different ways of being formatted
+this object is a common place to store these</p>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>2009.03.14 18:23:13
+would be nice if this were a subclass of datetime
+with special formatters built in
+tried this last week with ill effects, but still desirable</p>
+<p><a href="#id3"><span class="problematic" id="id4">*</span></a>2009.03.19 16:17:04 
+may want to integrate time related methods of osbrowser.node (day, date...)
+and also Directory.file_date_range (best migrated to Timerange)</p>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>2009.07.17 07:36:52
+considering that timestamps have different formats
+might be nice to associate that format with the object instance
+and make it settable/configurable.</p>
+<p>depending on format
+could have different output for date, time, accuracies, etc.</p>
+<dl class="class">
+<dt id="moments.timestamp.Timerange">
+<em class="property">
+class </em><tt class="descclassname">moments.timestamp.</tt><tt class="descname">Timerange</tt><big>(</big><em>trange=None</em>, <em>start=None</em>, <em>end=None</em><big>)</big><a class="headerlink" href="#moments.timestamp.Timerange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timerange holds a start and end python datetime</p>
+<p>trange can either be a string representing two timestamps separated
+by a &#8216;-&#8216;
+or just a simple tstamp string
+in which case it will be evaluated as a range based on accuracy</p>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>2009.03.18 05:28:03 
+currently assuming start and end are datetime objects,
+not timestamp objects
+once Timestamp is a subclass of datetime, should be a moot point</p>
+<dl class="method">
+<dt id="moments.timestamp.Timerange.from_trange">
+<tt class="descname">from_trange</tt><big>(</big><em>trange</em>, <em>end_is_now=False</em><big>)</big><a class="headerlink" href="#moments.timestamp.Timerange.from_trange" title="Permalink to this definition">¶</a></dt>
+<dd><p>will work with either a simple timestamp string
+or a string with a - separating two timestamp strings</p>
+<p>check the tstamp for a range of times
+split if found
+return the range start and end</p>
+<p>end defaults to now or tstamp_to_timerange end</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.from_tstamp">
+<tt class="descname">from_tstamp</tt><big>(</big><em>text_time</em><big>)</big><a class="headerlink" href="#moments.timestamp.Timerange.from_tstamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string of the format:
+YYYYMMDDHHMMSS
+return a tuple of python datetime objects
+based on the format supplied
+can assume different ranges based on the degree of accuracy</p>
+<p>we want to assume the difference</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.timestamp.parse_line_for_time">
+<tt class="descclassname">moments.timestamp.</tt><tt class="descname">parse_line_for_time</tt><big>(</big><em>line</em><big>)</big><a class="headerlink" href="#moments.timestamp.parse_line_for_time" title="Permalink to this definition">¶</a></dt>
+<dd>look at the line, determine if there is a timestamp
+return the timestamp, and the remainder if so</dd></dl>
+
+</div>
+<div class="section" id="the-tag-module">
+<h1>The <tt class="xref docutils literal"><span class="pre">tag</span></tt> Module<a class="headerlink" href="#the-tag-module" title="Permalink to this headline">¶</a></h1>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <h3><a href="../index.html">Table Of Contents</a></h3>
+            <ul>
+<li><a class="reference external" href="">The <tt class="docutils literal"><span class="pre">timestamp</span></tt> Module</a></li>
+<li><a class="reference external" href="#the-tag-module">The <tt class="docutils literal"><span class="pre">tag</span></tt> Module</a></li>
+</ul>
+
+            <h4>Previous topic</h4>
+            <p class="topless"><a href="moment.html"
+                                  title="previous chapter">The <tt class="docutils literal"><span class="pre">entry</span></tt> Module</a></p>
+            <h4>Next topic</h4>
+            <p class="topless"><a href="../editors.html"
+                                  title="next chapter">Editors</a></p>
+            <h3>This Page</h3>
+            <ul class="this-page-menu">
+              <li><a href="../_sources/api/parts.txt"
+                     rel="nofollow">Show Source</a></li>
+            </ul>
+          <div id="searchbox" style="display: none">
+            <h3>Quick search</h3>
+              <form class="search" action="../search.html" method="get">
+                <input type="text" name="q" size="18" />
+                <input type="submit" value="Go" />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+              <p class="searchtip" style="font-size: 90%">
+              Enter search terms or a module, class or function name.
+              </p>
+          </div>
+          <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../modindex.html" title="Global Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../editors.html" title="Editors"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="moment.html" title="The entry Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments v1.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+      &copy; Copyright 2009, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 0.6.2.
+    </div>
+  </body>
+</html>

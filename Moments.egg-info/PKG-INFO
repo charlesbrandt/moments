@@ -1,0 +1,17 @@
+Metadata-Version: 1.0
+Name: Moments
+Version: 1.0beta
+Summary: Python package to process moments log files
+Home-page: http://www.contextiskey.com
+Author: Charles Brandt
+Author-email: code@contextiskey.com
+License: MIT
+Description: Journal log files consist of text documents with the         format:
+        *YYYY.MM.DD hh:mm [tags]
+        [entry]
+        
+        
+        
+        these logs are useful for tracking notes with a time context
+        
+Platform: UNKNOWN
