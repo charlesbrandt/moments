@@ -13,13 +13,8 @@
 # based on examples/video.py distributed by pyglet, written by Alex Holkner
 
 # Requires:
-
-# TODO:
-# *2009.05.27 18:11:12 
-# way to print what is currently playing
-#
-# *2009.05.27 18:11:19
-# way to log all items being played/skipped in moments
+pyglet
+moments
 
 """
 import os, sys, re, codecs
@@ -48,6 +43,7 @@ def on_key_press(symbol, modifiers):
           key.symbol_string(symbol) == "ESCAPE"):
         exit()
 
+    #jump to position in current media file
     elif key.symbol_string(symbol) == "RETURN":
         try:
             seek = int(window.user_response)
@@ -57,6 +53,7 @@ def on_key_press(symbol, modifiers):
             print "invalid time: %s" % window.user_response
         window.user_response = ''
 
+    #jump to position in playlist
     elif key.symbol_string(symbol) == "TAB":
         try:
             position = int(window.user_response)
@@ -65,12 +62,14 @@ def on_key_press(symbol, modifiers):
             print "invalid position: %s" % window.user_response
         window.user_response = ''
 
+    #toggle between playing and paused
     elif key.symbol_string(symbol) == "SPACE":
         if playlist.player._playing:
             playlist.player.pause()
         else:
             playlist.player.play()
 
+    #start playing
     elif key.symbol_string(symbol) == "P":
         playlist.player.play()
 
@@ -90,12 +89,15 @@ def on_key_press(symbol, modifiers):
             pyglet.clock.schedule_once(playlist.jump_next, 1)
             playlist.jumping = True
 
+    #jump next timestamp in time list
     elif key.symbol_string(symbol) == "N":
         playlist.jump_next(0)
 
+    #add an entry to the the log
     elif key.symbol_string(symbol) == "L":
         playlist.log_current()
 
+    #mark current position
     elif key.symbol_string(symbol) == "M":
         #add current position to jump list... then it can be written to log
         #will be written to log when jumps complete
@@ -279,24 +281,6 @@ a            """
             #exit()
             playlist.extend(pl)
 
-            # *2009.08.30 09:58:05 
-            # a quick place to add in functionality to save the resulting
-            # m3u file
-            # might want to generalize this.
-            ## o = file("playlist.m3u", 'w')
-            ## for i in playlist:
-            ##     #if re.match('\/c\/media\/binaries', i):
-            ##     if i[0].startswith('/c/media/binaries'):
-            ##         i = i[0].replace('/c/media/binaries/music', '/Volumes/Binaries/music')
-            ##         print i
-            ##     else:
-            ##         print "NO MATCH: %s" % i[0]
-            ##         i = ''
-            ##     if not re.search('JPG', i):
-            ##         o.write(i)
-            ##         o.write('\n')
-            ## exit()
-
         else:
             #this is the place for osbrowser to automatically determine
             #path object and create list accordingly
@@ -306,6 +290,27 @@ a            """
                     playlist.append( [os.path.join(path, i)] )
             else:
                 playlist.append ( [sys.argv[1]] )
+
+
+        if "-save" in sys.argv:
+
+            # *2009.08.30 09:58:05 
+            # a quick place to add in functionality to save the resulting
+            # m3u file
+            # might want to generalize this.
+            o = file("playlist.m3u", 'w')
+            for i in playlist:
+                #if re.match('\/c\/media\/binaries', i):
+                if i[0].startswith('/c/media/binaries'):
+                    i = i[0].replace('/c/media/binaries/music', '/Volumes/Binaries/music')
+                    print i
+                else:
+                    print "NO MATCH: %s" % i[0]
+                    i = ''
+                if not re.search('JPG', i):
+                    o.write(i)
+                    o.write('\n')
+            exit()
             
 
     #width=format.width, height=format.height

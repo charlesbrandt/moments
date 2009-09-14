@@ -10,6 +10,36 @@ from timestamp import Timestamp
 from association import Association, check_ignore
 from tags import path_to_tags
 
+# not to be confused with association.filter_list
+def filter_items(items, updates):
+    """
+    apply all updates in updates list 
+    to all items in items list
+
+    updates consist of a list of lists
+    where the sub lists contain:
+    (search_string, replace_string)
+    """
+    for u in updates:
+        search_string = u[0]
+        replace_string = u[1]
+        #print search_string
+        pattern = re.compile(search_string)
+        for item in items:
+            if pattern.search(item):
+                index = items.index(item)
+                items.remove(item)
+                #print "ORIGINAL ITEM: %s" % item
+
+                item = pattern.sub(replace_string, item)
+                # not sure if python replace is faster than re.sub:
+                #self.replace(pu[0], pu[1])
+                
+                #print "     NEW ITEM: %s" % item
+                items.insert(index, item)
+
+    return items
+
 def log_action(destination, message, tags=[]):
     """
     this is a common need...
@@ -435,6 +465,31 @@ class Journal(list):
         return list(entry_set)
 
 #UNTESTED BELOW HERE:
+
+    def filter_entries(self, updates):
+        """
+        apply filters to the journal's entries in place
+        #normalize/filter all of the data first...
+        #as the system changes, so do the paths
+
+        adapted from medialist.from_journal
+
+        could consider adding this as a method to entry or data
+        """
+        for e in self:
+            filtered_data = ''
+            for line in e.data.splitlines():
+                if line:
+                    #for url quoted items??
+                    #item = urllib.unquote(item)
+                    
+                    [line] = filter_items( [line], updates)
+                    if line:
+                        filtered_data += line + '\n'
+                        
+            e.data = filtered_data
+            #new_entries.append(e)
+
 
     def extract(self, tag_list, etype="intersect"):
         """

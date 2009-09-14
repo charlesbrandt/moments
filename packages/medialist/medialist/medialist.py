@@ -30,30 +30,6 @@ from routes import url_for
 from osbrowser.meta import make_node
 from moments.journal import Journal
 
-def multi_filter(items, updates):
-    """
-    apply all updates in updates list 
-    to all items in items list
-
-    updates consist of a list of lists
-    where the sub lists contain:
-    (search_string, replace_string)
-    """
-    for u in updates:
-        search_string = u[0]
-        replace_string = u[1]
-        pattern = re.compile(search_string)
-        for item in items:
-            if pattern.search(item):
-                index = items.index(item)
-                items.remove(item)
-                #print "ORIGINAL ITEM: %s" % item
-                item = pattern.sub(replace_string, item)
-                #print "     NEW ITEM: %s" % item
-                items.insert(index, item)
-
-    return items
-
 class MediaList(list):
     """
     aka playlist
@@ -344,22 +320,24 @@ class MediaList(list):
 
         #normalize/filter all of the data first...
         #as the system changes, so do the paths
-        new_entries = []
-        for e in entries:
-            filtered_data = ''
-            for line in e.data.splitlines():
-                if line:
-                    [ line ] = multi_filter( [line], updates)
-                    #[ line ] = multi_filter( [line], path_updates)
-                    if line:
-                        filtered_data += line + '\n'
+        ## new_entries = []
+        ## for e in entries:
+        ##     filtered_data = ''
+        ##     for line in e.data.splitlines():
+        ##         if line:
+        ##             [ line ] = multi_filter( [line], updates)
+        ##             #[ line ] = multi_filter( [line], path_updates)
+        ##             if line:
+        ##                 filtered_data += line + '\n'
 
-            e.data = filtered_data
-            new_entries.append(e)
+        ##     e.data = filtered_data
+        ##     new_entries.append(e)
 
         #make a new journal with normalized/filtered data
         j2 = Journal()
-        j2.from_entries(new_entries)
+        j2.from_entries(entries)
+        
+        j2.filter_entries(updates)
 
         #now, create a media list based on the frequency of items in j2
         ilist = j2.datas.frequency_list()

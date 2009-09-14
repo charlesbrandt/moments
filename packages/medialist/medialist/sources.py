@@ -517,6 +517,7 @@ def entries_to_playlist(entries):
             elif line.strip():
                 source_file = line.strip()
                 if re.match('^media', source_file):
+                    source_file = source_file.replace('media/', '')
                     source_file = '/c/' + source_file
 
                 playlist.append( [source_file, [], e] )
