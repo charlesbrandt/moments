@@ -626,7 +626,7 @@ class Playlist(list):
             self.player.play()
 
         now_playing = self.now_playing()
-        print "Playlist position: %s" % self.list_pos
+        print "Playlist position: %s/%s" % (self.list_pos, len(self))
         print now_playing.render()
         
     def list_previous(self):
