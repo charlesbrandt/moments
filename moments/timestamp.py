@@ -347,41 +347,44 @@ class Timestamp(object):
         
         return links
 
-    def year(self):
-        """
-        return a string for our year (YYYY)
-        """
-        return self.dt.strftime("%Y")
+    # the following are picked up by __getattr__()
+    # which pulls them from the self.dt (datetime)
+
+    ## def year(self):
+    ##     """
+    ##     return a string for our year (YYYY)
+    ##     """
+    ##     return self.dt.strftime("%Y")
         
-    def month(self):
-        """
-        return a string for our month (MM)
-        """
-        return self.dt.strftime("%m")
+    ## def month(self):
+    ##     """
+    ##     return a string for our month (MM)
+    ##     """
+    ##     return self.dt.strftime("%m")
 
-    def day(self):
-        """
-        return a string for our day (DD)
-        """
-        return self.dt.strftime("%d")
+    ## def day(self):
+    ##     """
+    ##     return a string for our day (DD)
+    ##     """
+    ##     return self.dt.strftime("%d")
 
-    def hour(self):
-        """
-        return a string for our hour (HH) (24 hour)
-        """
-        return self.dt.strftime("%H")
+    ## def hour(self):
+    ##     """
+    ##     return a string for our hour (HH) (24 hour)
+    ##     """
+    ##     return self.dt.strftime("%H")
 
-    def minute(self):
-        """
-        return a string for our minute (MM)
-        """
-        return self.dt.strftime("%M")
+    ## def minute(self):
+    ##     """
+    ##     return a string for our minute (MM)
+    ##     """
+    ##     return self.dt.strftime("%M")
 
-    def second(self):
-        """
-        return a string for our second (SS)
-        """
-        return self.dt.strftime("%S")
+    ## def second(self):
+    ##     """
+    ##     return a string for our second (SS)
+    ##     """
+    ##     return self.dt.strftime("%S")
     
     def future(self, years=0, weeks=0, days=0,
                hours=0, minutes=0, seconds=0):
