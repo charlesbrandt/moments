@@ -163,14 +163,18 @@ class Timestamp(object):
         return text_time
 
     def now(self):
+        """
+        update the timestamp to be the current time (when now() is called)
+        """
         self.dt = datetime.now()
 
     #was time_to_tstamp
     def compact(self, accuracy=None):
         """
-        take a python datetime object
-        return a string representation of that time
+        return a string representation of our internal datetime object
+        with a format like:
         YYYYMMDDHHMMSS
+        controlled by 'accuracy'
         """
         if accuracy == 'year':
             return self.dt.strftime("%Y")
@@ -342,8 +346,111 @@ class Timestamp(object):
         links = ''.join(parts)
         
         return links
-    
 
+    def year(self):
+        """
+        return a string for our year (YYYY)
+        """
+        return self.dt.strftime("%Y")
+        
+    def month(self):
+        """
+        return a string for our month (MM)
+        """
+        return self.dt.strftime("%m")
+
+    def day(self):
+        """
+        return a string for our day (DD)
+        """
+        return self.dt.strftime("%d")
+
+    def hour(self):
+        """
+        return a string for our hour (HH) (24 hour)
+        """
+        return self.dt.strftime("%H")
+
+    def minute(self):
+        """
+        return a string for our minute (MM)
+        """
+        return self.dt.strftime("%M")
+
+    def second(self):
+        """
+        return a string for our second (SS)
+        """
+        return self.dt.strftime("%S")
+    
+    def future(self, years=0, weeks=0, days=0,
+               hours=0, minutes=0, seconds=0):
+        """
+        return a new Timestamp object that is in the future
+        according to parameters
+
+        months are not included since it is tricky to convert those into days
+        (months are not consistent in length)
+        and days are what we need to boil the distance down to.
+        
+        could revisit that in the future (hehe)
+        the tricky cases will be when the function is called
+        on the 31st of a month,
+        and told to go into the future to a month that does not have 31 days.
+        Should it roll back to the 30th of that future month? (or 28th in Feb?)
+        or should it go forward?
+        """
+        future = self.dt
+        if years:
+            year = timedelta(365)
+            future = future + (years * year)
+
+        if weeks:
+            week = timedelta(7)
+            future = future + (weeks * week)
+
+        if days:
+            future = future + timedelta(days)
+
+        if hours:
+            future = future + timedelta(hours=hours)
+
+        if minutes:
+            future = future + timedelta(minutes=minutes)
+
+        if seconds:
+            future = future + timedelta(seconds=seconds)
+
+        return Timestamp(future)
+
+    def past(self, years=0, weeks=0, days=0,
+               hours=0, minutes=0, seconds=0):
+        """
+        return a new Timestamp object that is in the past
+        according to parameters
+        """
+        past = self.dt
+        if years:
+            year = timedelta(365)
+            past = past - (years * year)
+
+        if weeks:
+            week = timedelta(7)
+            past = past - (weeks * week)
+
+        if days:
+            past = past - timedelta(days)
+
+        if hours:
+            past = past - timedelta(hours=hours)
+
+        if minutes:
+            past = past - timedelta(minutes=minutes)
+
+        if seconds:
+            past = past - timedelta(seconds=seconds)
+
+        return Timestamp(past)
 
 #def this_week_last_year(today=date.today()):
 def this_week_last_year(today=None):

@@ -30,7 +30,7 @@ class Moment(Entry):
         elif type(created) == type(now):
             self.created = Timestamp(created)
 
-        #*2009.08.08 17:58:40 not sure why this else was commented
+        #*2009.08.08 17:58:40 not sure why this 'else' was commented
         #if causing incorrect behavior should document that.
         else:
             #assuming we passed in an actual Timestamp here:
@@ -77,6 +77,18 @@ class Moment(Entry):
             line = '-'
         else:
             line = '*'
+        line += text_time + " " + ' '.join(self.tags)
+        line += "\n"
+        return unicode(line)
+
+    def render_comment(self):
+        """
+        render the date and the tags for the entry as a comment
+        """
+        #text_time = str(Timestamp(time=self.created))
+        text_time = str(self.created)
+        
+        line = '#'
         line += text_time + " " + ' '.join(self.tags)
         line += "\n"
         return unicode(line)
