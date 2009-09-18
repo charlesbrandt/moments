@@ -1,4 +1,4 @@
-import os
+import os, re
 from moments.journal import Journal, load_journal
 from moments.timestamp import Timestamp
 from moments.moment import Moment
@@ -6,77 +6,593 @@ from moments.association import Association
 
 class Position(object):
     """
-    very similar to a MediaList object here
-
-    but we just want to hold a position
+    we just want to hold a position
     and length
 
     from this we can determine the number for previous, next
-    and also add increment and decrement options
+    and provide increment and decrement options
 
-    loop could be here instead
-    
+    loop is tracked here
+
+    error checking and representing positions
     """
-    def __init__(self, length, position=0):
+    def __init__(self, length=0, position=0, loop=True):
         self.position = position
         self.length = length
+        self.loop = loop
 
     def __int__(self):
         return self.position
 
-    def increment(self):
-        """
-        changes the actual position variable
-        """
-        if self.position+1 >= self.length:
-            self.position = 0
-        else:
-            self.position += 1
+    def __str__(self):
+        return str(self.position)
+
+    def __repr__(self):
         return self.position
 
-    def decrement(self):
+    def end(self):
         """
-        changes the actual position variable
+        the value for the last object
         """
-        if self.position-1 < 0:
-            self.position = self.length-1
-        else:
-            self.position -= 1
-        return self.position
-    
-    def next(self):
+        return self.length-1
+
+    def at_end(self):
         """
-        gives the position for the next item
-        but does not actually increment the position
+        return a boolean value for if our position is equal to the end
         """
-        if self.position+1 >= self.length:
+        return self.position == self.end()
+
+    def change_length(self, length):
+        """
+        position needs to know how long the list is
+        we can change that later if we don't know the length
+        """
+        self.length = length
+        #go ahead one just to make sure we weren't beyond the new length
+        self.next()
+
+    def set(self, position):
+        """
+        would be nice if this just overrides the default set
+        TODO: look up overriding that, maybe check moments.timestamp
+        """
+        self.position = self.check(position)
+
+    def check(self, position):
+        """
+        accept a vaule for a position
+        check to make sure it falls within the range of acceptable values
+
+        if greater, go to the end
+        if less than 0, go to the beginning
+
+        could consider doing a mod operation and taking the remainder as
+        the new position.
+        """
+        if position < 0:
             return 0
+        elif position >= 0 and position <= self.end():
+            return int(position)
         else:
-            return self.position+1
+            return self.end()
 
-    def previous(self):
+    def next(self, value=1):
         """
         gives the position for the next item
         but does not actually increment the position
         """
-        if self.position-1 < 0:
-            return self.length-1
+        if self.position+value >= self.length:
+            if self.loop:
+                return 0
+            else:
+                #staying at the end
+                #return self.position
+                #return self.length-1
+                return self.end()
         else:
-            return self.position-1
+            return self.position+value
+    
+    def previous(self, value=1):
+        """
+        gives the position for the next item
+        but does not actually increment the position
+        """
+        if self.position-value < 0:
+            if self.loop:
+                #return self.length-1
+                return self.end()
+            else:
+                #staying at the beginning
+                #(should be 0 already)
+                return 0
+        else:
+            return self.position-value
+
+    def increment(self, value=1):
+        """
+        changes the actual position variable
+        """
+        self.position = self.next(value)
+        return self.position
+
+    def decrement(self, value=1):
+        """
+        changes the actual position variable
+        """
+        self.position = self.previous(value)
+        return self.position
+
+class Items(list):
+    """
+    generic list with a position associated with it
+    position will get updated with call to update()
+
+    changing the position is left to the caller
+    """
+    def __init__(self, items=[]):
+        list.__init__(self)
+        self.extend(items)
+        self.position = Position(len(items))
+        
+        #quick way to access the current item directly
+        #rather than having get return the value
+        if items:
+            self.current = self.get()
+        else:
+            #if nothing was sent, be sure to initialize current later!
+            self.current = None
+        
+
+    def get(self, position=None):
+        """
+        get calls will not change our position
+        """
+        #lets make sure our position's length is always up to date:
+        self.update()
+        
+        print "Received position: %s" % position
+        print "Current position: %s" % self.position
+        print "Length: %s" % len(self)
+        
+        if position is None:
+            #use our current position
+            return self[int(self.position)]
+        else:
+            #checking if position is out of range here:
+            return self[self.position.check(position)]
+
+    def get_previous(self):
+        return self.get(self.position.previous())
+
+    def get_next(self):
+        return self.get(self.position.next())
+
+    def go(self, position=None):
+        """
+        go calls will update the local position object
+        """
+        item = self.get(position)
+        if position is not None:
+            self.position.set(position)
+        self.current = item
+        return item
+
+    def go_next(self):
+        return self.go(self.position.next())
+        
+    def go_previous(self):
+        return self.go(self.position.previous())
+
+    def update(self):
+        """
+        update the position so it knows our new length
+        should be called any time items are added or removed to the list
+        """
+        self.position.change_length(len(self))
+
+class Jumps(Items):
+    def __init__(self, comma='', items=[]):
+        Items.__init__(self, items)
+        #we don't want to loop over jumps
+        self.position.loop = False
+        if comma:
+            self.from_comma(comma)
+        
+    def from_comma(self, source):
+        """
+        split a comma separated string into jumps
+        """
+        temps = source.split(',')
+        for j in temps:
+            try:
+                self.append(int(j))
+            except:
+                print "could not convert %s to int from: %s" % (j, source)
+        return self
+    
+    def to_comma(self):
+        """
+        combine self into a comma separated string
+        """
+        temp = []
+        for j in self:
+            if j not in temp:
+                temp.append(str(j))
+        jump_string = ','.join(temp)
+        return jump_string
+
+    def relate(self, compare):
+        """
+        take another list of items
+        see if we are a subset, superset, or how many items in common there are
+        returns a tuple:
+        (int(items_in_common), description_of_relationship)
+        where description is one of 3:
+        subset
+        superset
+        same
+        different
+
+        requires that all items in both lists are useable in a python set
+        i.e. distinct hashable objects
+        (source objects themselves won't work)
+
+        may want this to be part of general Items object
+        """
+        response = ''
+        local = set(self)
+        other = set(compare)
+ 
+        #check if either is a subset of the other
+        #cset = set(c[0][1])
+        #iset = set(i[0][1])
+        
+        common = local.intersection(other)
+        
+        if len(local.difference(other)) == 0:
+            #same set!
+            #could be the same item
+            response = 'same'
+        elif local.issubset(other):
+            response = 'subset'
+        elif other.issubset(local):
+            response = 'superset'
+        else:
+            response = 'different'
+
+        return (len(common), response)
+
+class Source(object):
+    """
+    A single media object.
+    
+    an object to formalize the items in the list
+    being used in the pyglet based player script
+
+    A Source holds the following:
+    media:  a path representing the object, can be local or eventually remote
+    jumps:  a list of times for marking transitions, etc
+    entry:  the original entry that the source was created from
+    """
+    def __init__(self, path=None):
+        self.path = path
+        self.jumps = Jumps()
+        self.entry = None
 
 
+    def __str__(self):
+        return self.as_moment().render()
+
+    def as_moment(self):
+        moment = Moment()
+        if self.entry:
+            moment.tags = self.entry.tags
+        else:
+            moment.tags = []
+
+        if self.jumps:
+            moment.data = "# -sl %s %s" % (self.jumps.to_comma(), self.path)
+        else:
+            moment.data = self.path
+
+        return moment
+
+    def as_key(self):
+        """
+        convert a source item
+        (that can have up to 3 elements... file, times, entry)
+        into an item suitable for a key in a dictionary
+        """
+        if self.jumps:
+            key = ( self.path, tuple(self.jumps) )
+        else:
+            key = ( self.path )
+        return key
+
+ 
+class Sources(Items):
+    """
+    A collection of Source objects
+    and a destination path for the logs generated
+
+    aka Playlist, Medialist
+    """
+    def __init__(self, items=[], log_path=None):
+        Items.__init__(self, items)
+        if log_path is None:
+            self.log_path = '/c/charles/logs/daily/transfer'
+        else:
+            self.log_path = log_path
+        
+    def log_current(self):
+        """
+        log that a play was just completed
+        
+        this is very similar to osbrowser.node log_action?
+
+        could move into moments.journal
+        would need the log path, the file being logged (or file parent path)
+        and the entry to use
+        """
+        entry = self.now_playing()
+
+        #log in default log directory
+        j = Journal()
+        now = Timestamp(now=True)
+        log_name = os.path.join(self.log_path , now.filename())
+        j.from_file(log_name)
+        j.update_entry(entry)
+        j.to_file()
+
+        # log in action.txt for current media's directory
+        cur_item = self.get()
+        parent_path = os.path.dirname(cur_item.path)
+        action = os.path.join(parent_path, 'action.txt')
+        j2 = Journal()
+        j2.from_file(action)
+        j2.update_entry(entry)
+        j2.to_file()
+        
+    def now_playing(self):
+        """
+        return an entry for what is playing
+        """
+        cur_item = self.get()
+        return cur_item.as_moment()
+    
 class Converter(object):
-    def __init__(self, path, type="m3u"):
+    """
+    Sources generator
+    
+    a collection of routines used to convert to and from a Sources list
+
+    approaches Sources generation from many different levels
+
+    rather than bog down and clutter the Sources object directly
+    can just generate it here
+    """
+    
+    def __init__(self, sources=None, path=None):
         """
         accept a path as the source
         generate the corresponding Sources object
+
+        probably a good idea to pass sources in, so that when Converter
+        is destroyed, sources doesn't go with it
         """
         self.path = path
-        self.type = type
+        if sources is None:
+            self.sources = Sources()
+        else:
+            self.sources = sources
+
+    def from_entry(self, entry):
+        """
+        take one journal entry
+        and look for Sources items within it
+        """
+        for line in entry.data.splitlines():
+            if re.search("\ -sl\ ", line):
+                #this requires the first 3 items to be:
+                # # -sl [nums] [file]
+                # otherwise parts will be off
+                # see replace.txt
+                parts = line.split(' ', 3)
+                try:
+                    sl_pos = parts.index('-sl')
+                except:
+                    print "SL found, but incorrect format:"
+                    print e.render()
+                    exit()
+                jumpstr = parts[sl_pos+1]
+                jumps = Jumps(jumpstr)
+                
+                try:
+                    source_file = parts[sl_pos+2]
+                except:
+                    print "no source file in parts: %s" % parts
+                    print line
+                    print
+
+                #get rid of surrounding quotes here
+                source_file = source_file.replace('"', '')
+                
+                source = Source()
+                source.path = source_file
+                source.jumps = jumps
+                source.entry = entry
+                print "adding source: %s" % source
+                self.sources.append( source )
+                
+            elif line.strip():
+                #this will not work with entries that have file paths
+                #and other comments/text in them:
+
+                #'# -sl ' should be caught by previous case
+                #could verify that line starts with either a '/' 'http:'
+                source_file = line.strip()
+                if re.match('^media', source_file):
+                    source_file = source_file.replace('media/', '')
+                    source_file = '/c/' + source_file
+
+                source = Source()
+                source.path = source_file
+                source.entry = entry
+                print "adding source: %s" % source
+                self.sources.append( source )
+
+    def from_entries(self, entries):
+        """
+        take a list of moments/entries
+        for each line in the entry
+        see if it will work as a playlist item
+        add if so
+        """
+        for e in entries:
+            self.from_entry(e)
+        return self.sources
+
+    def condense_and_sort(self, destination=None):
+        """
+        whatever is in the list,
+        count the number of times items show up in the list
+        (return the frequency of those items)
+        and sort items by that frequency
+        and return a condesed list in that order
+        """
+        if destination is None:
+            destination = Sources()
+        
+        ## freq = Association()
+        ## for i in pl:
+        ##     freq.associate(i, i[0])
+        ## item_lists = freq.items_by_frequency()
+        ## new_list = []
+        ## #now have a list of:
+        ## #[ [file_path, list_of_original_playlist_items], ..]
+        ## for i in item_lists:
+        ##     longest = ['', []]
+        ##     for playlist_item in i[1]:
+        ##         if len(playlist_item[1]) >= len(longest[1]):
+        ##             longest = playlist_item
+        ##     #print len(longest[1])
+        ##     new_list.append(longest)
+
+        tally = {}
+
+        #at this point we will be losing any entry associated
+        #in order to condense
+        #this will also lose any tag data
+        #we can look up one of these entries later
+        #no guarantee which one will be reassociated
+        # could go through all entries later and tally up tags there
+        # don't want to do that just yet though
+        for i in self.sources:
+            i.jumps.sort()
+            key = i.as_key()
+
+            if tally.has_key(key):
+                tally[key] += 1
+            else:
+                tally[key] = 1
+
+        #get the keys and values
+        items = tally.items()
+
+        #convert top items to lists instead of default tuple returned by dict
+        new_items = []
+        for i in items:
+            new_items.append( list(i) )
+        items = new_items
+
+        #condense items:
+        condensed = items[:]
+        for i in items:
+            # see if we have jumps to consider
+            if len(i[0]) > 1:
+                #could be more than one condensed(c) that has jumps as subset...
+                #should stop after we find one that matches
+                #(hence using 'while' instead of 'for')
+                pos = 0
+                match = False
+                while not match:
+                    c = condensed[pos]
+                    #if condensed.key.path == item.key.path
+                    #and we have jumps to consider:
+                    if (c[0][0] == i[0][0]) and (len(c[0]) > 1):
+                        #both have times
+                        #check if either is a subset of the other
+                        cset = set(c[0][1])
+                        iset = set(i[0][1])
+                        if len(cset.difference(iset)) == 0:
+                            #same set!
+                            #could be the same item
+                            pass
+                        elif cset.issubset(iset):
+                            #update tally i in condensed
+                            pos = condensed.index(i)
+                            condensed[pos][1] += c[1]
+                            print "found subset: %s of: %s. current length: %s" % ( cset, iset, len(condensed))
+                            condensed.remove(c)
+                            print "new length: %s" % len(condensed)
+                            match = True
+                        elif iset.issubset(cset):
+                            #update tally i in condensed
+                            pos = condensed.index(c)
+                            condensed[pos][1] += i[1]
+                            print "found subset: %s of: %s. current length: %s" % ( iset, cset, len(condensed))
+                            condensed.remove(i)
+                            print "new length: %s" % len(condensed)
+                            match = True
+                        else:
+                            print "times didn't match"
+                    pos += 1
+                    if pos >= len(condensed):
+                        #maybe no match, exit while loop
+                        match = True
+
+
+        items = condensed
+
+        #need to sort based on second item in the list, not the first...
+        #not sure how to do this with sort...
+        #I think there is a better way than this:
+        #swap positions:
+        new_items = []
+        for i in items:
+            new_items.append( (i[1], i[0]) )
+        new_items.sort()
+        new_items.reverse()
+        items = []
+        for i in new_items:
+            items.append( i[1] )
+
+        #this will not catch the case when jumps were merged into a larger set
+        #will lose entry association in that case
+        for i in self.sources:
+            key = i.as_key()
+            if key in items:
+                pos = items.index(key)
+                items[pos] = [ i.path, i.jumps, i.entry ]
+
+        #regenerate a new Sources object:
+        for i in items:
+            source = Source()
+            source.path = i[0]
+            if len(i) > 1:
+                source.jumps = i[1]
+            if len(i) > 2:
+                source.entry = i[2]
+            destination.append(source)
+
+        return destination
+    
+    def save(self):
+        pass
 
     def from_m3u(self, filename=None):
         if not filename:
-            filename = self.source
+            filename = self.path
         #try:
         f = codecs.open(filename, encoding='latin_1')
         #f = open(filename)
@@ -105,6 +621,13 @@ class Converter(object):
 
     def from_journal(self, journal, tags=[], updates=[], local_path=None):
         """
+        TODO:
+        refactor this
+        see if there is anything worth keeping
+        otherwise should use from_entries, and condense_and_sort()
+
+        
+        
         filter_and_update
         filter journal based on tags (union)
 
@@ -236,530 +759,3 @@ class Converter(object):
         
         xspf.seek(0)
         return xspf.read()
-
-
-
-
-#could also consider this a collection of layouts
-#sources?  scenes?
-class Sources(list):
-    """
-    this is a list of layouts for our current position
-    can use browser to switch between the layouts as normal
-
-    also has a concept of siblings.
-    These should just be links of sorts (file path, tags, etc).
-    If we navigate to them, can change the point
-
-    also has one parent
-    and a list of children.
-
-    similar in concept to a Node on a filesystem
-    but keeping it separate to keep it simpler.
-
-    *2009.08.09 17:00:12
-    important to remember that for performance
-    we don't want to have any more than the current, previous and next layout
-    in memory at a time
-
-    therefore this needs to know how to load a layout based on the contents
-    and content type
-
-    *2009.08.09 17:02:44
-    although, for simple layouts it may be acceptable to load them all into
-    memory
-    (as in breathe.py)
-    """
-    def __init__(self, items, app):
-        list.__init__(self)
-        self.extend(items)
-        
-        self.app = app
-        
-        self.parent = None
-        self.children = []
-        #should include link/index to self.
-        self.siblings = []
-        self.view = "filesystem"
-        self.position = Position(len(self))
-
-    #refactor todo
-    #this is what should be overridden in subclasses and called by app
-    #not get_item
-    #it can call get_item though
-    def get_layout(self, position=None):
-        pass
-
-    def get_item(self, position=None):
-        """
-        this should be over-ridden for different instances / subclasses.
-        """
-        #when over-riding, can do something like the following to generate
-        #a layout on the fly
-        #self.make_thumb_layout(self.sources[int(self.position)])
-        #return make_thumb_layout(self.app, self[position])
-        print "Position: %s" % position
-        if position is None:
-            print self.position.position
-            return self[self.position.position]
-        else:
-            return self[position]
-
-    def get_previous(self):
-        return self.get_item(self.position.previous())
-
-    def get_next(self):
-        return self.get_item(self.position.next())
-
-
-import pyglet
-from pyglet.media import Player
-import re
-
-
-def jumps_to_string(jumps):
-    temp = []
-    if jumps:
-        for j in jumps:
-            if j not in temp:
-                temp.append(str(j))
-    else:
-        temp = ["0"]
-    jump_string = ','.join(temp)
-    return jump_string
-
-def string_to_jumps(string):
-    temps = string.split(',')
-    jumps = []
-    for j in temps:
-        try:
-            jumps.append(int(j))
-        except:
-            print "could not convert %s to int from: %s" % (j, string)
-    return jumps
-    
-
-def make_key(i):
-    """
-    convert a playlist item
-    (that can have up to 3 elements... file, times, entry)
-    into an item suitable for a key in a dictionary
-    """
-    if len(i) >= 2:
-        key = ( i[0], tuple(i[1]) )
-    elif len(i) == 1:
-        key = ( i[0] )
-    return key
-    
-
-def condense_and_sort_list(playlist):
-    """
-    whatever is in the list,
-    count the number of times items show up in the list
-    (return the frequency of those items)
-    and sort items by that frequency
-    and return a condesed list in that order
-    """
-    ## freq = Association()
-    ## for i in pl:
-    ##     freq.associate(i, i[0])
-    ## item_lists = freq.items_by_frequency()
-    ## new_list = []
-    ## #now have a list of:
-    ## #[ [file_path, list_of_original_playlist_items], ..]
-    ## for i in item_lists:
-    ##     longest = ['', []]
-    ##     for playlist_item in i[1]:
-    ##         if len(playlist_item[1]) >= len(longest[1]):
-    ##             longest = playlist_item
-    ##     #print len(longest[1])
-    ##     new_list.append(longest)
-    tally = {}
-
-    #at this point we will be losing any entry associated
-    #in order to condense
-    #this will also lose any tag data
-    for i in playlist:
-        key = make_key(i)
-        
-        if tally.has_key(key):
-            tally[key] += 1
-        else:
-            tally[key] = 1
-
-    #get the keys and values
-    items = tally.items()
-
-    #make sure main items are lists instead of default tuple returned by dict
-    new_items = []
-    for i in items:
-        new_items.append( list(i) )
-    items = new_items
-    
-    #condense items here:
-    condensed = items[:]
-    for i in items:
-        if len(i[0]) > 1:
-            #could be more than one c that has i as subset...
-            #should stop after one
-            #(hence using 'while' instead of 'for')
-            match = False
-            pos = 0
-            while not match:
-                c = condensed[pos]
-                if (c[0][0] == i[0][0]) and (len(c[0]) > 1):
-                    #both have times
-                    #check if either is a subset of the other
-                    cset = set(c[0][1])
-                    iset = set(i[0][1])
-                    if len(cset.difference(iset)) == 0:
-                        #same set!
-                        #could be the same item
-                        pass
-                    elif cset.issubset(iset):
-                        #update tally i in condensed
-                        pos = condensed.index(i)
-                        condensed[pos][1] += c[1]
-                        print "found subset: %s of: %s. current length: %s" % ( cset, iset, len(condensed))
-                        condensed.remove(c)
-                        print "new length: %s" % len(condensed)
-                        match = True
-                    elif iset.issubset(cset):
-                        #update tally i in condensed
-                        pos = condensed.index(c)
-                        condensed[pos][1] += i[1]
-                        print "found subset: %s of: %s. current length: %s" % ( iset, cset, len(condensed))
-                        condensed.remove(i)
-                        print "new length: %s" % len(condensed)
-                        match = True
-                    else:
-                        print "times didn't match"
-                pos += 1
-                if pos >= len(condensed):
-                    #maybe no match, exit while loop
-                    match = True
-                    
-                       
-    items = condensed
-    
-    #need to sort based on second item in the list, not the first...
-    #not sure how to do this with sort... I know there is a better way than
-    #this
-    #swap positions:
-    new_items = []
-    for i in items:
-        new_items.append( (i[1], i[0]) )
-
-    new_items.sort()
-    new_items.reverse()
-
-    items = []
-    for i in new_items:
-        items.append( i[1] )
-
-    for i in playlist:
-        key = make_key(i)
-        if key in items:
-            #replace key with i
-            pos = items.index(key)
-            items[pos] = i
-        #sorted_i = ( i[0], tuple(i[1]))
-
-    new_items = []
-    for i in items:
-        if len(i) > 1:
-            times = list(i[1])
-            times.sort()
-            i[1] = times
-        new_items.append(i)
-        
-    #print items
-    #exit()
-    return new_items
-
-def entries_to_playlist(entries):
-    """
-    take a list of moments/entries
-    for each line in the entry
-    see if it will work as a playlist item
-    add if so
-    """
-    playlist = []
-    for e in entries:
-        for line in e.data.splitlines():
-            if re.search("\ -sl\ ", line):
-                #this requires the first 3 items to be:
-                # # -sl [nums] [file]
-                # otherwise parts will be off
-                # see replace.txt
-                parts = line.split(' ', 3)
-                try:
-                    sl_pos = parts.index('-sl')
-                except:
-                    print "SL found, but incorrect format:"
-                    print e.render()
-                    exit()
-                jumpstr = parts[sl_pos+1]
-                jumps = string_to_jumps(jumpstr)
-                try:
-                    source_file = parts[sl_pos+2]
-                except:
-                    print "no source file in parts: %s" % parts
-                    print line
-                    print
-                    
-                #get rid of surrounding quotes here
-                source_file = source_file.replace('"', '')
-                
-                playlist.append( [source_file, jumps, e] )
-            elif re.search("-ss", line):
-                continue
-            elif line.strip():
-                source_file = line.strip()
-                if re.match('^media', source_file):
-                    source_file = source_file.replace('media/', '')
-                    source_file = '/c/' + source_file
-
-                playlist.append( [source_file, [], e] )
-
-    playlist = condense_and_sort_list(playlist)
-    return playlist
-
-    
-
-class Playlist(list):
-    """
-    playlist for pyglet media
-    playlists are:
-    [ [source, [jumps_as_list], [original_source_entry]], ....  ]
-
-    this playlist is used in /c/playlists/player.py
-
-    TODO:
-    subclass Sources for that functionality
-    keep pyglet specific functionality here
-    """
-    def __init__(self, window, playlist=[], jumps=None):
-        #PygletPlayer.__init__(self)
-
-        self.extend(playlist)
-        self.seconds = pyglet.text.Label("0.0",
-                                         font_name='Times New Roman',
-                                         font_size=24,
-                                         #we don't have this yet here:
-                                         #x=window.width//5,
-                                         #y=window.height-(window.height//5)
-                                         x=40, y=20,
-                                         anchor_x='center', anchor_y='center')
-        self.d = pyglet.text.Label(" / ",
-                                   font_name='Times New Roman',
-                                   font_size=14,
-                                   #we don't have this yet here:
-                                   #x=window.width//5,
-                                   #y=window.height-(window.height//5)
-                                   x=100, y=20,
-                                   anchor_x='center', anchor_y='center')
-        self.show_time = False
-
-        self.jump_interval = 5
-        self.jumping = False
-        self.jumps = jumps
-        self.jump_pos = 1
-        
-        #position in playlist
-        self.list_pos = 0
-        #self.playlist = playlist
-        self.first_play = True
-
-        self.player = None
-
-        #need to track this so we know where to play it
-        self.window = window
-
-        #duration of the current source item
-        self.duration = 0
-        
-    def list_go(self, position=None):
-        if position is None:
-            position = self.list_pos
-        item = self[position]
-        ## try:
-        if re.match('http:', item[0]):
-            source = self.load_stream(item[0])
-        else:
-            source = self.load_source(item[0])
-        ## except:
-        ##     print "could not load: %s ... skipping" % item[0]
-        ##     if position < self.list_pos and position != 0:
-        ##         self.list_pos = position
-        ##         self.list_previous()
-        ##     else:
-        ##         self.list_pos = position
-        ##         self.list_next()                
-        ##     return
-
-        self.duration = source.duration
-        
-        #just in case it was passed in and has not been set yet:
-        self.list_pos = position
-
-        #now we need to make sure the previous player is stopped and deleted
-        #if it exists:
-        if self.player:
-            #not sure if we need to remove handlers for this player:
-            #self.player.remove_handlers()
-            self.player.pause()
-            del self.player
-
-        self.player = Player()
-        self.player.on_eos = self.on_eos
-        self.player.queue(source)
-
-        #until we find out otherwise:
-        self.jumping = False
-
-        if len(item) > 1 and item[1]:
-            self.jumps = item[1]
-            self.jumping = True
-            self.jump_next(0)
-        else:
-            self.player.play()
-
-        now_playing = self.now_playing()
-        print "Playlist position: %s/%s" % (self.list_pos, len(self))
-        print now_playing.render()
-        
-    def list_previous(self):
-        self.jump_pos = 0
-        new_position = self.list_pos - 1
-        #self.list_pos -= 1
-        if new_position < 0:
-            #can either loop or exit
-            #exit()
-            new_position = len(self)-1
-        self.list_go(new_position)
-
-    def list_next(self):
-        self.jump_pos = 0
-        new_position = self.list_pos + 1
-        #self.list_pos += 1
-        if new_position >= len(self):
-            #can either loop or exit
-            #exit()
-            new_position = 0
-        self.list_go(new_position)
-
-    def jump_next(self, dt):
-        pyglet.clock.unschedule(self.jump_next)
-        if self.jumps and (self.jump_pos < len(self.jumps)):
-            #next = self.jumps.pop(0)
-            next = self.jumps[self.jump_pos]
-            self.jump_pos += 1
-            self.player.seek(next)
-            self.player.play()
-            pyglet.clock.schedule_once(self.jump_next, self.jump_interval)
-        elif len(self):
-            self.log_current()
-            self.list_next()
-
-    #log that a play was just completed
-    def log_current(self):
-        j = Journal()
-        now = Timestamp(now=True)
-        log_name = os.path.join('daily/transfer' , now.filename())
-        j.from_file(log_name)
-        cur_item = self[self.list_pos]
-        if len(cur_item) > 2:
-            entry = cur_item[2]
-            tags = entry.tags
-        else:
-            tags = []
-        if self.jumps:
-            j.make_entry("# -sl %s %s" % (jumps_to_string(self.jumps), cur_item[0]), tags=tags)
-        else:
-            j.make_entry(cur_item[0], tags=tags)
-        j.to_file()
-
-    def now_playing(self):
-        """
-        return an entry for what is playing
-        """
-        moment = Moment()
-        cur_item = self[self.list_pos]
-        if len(cur_item) > 2:
-            entry = cur_item[2]
-            moment.tags = entry.tags
-        else:
-            moment.tags = []
-        if self.jumps:
-            moment.data = "# -sl %s %s" % (jumps_to_string(self.jumps), cur_item[0])
-        else:
-            moment.data = cur_item[0]
-
-        return moment
-
-
-    def load_source(self, source_file):
-        #source_file = source_file.replace(' ', '\\ ')
-        #print source_file
-
-        try:
-            source = pyglet.media.load(source_file)
-        except:
-            print source_file
-            exit()
-        format = source.video_format
-        if not format:
-            #print 'No video track in this source.'
-            #sys.exit(1)
-            self.window.width = 150
-            self.window.height = 40
-        else:
-            self.window.width = format.width
-            self.window.height = format.height
-        return source
-
-    #http://snippets.dzone.com/posts/show/5722
-    ##     h = httplib.HTTP(host, port)
-    ##     h.putrequest('GET', url)
-    ##     h.putheader('Host', host)
-    ##     h.putheader('User-agent', 'python-httplib')
-    ##     h.endheaders()
-
-    ##     (returncode, returnmsg, headers) = h.getreply()
-    ##     if returncode != 200:
-    ##         print returncode, returnmsg
-    ##         sys.exit()
-
-    ##     f = h.getfile()
-    ##     return f.read()
-
-
-    #def get(host,port,url):
-    def load_stream(self, stream):
-        """
-        a python like wget or curl -O function
-        """
-        import urllib2
-        f = urllib2.urlopen(stream)
-
-        #pyglet does not currently support passing in file like arguments
-        #to media.load
-        #file:///c/downloads/reference/pyglet/doc/html/api/pyglet.media-module.html#load
-
-        source = pyglet.media.load(file=f, streaming=True)
-        format = source.video_format
-        if not format:
-            #print 'No video track in this source.'
-            #sys.exit(1)
-            self.window.width = 150
-            self.window.height = 40
-        else:
-            self.window.width = format.width
-            self.window.height = format.height
-        return source
-
-    def on_eos(self):
-        self.log_current()
-        self.list_next()
-

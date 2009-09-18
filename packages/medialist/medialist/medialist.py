@@ -25,7 +25,12 @@ import xml.sax.saxutils as saxutils
 from filters import path_updates
 
 #from webhelpers.html import url_escape
-from routes import url_for
+
+###### IMPORTANT #######
+# functions still call url_for
+# tests do not test those functions
+# these should be moved into pose somehow:
+#from routes import url_for
 
 from osbrowser.meta import make_node
 from moments.journal import Journal

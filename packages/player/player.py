@@ -12,24 +12,218 @@
 
 # based on examples/video.py distributed by pyglet, written by Alex Holkner
 
+*2009.09.18 12:48:03 
+# could easily use this to make system calls to a different player of choice
+# then this becomes a way to manage your playlists and keep open logs
+# of what happens when
+
 # Requires:
 pyglet
 moments
+medialist
 
+*2009.09.18 10:50:03
+major refactor
 """
 import os, sys, re, codecs
 import pyglet
+from pyglet.media import Player as PygletPlayer
 from pyglet.window import key
 
 from moments.log import Log
 from moments.journal import load_journal
 
-from medialist.sources import Playlist, entries_to_playlist
+from medialist.sources import Converter, Source, Sources
     
 window = pyglet.window.Window(resizable=True, visible=False)
 
-playlist = Playlist(window)
+class Player(object):
+    """
+    pyglet player specific wrapper to navigate through a Sources list object  
+    """
+    def __init__(self, window, sources):
+        self.player = None
 
+        #need to track this so we know where to play it
+        self.window = window
+
+        self.sources = sources
+
+        self.seconds = pyglet.text.Label("0.0",
+                                         font_name='Times New Roman',
+                                         font_size=24,
+                                         #we don't have this yet here:
+                                         #x=window.width//5,
+                                         #y=window.height-(window.height//5)
+                                         x=40, y=20,
+                                         anchor_x='center', anchor_y='center')
+        self.d = pyglet.text.Label(" / ",
+                                   font_name='Times New Roman',
+                                   font_size=14,
+                                   #we don't have this yet here:
+                                   #x=window.width//5,
+                                   #y=window.height-(window.height//5)
+                                   x=100, y=20,
+                                   anchor_x='center', anchor_y='center')
+        self.show_time = True
+
+        #duration of the current source item
+        self.duration = 0
+
+        self.jump_interval = 5
+        self.jumping = False
+
+    def list_previous(self):
+        new_position = self.sources.position.previous()
+        self.list_go(new_position)
+
+    def list_next(self):
+        new_position = self.sources.position.next()
+        self.list_go(new_position)
+
+    def jump_next(self, dt=0):
+        pyglet.clock.unschedule(self.jump_next)
+        if self.sources.current.jumps and not self.sources.current.jumps.position.at_end():
+            next = self.sources.current.jumps.go_next()
+            self.player.seek(next)
+            self.player.play()
+            pyglet.clock.schedule_once(self.jump_next, self.jump_interval)
+        else:
+            self.sources.log_current()
+            self.list_next()
+
+    def list_go(self, position=None):
+        item = self.sources.go(position)
+        
+        #CHECK FOR something we can PLAY: (video or audio)
+        source = self.load_playable(item)
+        if source:
+            self.duration = source.duration
+
+            #make sure the previous player is stopped and deleted
+            #if it exists:
+            if self.player:
+                #not sure if we need to remove handlers for this player:
+                #self.player.remove_handlers()
+                self.player.pause()
+                del self.player
+
+            #make a new one:
+            self.player = PygletPlayer()
+            self.player.on_eos = self.on_eos
+            self.player.queue(source)
+
+            #until we find out otherwise:
+            self.jumping = False
+            if item.jumps:
+                self.jumping = True
+                self.jump_next()
+            else:
+                self.player.play()
+
+            now_playing = self.sources.now_playing()
+            print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
+            print now_playing.render()
+
+        #MUST HAVE SOMETHING ELSE:
+        # either static resource like image or an entry
+        # or another playlist, log, etc.
+        else:
+            #this is the place for osbrowser to automatically determine
+            #path object and create list accordingly
+
+            #if item is a image file path, show it
+            #if item is an entry, show it
+
+            #else:
+            #in the following cases, launch a new player
+            #and pause the current player:
+
+            #if path is a directory, launch player with contents
+
+            #these can be combined:
+            #if path is a log, load the journal, look for media entries, play those
+            #if path is a log without media entries, show all entries
+            #must be an entry only
+            #or maybe a picture?
+            pass
+        
+    def load_playable(self, item):
+        """
+        accepts a medialist.source.Source item made up of:
+        -path
+        -jumps
+        -entry
+        """
+
+        #should decide if it is a stream here:
+        ## #source_file = source_file.replace(' ', '\\ ')
+        ## #print source_file
+        ## ## try:
+        ## if re.match('http:', item[0]):
+        ##     source = self.load_stream(item[0])
+
+        ### LOAD STREAM:
+        ## #def get(host,port,url):
+        ## def load_stream(self, stream):
+        ## import urllib2
+        ## f = urllib2.urlopen(stream)
+        #pyglet does not currently support passing in file like arguments
+        #to media.load
+        #file:///c/downloads/reference/pyglet/doc/html/api/pyglet.media-module.html#load
+        #http://snippets.dzone.com/posts/show/5722
+        ##     h = httplib.HTTP(host, port)
+        ##     h.putrequest('GET', url)
+        ##     h.putheader('Host', host)
+        ##     h.putheader('User-agent', 'python-httplib')
+        ##     h.endheaders()
+
+        ##     (returncode, returnmsg, headers) = h.getreply()
+        ##     if returncode != 200:
+        ##         print returncode, returnmsg
+        ##         sys.exit()
+
+        ##     f = h.getfile()
+        ##     return f.read()
+
+
+        ## else:
+        ##     source = self.load_source(item[0])
+        ## ## except:
+        ## ##     print "could not load: %s ... skipping" % item[0]
+        ## ##     if position < self.list_pos and position != 0:
+        ## ##         self.list_pos = position
+        ## ##         self.list_previous()
+        ## ##     else:
+        ## ##         self.list_pos = position
+        ## ##         self.list_next()                
+        ## ##     return
+
+
+        try:
+            source = pyglet.media.load(item.path)
+        except:
+            print "Item path: %s" % item.path
+            exit()
+        format = source.video_format
+        if not format:
+            #print 'No video track in this source.'
+            #sys.exit(1)
+            self.window.width = 150
+            self.window.height = 40
+        else:
+            self.window.width = format.width
+            self.window.height = format.height
+        return source
+
+    def on_eos(self):
+        self.sources.log_current()
+        self.list_next()
+
+
+sources = Sources()
+player = Player(window, sources)
+        
 @window.event
 def on_text(text):
     #global user_response
@@ -47,8 +241,8 @@ def on_key_press(symbol, modifiers):
     elif key.symbol_string(symbol) == "RETURN":
         try:
             seek = int(window.user_response)
-            playlist.player.seek(seek)
-            playlist.player.play()
+            player.player.seek(seek)
+            player.player.play()
         except:
             print "invalid time: %s" % window.user_response
         window.user_response = ''
@@ -57,61 +251,58 @@ def on_key_press(symbol, modifiers):
     elif key.symbol_string(symbol) == "TAB":
         try:
             position = int(window.user_response)
-            playlist.list_go(position)
+            player.list_go(position)
         except:
             print "invalid position: %s" % window.user_response
         window.user_response = ''
 
     #toggle between playing and paused
     elif key.symbol_string(symbol) == "SPACE":
-        if playlist.player._playing:
-            playlist.player.pause()
+        if player.player._playing:
+            player.player.pause()
         else:
-            playlist.player.play()
+            player.player.play()
 
     #start playing
     elif key.symbol_string(symbol) == "P":
-        playlist.player.play()
+        player.player.play()
 
     #toggle time display
     elif key.symbol_string(symbol) == "O":
-        if playlist.show_time:
-            playlist.show_time = False
+        if player.show_time:
+            player.show_time = False
         else:
-            playlist.show_time = True
+            player.show_time = True
 
     #toggle jump mode
     elif key.symbol_string(symbol) == "J":
-        if playlist.jumping:
-            pyglet.clock.unschedule(playlist.jump_next)
-            playlist.jumping = False
+        if player.jumping:
+            pyglet.clock.unschedule(player.jump_next)
+            player.jumping = False
         else:
-            pyglet.clock.schedule_once(playlist.jump_next, 1)
-            playlist.jumping = True
+            pyglet.clock.schedule_once(player.jump_next, 1)
+            player.jumping = True
 
     #jump next timestamp in time list
     elif key.symbol_string(symbol) == "N":
-        playlist.jump_next(0)
+        player.jump_next(0)
 
     #add an entry to the the log
     elif key.symbol_string(symbol) == "L":
-        playlist.log_current()
+        print "Adding Log"
+        player.sources.log_current()
 
     #mark current position
     elif key.symbol_string(symbol) == "M":
         #add current position to jump list... then it can be written to log
         #will be written to log when jumps complete
-        time = playlist.player._get_time()
+        time = player.player._get_time()
         #print time
 
         #seconds only
         seconds = int(time)
-        if not playlist.jumps:
-            playlist.jumps = [ seconds ]
-        else:
-            #would be better to insert in sequence here... can order that later
-            playlist.jumps.append(seconds)
-        #playlist.jump_next(0)
+        player.sources.current.jumps.append(seconds)
+        #player.jump_next(0)
 
         print "added mark: %s" % seconds
 
@@ -119,7 +310,7 @@ def on_key_press(symbol, modifiers):
     elif key.symbol_string(symbol) == "S":
         #this results in the timestamp showing up in the image (if on screen)
         #but is right side up
-        time = playlist.player._get_time()
+        time = player.player._get_time()
         filename2 = "%04d.png" % (time)
         pyglet.image.get_buffer_manager().get_color_buffer().save(filename2)
         
@@ -127,62 +318,62 @@ def on_key_press(symbol, modifiers):
           key.modifiers_string(modifiers) == "MOD_CTRL") or
           key.symbol_string(symbol) == "PAGEUP"):
         #playing = player._playing
-        time = playlist.player._get_time()
+        time = player.player._get_time()
         time += 35
-        playlist.player.seek(time)
-        playlist.player.play()
+        player.player.seek(time)
+        player.player.play()
     elif ((key.symbol_string(symbol) == "LEFT" and
           key.modifiers_string(modifiers) == "MOD_CTRL") or
           key.symbol_string(symbol) == "PAGEDOWN"):
-        time = playlist.player._get_time()
+        time = player.player._get_time()
         time -= 35
-        playlist.player.seek(time)
-        playlist.player.play()
+        player.player.seek(time)
+        player.player.play()
     elif key.symbol_string(symbol) == "RIGHT":
-        time = playlist.player._get_time()
+        time = player.player._get_time()
         time += 5.
-        playlist.player.seek(time)
-        playlist.player.play()
+        player.player.seek(time)
+        player.player.play()
     elif key.symbol_string(symbol) == "LEFT":
-        time = playlist.player._get_time()
+        time = player.player._get_time()
         time -= 11
-        playlist.player.seek(time)
-        playlist.player.play()
+        player.player.seek(time)
+        player.player.play()
     elif key.symbol_string(symbol) == "UP":
-        playlist.list_previous()
+        player.list_previous()
     elif key.symbol_string(symbol) == "DOWN":
-        playlist.list_next()
+        player.list_next()
 
 @window.event
 def on_draw():
     window.clear()
-    texture = playlist.player.get_texture()
+    texture = player.player.get_texture()
     if texture:
         texture.blit(0, 0)
 
-    if playlist.show_time:
-        time = playlist.player._get_time()
+    if player.show_time:
+        time = player.player._get_time()
         #print time
 
         #seconds only
         seconds = int(time)
-        if str(seconds) != playlist.seconds.text:
-            playlist.seconds.text = str(seconds)
+        if str(seconds) != player.seconds.text:
+            player.seconds.text = str(seconds)
         #more detail:
         #label.text = str(time)
 
-        playlist.seconds.draw()
+        player.seconds.draw()
 
         #doesn't seem to be a way to get the total length of the current
         #media item loaded via the Player object
 
         #but it is available as source.duration property
-        playlist.d.text = " / %s" % int(playlist.duration)
-        playlist.d.draw()
+        player.d.text = " / %s" % int(player.duration)
+        player.d.draw()
                         
 def main():
-    global playlist
-
+    global sources
+    
     jumps = []
     start = 0
     source_file = None
@@ -190,41 +381,40 @@ def main():
         if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
             print __doc__
             sys.exit(1)
+
+        #Some overlap here with sources.Converter methods.
+        
         elif '-ss' in sys.argv:
+            # play one file starting at -ss position
             pos = sys.argv.index("-ss")
             sys.argv.remove("-ss")
+            source = Source()
             start = int(sys.argv.pop(pos))
+            source.jumps.append(start)
+            path = sys.argv[1]
+            source.path = path
+            sources.append(source)
+            
         elif '-sl' in sys.argv:
+            # play one file and jump through all jump positions
             pos = sys.argv.index("-sl")
             sys.argv.remove("-sl")
-            jumps = string_to_jumps(sys.argv.pop(pos))
-            source = sys.argv.pop(pos)
-            playlist.append( [source, jumps] )
+            source = Source()
+            source.jumps.from_comma(sys.argv.pop(pos))
+            #jumps = string_to_jumps(sys.argv.pop(pos))
+            source.path = sys.argv.pop(pos)
+            #playlist.append( [source, jumps] )
+            sources.append(source)
             
-        elif '-images' in sys.argv:
-            from osbrowser.meta import make_node
-            pos = sys.argv.index("-images")
-            sys.argv.remove("-images")
-            
-            #should be relative to this file:
-            image_dir = sys.argv.pop(pos)
-            node = make_node(os.path.join(os.path.dirname(__file__), image_dir))
-            node.scan_directory()
-            node.scan_filetypes()
-            images = node.images
-            for i in images:
-                seconds = i.name[:4]
-                if int(seconds) not in jumps:
-                    jumps.append(int(seconds))
-            jumps.sort()
-
         elif '-m3u' in sys.argv:
             pos = sys.argv.index("-m3u")
             sys.argv.remove("-m3u")
             
             filename = sys.argv.pop(pos)
             f = codecs.open(filename, encoding='utf8')
-
+            
+            #this could also be accomplished with Converter.from_m3u
+            #but this is a good introduction to Sources objects
             for line in f.readlines():
                 line = unicode(line)
                 if line.startswith('#') or len(line.strip()) == 0:
@@ -232,27 +422,9 @@ def main():
                 else:
                     source_file = line.strip()
                     source_file = source_file.replace('"', '')
-                    playlist.append( [source_file] )
+                    source = Source(source_file)
+                    sources.append( Source )
             f.close
-
-        #*2009.06.18 14:29:41 
-        #main function for slist and mlist have been merged
-        #could use the same command line option
-        #but they do load journals differently
-
-        # playlist that includes jump lists (second lists)
-        elif '-slist' in sys.argv:
-            pos = sys.argv.index("-slist")
-            sys.argv.remove("-slist")
-            
-            playlist_file = sys.argv.pop(pos)
-            pfile = Log(playlist_file)
-            pfile.from_file()
-            entries = pfile.to_entries()
-            pl = entries_to_playlist(entries)
-            print len(pl)
-            playlist.extend(pl)
-            
 
         elif '-mlist' in sys.argv:
             """
@@ -266,7 +438,8 @@ def main():
 
             otherwise
                 just open it as a journal file
-a            """
+            
+            """
             pos = sys.argv.index("-mlist")
             sys.argv.remove("-mlist")
             
@@ -274,26 +447,30 @@ a            """
             j = load_journal(playlist_file)
             entries = j.to_entries()
 
-            pl = entries_to_playlist(entries)
-            #new_list = condense_and_sort_list(pl)
-
-            #print new_list
-            #exit()
-            playlist.extend(pl)
-
+            temp = Sources()
+            converter = Converter(temp)
+            converter.from_entries(entries)
+            converter.condense_and_sort(sources)
+            
         else:
-            #this is the place for osbrowser to automatically determine
-            #path object and create list accordingly
-            path = sys.argv[1]
-            if os.path.isdir(path):
-                for i in os.listdir(path):
-                    playlist.append( [os.path.join(path, i)] )
-            else:
-                playlist.append ( [sys.argv[1]] )
+            #files passed in via command line:
+            #get rid of the command argument:
+            del sys.argv[0]
 
+            #go through all arguments remaining... could have been passed
+            #multiple items via a wildcard
+            #print sys.argv
+            for path in sys.argv:
+                if os.path.isdir(path):
+                    for i in os.listdir(path):
+                        new_path = os.path.join(path, i)
+                        source = Source(new_path)
+                        sources.append( source )
+                else:
+                    sources.append( Source(path) )
+            #print sources
 
         if "-save" in sys.argv:
-
             # *2009.08.30 09:58:05 
             # a quick place to add in functionality to save the resulting
             # m3u file
@@ -313,17 +490,11 @@ a            """
             exit()
             
 
-    #width=format.width, height=format.height
     window.set_visible(True)
     window.user_response = ''
 
-    #if playlist:
-    #    player.playlist = playlist
+    player.list_go(0)
 
-    #print playlist
-    #exit()
-
-    playlist.list_go(0)
     pyglet.app.run()
         
 if __name__ == '__main__':
