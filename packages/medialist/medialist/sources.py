@@ -545,7 +545,8 @@ class Converter(object):
                             print "new length: %s" % len(condensed)
                             match = True
                         else:
-                            print "times didn't match"
+                            #print "times didn't match"
+                            pass
                     pos += 1
                     if pos >= len(condensed):
                         #maybe no match, exit while loop
