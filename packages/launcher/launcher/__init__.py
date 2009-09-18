@@ -16,7 +16,7 @@ add a main function
 pass the launch to call via command line
 (maybe someday a running process like quicksilver/gnome-do)
 """
-import os, subprocess
+import os, sys, subprocess
 
 def import_pictures():
     #could just as easily import the library and call the function directly here
@@ -47,7 +47,12 @@ def terminal(working_dirs=[], tabs=0):
     return command + "\n"
 
 def emacs(source=''):
-    command = "emacs %s &" % source
+    #print os.name
+    print sys.platform
+    if sys.platform == "darwin":
+        command = "/Applications/Emacs.app/Contents/MacOS/Emacs %s &" % source
+    else:
+        command = "emacs %s &" % source
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     return command + "\n"
