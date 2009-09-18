@@ -1,0 +1,16 @@
+Metadata-Version: 1.0
+Name: icalendar
+Version: 2.0.1
+Summary: iCalendar parser/generator
+Home-page: http://codespeak.net/icalendar/
+Author: MaxM
+Author-email: maxm@mxm.dk
+License: GPL2.1
+Description: iCalendar is a parser/generator of iCalendar files
+        (RFC 2445) for use with Python.
+Keywords: calendar icalendar
+Platform: All
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Operating System :: OS Independent
