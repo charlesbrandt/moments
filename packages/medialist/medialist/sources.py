@@ -150,9 +150,9 @@ class Items(list):
         #lets make sure our position's length is always up to date:
         self.update()
         
-        print "Received position: %s" % position
-        print "Current position: %s" % self.position
-        print "Length: %s" % len(self)
+        #print "Received position: %s" % position
+        #print "Current position: %s" % self.position
+        #print "Length: %s" % len(self)
         
         if position is None:
             #use our current position
@@ -421,7 +421,7 @@ class Converter(object):
                 source.path = source_file
                 source.jumps = jumps
                 source.entry = entry
-                print "adding source: %s" % source
+                #print "adding source: %s" % source
                 self.sources.append( source )
                 
             elif line.strip():
@@ -435,11 +435,14 @@ class Converter(object):
                     source_file = source_file.replace('media/', '')
                     source_file = '/c/' + source_file
 
-                source = Source()
-                source.path = source_file
-                source.entry = entry
-                print "adding source: %s" % source
-                self.sources.append( source )
+                if re.match('^/', source_file):
+                    source = Source()
+                    source.path = source_file
+                    source.entry = entry
+                    #print "adding source: %s" % source
+                    self.sources.append( source )
+                else:
+                    print "Non Source: %s" % source_file
 
     def from_entries(self, entries):
         """
