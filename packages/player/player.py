@@ -94,6 +94,8 @@ class Player(object):
 
     def list_go(self, position=None):
         item = self.sources.go(position)
+        if item.jumps.position.at_end():
+            item.jumps.position.set(0)
         
         #CHECK FOR something we can PLAY: (video or audio)
         source = self.load_playable(item)
@@ -444,13 +446,24 @@ def main():
             sys.argv.remove("-mlist")
             
             playlist_file = sys.argv.pop(pos)
+            #TODO:
+            # way to pass in tags to ignore when loading a journal
+            # so that those tags are not included with subsequent entries
+
             j = load_journal(playlist_file)
             entries = j.to_entries()
+            print len(entries)
 
+            #condense and sort will change the order of an entry list
+            #if there are not statistics to generate
+            # i.e. one of each only
+            # could export as a m3u instead
+            # or have separate options not to sort.
             temp = Sources()
-            converter = Converter(temp)
+            #converter = Converter(temp)
+            converter = Converter(sources)
             converter.from_entries(entries)
-            converter.condense_and_sort(sources)
+            #converter.condense_and_sort(sources)
             
         else:
             #files passed in via command line:
@@ -471,22 +484,27 @@ def main():
             #print sources
 
         if "-save" in sys.argv:
+            # should use a converter here for consistency
+            
             # *2009.08.30 09:58:05 
             # a quick place to add in functionality to save the resulting
             # m3u file
             # might want to generalize this.
-            o = file("playlist.m3u", 'w')
-            for i in playlist:
+            
+            o = file("playlist.txt", 'w')
+            for i in sources:
                 #if re.match('\/c\/media\/binaries', i):
-                if i[0].startswith('/c/media/binaries'):
-                    i = i[0].replace('/c/media/binaries/music', '/Volumes/Binaries/music')
-                    print i
+                if i.path.startswith('/c/media/binaries'):
+                    i.path = i.path.replace('/c/media/binaries/music', '/Volumes/Binaries/music')
+                    #print i
                 else:
-                    print "NO MATCH: %s" % i[0]
-                    i = ''
-                if not re.search('JPG', i):
-                    o.write(i)
-                    o.write('\n')
+                    print "NO MATCH: %s" % i.path
+                    #i = ''
+
+                #one last place to filter:
+                if not re.search('JPG', i.path):
+                    o.write(str(i))
+                    #o.write('\n')
             exit()
             
 
