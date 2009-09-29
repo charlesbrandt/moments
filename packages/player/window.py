@@ -33,7 +33,7 @@ class Layer(object):
         self.height = None
         
         #where we begin relative to parent object
-        #all of our item's position are relative to this:
+        #all of our items' positions are relative to this:
         self.x = None
         self.y = None
 
