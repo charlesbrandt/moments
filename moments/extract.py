@@ -243,5 +243,50 @@ def main():
     #print source
     extract_tags(source, extractions, ignores, save=True)
 
+def extract_completes():
+    """
+    Completed items in a todo list are a good example
+    (and a special case)
+    where many of the parameters are known,
+    or can be algorithmically determined.
+
+    """
+    source = None
+    if len (sys.argv) > 1:
+        if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
+            usage()
+        source = sys.argv[1]
+
+    ignores = []
+    #consider adding filename path tags to ignores
+    #we don't really want to add or remove tags at this stage.
+    ignores = path_to_tags(source)
+
+    #look at the source,
+    #the prefix path should be the same (dirname)
+    path_prefix = os.path.dirname(source)
+    filename = os.path.basename(source)
+    if filename == "todo.txt":
+        dfilename = "journal.txt"
+    elif re.search('todo', filename):
+        parts = filename.split('-todo')
+        prefix = parts[0]
+        dfilename = prefix + '.txt'
+    else:
+        print "unknown todo file: %s" % source
+        #could manually set it here
+        #or set up script to handle passing something in
+        dfilename = None
+        exit()
+    
+    destination = os.path.join(path_prefix, dfilename)
+    extractions = [
+        (["complete"], destination),
+        (["completed"], destination),
+        ]
+    extract_tags(source, extractions, ignores, save=True)
+    
+
 if __name__ == '__main__':
-    main()
+    #main()
+    extract_completes()

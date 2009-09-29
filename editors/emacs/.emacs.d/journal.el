@@ -74,6 +74,12 @@
   (insert "also ")
   (ss2t)
 )
+(defun complete ()
+  (interactive)
+  (tstamp)
+  (insert "complete\n")
+  (req)
+)
 
 (defun paste-beginning ()
   ;; modified yank to delete first two lines from buffer
