@@ -25,19 +25,21 @@ import sys, os
 import pyglet
 from pyglet.clock import schedule_once, unschedule
 from pyglet.window import key
-from window import Window
+from window import Window, Layout
 
 #from glue import application
 #from glue.layout import Layout, Flow
 #from glue.widget import ImageButton, Image
 
 from osbrowser.meta import make_node
+from medialist.sources import Sources
 
 class Slideshow(Window):
     def __init__(self, width=None, height=None):
-        super(Slideshow, self).__init__(width, height)
-        pyglet.clock.unschedule(self.on_draw)
-        pyglet.clock.schedule_interval(self.on_draw, 1.0/1.0)
+        #super(Slideshow, self).__init__(width, height)
+        super(Slideshow, self).__init__()
+        #pyglet.clock.unschedule(self.on_draw)
+        #pyglet.clock.schedule_interval(self.on_draw, 1.0/1.0)
 
     def make_image_layout(self, image_node):
         #if we don't create a new batch for each layout,
@@ -47,7 +49,7 @@ class Slideshow(Window):
         #regardless of which layout owns the items
         #order is undefined in that case, which causes a chaotic view
         batch = pyglet.graphics.Batch()
-        layout = Flow(self, batch)
+        layout = Layout(self, batch)
         layout.update_dimensions()
         #print self.sources[self.position].path
         #print self.sources[self.position].size_path('large')
@@ -155,17 +157,20 @@ def main():
     node.scan_directory()
     node.scan_filetypes()
     #print node.images
-    app.sources = node.images
-    app.position = application.Position(len(app.sources))
+    app.sources = Sources(node.images)
+    #app.position = application.Position(len(app.sources))
     #app.position = 7
     #prep first layout:
 
-    #app.prep_next_layout()
-    app.next_layout = app.make_image_layout(app.sources[app.position.next()])
-    #app.prep_previous_layout()
-    app.previous_layout = app.make_image_layout(app.sources[app.position.previous()])
-    app.current_layout = app.make_image_layout(app.sources[0])
-    app.current_layout.push_handlers()
+    ## #app.prep_next_layout()
+    ## app.next_layout = app.make_image_layout(app.sources[app.position.next()])
+    ## #app.prep_previous_layout()
+    ## app.previous_layout = app.make_image_layout(app.sources[app.position.previous()])
+    ## app.current_layout = app.make_image_layout(app.sources[0])
+    ## app.current_layout.push_handlers()
+
+    for i in app.sources:
+        print i
 
     pyglet.app.run()
         
