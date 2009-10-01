@@ -30,7 +30,7 @@ def main():
         print iso
         mount = "/media/iso"
         mount_iso(iso, mount)
-        log = "/c/media/movies/movies.txt"
+        log = "/c/charles/movies/movies.txt"
         log_action(log, iso, tags=['mount', 'play'])
         totem(mount)
         print "emacs %s &" % log
