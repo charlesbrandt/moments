@@ -8,24 +8,28 @@ from datetime import datetime
 from moments.timestamp import Timestamp, Timerange
 from moments.journal import log_action, load_journal, Journal
 
-def load_instance(instances="/c/instances.txt", tag="default"):
+def load_instance(instances="/c/instances.txt", tag=None):
     """
     load instances.txt journal
     look for the newest entry with tag "default"
     return the data of the entry as a list of each file/line
     """
     j = load_journal(instances)
-    entries = j.tags[tag]
+    if tag is not None:
+        entries = j.tags[tag]
+    else:
+        entries = j
+        
     #for sorting a list of entries:
     j2 = Journal()
     j2.from_entries(entries)
     entries = j2.to_entries(sort='reverse-chronological')
+
     #should be the newest entry with tag "tag"
     e = entries[0]
     items = e.data.splitlines()
     #print items
     return items
-
 
 def assemble_today(calendars="/c/calendars", destination="/c/outgoing", include_week=False):
     """
@@ -47,14 +51,14 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", include_
     creates the new journal file in destination (default = /c/outgoing)
     """
     now = Timestamp()
+
+    #CALENDAR LOADING:
     this_month_file = '%02d.txt' % now.month
     this_month_path = os.path.join(calendars, this_month_file)
     j = load_journal(this_month_path, ['calendar'])
     #print len(j.to_entries())
-
     # go ahead an convert recurring annual entries to this year
     # then if one is today, it should show up in the log
-
     annual_month_file = '%02d-annual.txt' % now.month
     annual_month_path = os.path.join(calendars, annual_month_file)
     annual = Journal()
@@ -94,10 +98,12 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", include_
     today_entries = j.limit(start, end)
     #print today_entries
    
+
+
+    #CREATE TODAY'S LOG:
     today = os.path.join(destination, now.filename())
     #print today
     #print entries
-    
     today_j = Journal()
     today_j.from_file(today)
     #today_j = load_journal(today)

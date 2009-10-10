@@ -181,6 +181,8 @@ class Journal(list):
         'original'
         to keep the original order that the entries were added to the journal
 
+        'reverse'
+
         'chronological' or 'oldest to newest'
         oldest entries first in the list
 

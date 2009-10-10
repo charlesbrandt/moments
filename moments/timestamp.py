@@ -18,6 +18,28 @@ and make it settable/configurable.
 
 depending on format
 could have different output for date, time, accuracies, etc.
+
+
+        moving time to be the first keyword argument
+        that way Timestamp objects can be initialized from a standard python
+        datetime object, without specifying the time keyword
+        
+        datetime objects in python are immutable
+        class attributes like year, month, and day are read-only
+
+        subclassing requires overriding __new__, not __init___
+        http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date
+        http://www.python.org/doc/current/reference/datamodel.html#object.__new__
+        
+        due to multiple ways of initializing, we don't want to require that
+        year, month, day
+        be passed in, like datetime does
+
+        could add those arguments to the init function if that was needed
+        by those using Timestamp objects in place of datetime objects
+
+        compact and cstamp are the same thing
+
 """
 
 from datetime import datetime, timedelta, date, time
@@ -92,32 +114,17 @@ def parse_line_for_time(line):
     
 
 class Timestamp(object):
-    def __init__(self, time=None, tstamp=None, cstamp=None, now=True):
+    def __init__(self, time=None, tstamp=None, cstamp=None, compact=None,
+                 now=True):
         """
-        moving time to be the first keyword argument
-        that way Timestamp objects can be initialized from a standard python
-        datetime object, without specifying the time keyword
-        
-        datetime objects in python are immutable
-        class attributes like year, month, and day are read-only
-
-        subclassing requires overriding __new__, not __init___
-        http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date
-        http://www.python.org/doc/current/reference/datamodel.html#object.__new__
-        
-        due to multiple ways of initializing, we don't want to require that
-        year, month, day
-        be passed in, like datetime does
-
-        could add those arguments to the __init__ function if that was needed
-        by those using Timestamp objects in place of datetime objects
+        something in the docstring was causing problems with autotab
+        see indented area in file docstring.
         """
-        
         #this is the internal datetime object:
         #it is available externally via self.datetime
         self.dt = None
 
-        if time:
+        if time is not None:
             now = datetime.now()
             if type(time) == type(now):
                 self.dt = time
@@ -128,6 +135,8 @@ class Timestamp(object):
             self.from_text(tstamp)
         elif cstamp:
             self.from_compact(cstamp)
+        elif compact:
+            self.from_compact(compact)
         elif now:
             self.dt = datetime.now()
             
@@ -347,45 +356,6 @@ class Timestamp(object):
         
         return links
 
-    # the following are picked up by __getattr__()
-    # which pulls them from the self.dt (datetime)
-
-    ## def year(self):
-    ##     """
-    ##     return a string for our year (YYYY)
-    ##     """
-    ##     return self.dt.strftime("%Y")
-        
-    ## def month(self):
-    ##     """
-    ##     return a string for our month (MM)
-    ##     """
-    ##     return self.dt.strftime("%m")
-
-    ## def day(self):
-    ##     """
-    ##     return a string for our day (DD)
-    ##     """
-    ##     return self.dt.strftime("%d")
-
-    ## def hour(self):
-    ##     """
-    ##     return a string for our hour (HH) (24 hour)
-    ##     """
-    ##     return self.dt.strftime("%H")
-
-    ## def minute(self):
-    ##     """
-    ##     return a string for our minute (MM)
-    ##     """
-    ##     return self.dt.strftime("%M")
-
-    ## def second(self):
-    ##     """
-    ##     return a string for our second (SS)
-    ##     """
-    ##     return self.dt.strftime("%S")
-    
     def future(self, years=0, weeks=0, days=0,
                hours=0, minutes=0, seconds=0):
         """
@@ -455,28 +425,44 @@ class Timestamp(object):
 
         return Timestamp(past)
 
-#def this_week_last_year(today=date.today()):
-def this_week_last_year(today=None):
-    if not today:
-        today = datetime.combine(date.today(), time(0))
-    #today = datetime.datetime.now()
+    # the following are picked up by __getattr__()
+    # which pulls them from the self.dt (datetime)
 
-    #could use date to same effect,
-    #but that would require exceptions/checks in timestamp for type
-    #today.hour = 0
-    #today.minute = 0
-    #today.second = 0
-    #these are read-only attributes
-    
-    year = timedelta(365)
-    last_year = today - year
-    start = last_year - timedelta(4)
-    end = last_year + timedelta(4)
-    #stamp = start.strftime("%Y%m%d") + '-' + end.strftime("%Y%m%d")
-    
-    tr = Timerange(start=start, end=end)
-    stamp = str(tr)
-    return stamp
+    ## def year(self):
+    ##     """
+    ##     return a string for our year (YYYY)
+    ##     """
+    ##     return self.dt.strftime("%Y")
+        
+    ## def month(self):
+    ##     """
+    ##     return a string for our month (MM)
+    ##     """
+    ##     return self.dt.strftime("%m")
+
+    ## def day(self):
+    ##     """
+    ##     return a string for our day (DD)
+    ##     """
+    ##     return self.dt.strftime("%d")
+
+    ## def hour(self):
+    ##     """
+    ##     return a string for our hour (HH) (24 hour)
+    ##     """
+    ##     return self.dt.strftime("%H")
+
+    ## def minute(self):
+    ##     """
+    ##     return a string for our minute (MM)
+    ##     """
+    ##     return self.dt.strftime("%M")
+
+    ## def second(self):
+    ##     """
+    ##     return a string for our second (SS)
+    ##     """
+    ##     return self.dt.strftime("%S")
 
 class Timerange:
     """
@@ -601,3 +587,28 @@ class Timerange:
         self.start = start
         self.end = end
         return (start, end)
+
+#should see future and past operations on Timestamp now
+#def this_week_last_year(today=date.today()):
+def this_week_last_year(today=None):
+    if not today:
+        today = datetime.combine(date.today(), time(0))
+    #today = datetime.datetime.now()
+
+    #could use date to same effect,
+    #but that would require exceptions/checks in timestamp for type
+    #today.hour = 0
+    #today.minute = 0
+    #today.second = 0
+    #these are read-only attributes
+    
+    year = timedelta(365)
+    last_year = today - year
+    start = last_year - timedelta(4)
+    end = last_year + timedelta(4)
+    #stamp = start.strftime("%Y%m%d") + '-' + end.strftime("%Y%m%d")
+    
+    tr = Timerange(start=start, end=end)
+    stamp = str(tr)
+    return stamp
+

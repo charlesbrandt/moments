@@ -154,7 +154,12 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
                 j2.update_entry(e, 0)
                 print "adding entry to: %s\n%s" % (destination, e.render())
             if save:
-                #when it's time to save:
+                #this way we're saving any entries we extract to the new
+                #destination before we save the original source file
+                #
+                #if there are permission problems writing the source file
+                #at worst we'll have 2 copies of the same entry
+                # (and that can be filtered out later)
                 j2.to_file()
 
     if save:
