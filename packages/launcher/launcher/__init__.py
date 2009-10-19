@@ -25,11 +25,11 @@ def import_pictures():
                                stderr=subprocess.PIPE)
     return command + "\n"
 
-def breath():
-    command = "python /c/python/pyglet/breathe.py"
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    return command + "\n"
+## def breath():
+##     command = "python /c/python/pyglet/breathe.py"
+##     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+##                                stderr=subprocess.PIPE)
+##     return command + "\n"
 
 def terminal(working_dirs=[], tabs=0):
     args = ''
@@ -116,3 +116,31 @@ def macosx_dvd(movie):
                                stderr=subprocess.PIPE)
     return command + "\n"
 
+def firefox(url=None, urls=[]):
+    """
+    be sure to pass urls in with the http:// prefix
+
+    i.e.
+    "http://www.google.com" is good
+    "google.com" is not good
+
+    http://stackoverflow.com/questions/832331/launch-a-webpage-on-a-firefox-win-tab-using-python
+    Thanks Nadia!
+
+    http://docs.python.org/library/webbrowser.html
+
+    firefoxes "Preferences->Tab" seem to override anything done here
+    """
+    import webbrowser
+    #print url
+    if url is not None:
+        webbrowser.open_new(url)
+    elif urls:
+        url = urls.pop(0)
+        #webbrowser.open(url, new=1)
+        webbrowser.open_new(url)
+        for u in urls:
+            webbrowser.open_new_tab(u)
+    
+if __name__ == '__main__':
+    firefox(urls=[ "http://google.com", "http://news.google.com"])

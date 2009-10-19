@@ -94,7 +94,10 @@ class Playlists(object):
         loc = loc.replace(r'file://localhost/Volumes/Binaries/', 'media/binaries/')
         e.data = loc
         #print last_played
-        e.created = Timestamp().from_utc(last_played)
+        if last_played:
+            e.created = Timestamp().from_utc(last_played)
+        else:
+            e.created = Timestamp()
         e.tags = [ 'sound', 'play', 'itunes' ]
         return e
     

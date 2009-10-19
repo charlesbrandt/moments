@@ -1,3 +1,10 @@
+*2009.10.10 18:20:08 
+#this works, but does not escape urlencoded characters
+python /c/moments/packages/converter/itunes/convert_itunes_to_m3u.py --input 20091010.xml --output temp
+
+#this is better
+python /c/moments/packages/converter/itunes/itunes_xml_to_log.py --input 20091010.xml --output temp.txt
+
 *2008.11.02 08:27 
 4 files in this directory:
 
