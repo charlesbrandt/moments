@@ -49,13 +49,20 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     if verbose:
         print result
 
-    if (len1+len2 == len3):
-        return (ofile, 1)
-        
-    else:
-        result += "WARNING: dupes/conflicts encountered<br>"
-        return (ofile, 0)
+    #if there are dupes the two totals may not add up to the new total
+    # (does not necessarily mean a conflict)
+    #and now journal can handle multiple entries with the same timestamp,
+    # (so it will not discard subsequent entries with the same timestamp)
+    #so it may be ok to always accept a merge
+    # (as long as both files consisted of actual moment entries)
+    #
+    #if (len1+len2 == len3):
+    #    return (ofile, 1)        
+    #else:
+    #    result += "WARNING: dupes/conflicts encountered<br>"
+    #    return (ofile, 0)
 
+    return (ofile, 1)
 
     
 def main():

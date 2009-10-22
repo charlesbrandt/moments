@@ -26,6 +26,7 @@ from journal import load_journal, Journal
 from timestamp import Timestamp
 from tags import Tags, path_to_tags
 from association import check_ignore, filter_list
+from ascii import unaccented_map
 
 class ExtractConfig(object):
     def __init__(self):
@@ -152,7 +153,9 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
             for e in entries:
                 e.tags.extend(these_tags)
                 j2.update_entry(e, 0)
-                print "adding entry to: %s\n%s" % (destination, e.render())
+                entry = e.render()
+                e_ascii = entry.translate(unaccented_map()).encode("ascii", "ignore")
+                print "adding entry to: %s\n%s" % (destination, e_ascii)
             if save:
                 #this way we're saving any entries we extract to the new
                 #destination before we save the original source file

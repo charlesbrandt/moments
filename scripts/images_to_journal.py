@@ -8,6 +8,9 @@ take directory
 open use osbrowser.meta.make_node(path)
 scan_directory
 
+*2009.10.21 15:27:06
+could be used to generate a journal for any directory with files.
+
 """
 import sys#, os, subprocess
 import moments
