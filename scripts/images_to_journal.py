@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 *2009.08.09 04:02:25 
 convert a directory of images into the corresponding journal for entries that reference the image file.
@@ -8,9 +9,14 @@ take directory
 open use osbrowser.meta.make_node(path)
 scan_directory
 
+*2009.10.18 21:36:25 todo
+way to adjust time stamps on all files
+or on all entries
+closely related to:
+/c/moments/scripts/images_to_journal.py 
+
 *2009.10.21 15:27:06
 could be used to generate a journal for any directory with files.
-
 """
 import sys#, os, subprocess
 import moments

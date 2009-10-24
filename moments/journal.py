@@ -127,6 +127,8 @@ class Journal(list):
         #keys must be tag name
         self.tags = Association()
 
+        #TODO: rename to path
+        # then use name as a general name for the journal, if displayed
         #used for default filename:
         self.name = name
 

@@ -20,13 +20,17 @@ python /c/code/python/scripts/copy_media.py /c/playlists/daily/2009/01/ /c/media
 the last parameter is a translate, filter option
 the prefix in place in all source logs is the first option
 and the local destination is the second option
+
+TODO:
+convert to using medialist.sources
 """
 
 import sys, os, re
 import subprocess
 from moments.journal import Journal, load_journal
 from moments.association import check_ignore
-from medialist.medialist import MediaList
+#from medialist.medialist import MediaList
+from medialist.sources import Converter, Sources
 
 def flatten_structure(source):
     destination = '/binaries/music/vinyl/flat/'
@@ -66,6 +70,10 @@ def make_destination(source, translate):
     #destination = source.replace('/c/media', '')
     #or can hard code it here (would flatten out everything sent)
     #destination = '/c/media/binaries/graphics/dwt/20090405-telepaths_show/shared/'
+
+    #filename = os.path.basename(source)
+    #destination = '/c/trial/off/' + filename
+    
     return destination
 
 def copy_file(source, destination):
@@ -89,11 +97,15 @@ def copy_files(journal, translate=None):
     #j = Journal()
     #j.from_file(journal)
     j = load_journal(journal)
-    m = MediaList()
-    m.from_journal(j, local_path='/c')
-    for i in m:
-        if re.search('\.mp3', i):
-            destination = make_destination(i, translate)
+    #m = MediaList()
+    #m.from_journal(j, local_path='/c')
+    sources = Sources()
+    converter = Converter(sources)
+    converter.from_entries(j.to_entries())
+    for i in sources:
+        print i
+        if re.search('\.mp3', i.path):
+            destination = make_destination(i.path, translate)
             #print "SOURCE: %s" % i
             #print "DEST: %s" % destination
 
@@ -104,7 +116,7 @@ def copy_files(journal, translate=None):
                 if not os.path.exists(dest_path):
                     os.makedirs(dest_path)
 
-                copy_file(i, destination)
+                copy_file(i.path, destination)
     
 def main():
     if len (sys.argv) > 1:
@@ -116,10 +128,10 @@ def main():
             translate = sys.argv[2]
         copy_files(f1, translate)
 
-def alt():
+def flatten():
     source = sys.argv[1]
     flatten_structure(source)
     
 if __name__ == '__main__':
-    #main()
-    alt()
+    main()
+    #flatten()

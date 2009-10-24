@@ -10,8 +10,8 @@ This is an open version.
 import pyglet
 
 class Window(pyglet.window.Window):
-    def __init__(self):
-        pyglet.window.Window.__init__(self)
+    def __init__(self, *args, **kwargs):
+        pyglet.window.Window.__init__(self, *args, **kwargs)
 
 
 class Layer(object):

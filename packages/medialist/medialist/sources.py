@@ -313,7 +313,6 @@ from moments.sources import *
 ##         self.jumps = Jumps()
 ##         self.entry = None
 
-
 ##     def __str__(self):
 ##         return self.as_moment().render()
 

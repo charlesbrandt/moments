@@ -35,7 +35,10 @@ from moments.journal import load_journal
 
 from medialist.sources import Converter, Source, Sources
     
-window = pyglet.window.Window(resizable=True, visible=False)
+#window = pyglet.window.Window(resizable=True, visible=False)
+#start using a generalized Window with default configuration options
+from window import Window
+window = Window(resizable=True, visible=False)
 
 class Player(object):
     """
@@ -425,7 +428,7 @@ def main():
                     source_file = line.strip()
                     source_file = source_file.replace('"', '')
                     source = Source(source_file)
-                    sources.append( Source )
+                    sources.append( source )
             f.close
 
         elif '-mlist' in sys.argv:
