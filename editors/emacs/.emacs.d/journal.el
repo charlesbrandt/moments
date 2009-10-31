@@ -42,6 +42,15 @@
 )
 (global-set-key "\C-xj" 'journal)
 
+(defun also ()
+  (interactive)
+  (insert "also ")
+  (interactive)
+  (insert "[")
+  (date)
+  (insert "] ")
+)
+
 ;this is not currently working with seconds
 (defun s2t ()
   (interactive)
@@ -50,7 +59,6 @@
   (forward-char 16)
   (insert "]")
 )
-
 (defun requested ()
   (interactive)
   (insert "requested ")
@@ -67,11 +75,6 @@
 (defun req ()
   (interactive)
   (insert "requested ")
-  (ss2t)
-)
-(defun also ()
-  (interactive)
-  (insert "also ")
   (ss2t)
 )
 (defun start ()
