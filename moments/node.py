@@ -12,11 +12,10 @@ import subprocess
 
 from datetime import datetime
 
-from moments.moment import Moment
-from moments.journal import Journal, load_journal
-from moments.log import Log as MomentLog
-from moments.association import check_ignore
-from moments.tags import Tags, split_path # tags_from_string
+from moment import Moment
+from journal import Journal, load_journal
+from association import check_ignore
+from tags import Tags, split_path # tags_from_string
 
 #from paths import *
 #unless defined elsewhere, 
@@ -46,8 +45,11 @@ try:
 except:
     config = {}
 
+
 def local_to_relative(path=None, add_prefix=False):
     """
+    convert a local file path into one acceptable for use as a relative path in a URL
+    
     if node is a file, this will include the filename at the end!!!
     """
     #want to make sure that the path we're looking at contains local_path
@@ -69,7 +71,8 @@ def local_to_relative(path=None, add_prefix=False):
 
 def name_only(name):
     """
-    opposite of extension
+    opposite of extension()
+    return the filename without any extension
     """
     #make sure there is an extension
     new_name = ''
@@ -86,6 +89,7 @@ def name_only(name):
 def extension(name):
     """
     turns out that this is similar to os.path.splitext()
+    but will only return the extension (not both parts)
     
     find a file's file extension (part of filename after last '.')
 
@@ -103,19 +107,16 @@ class Node:
     """
     could be a file or a directory
 
-    one thing connected to other things
+    one thing connected to other things on the filesystem
     
     structure to hold the meta data of a node on a filesystem
     should hold the common attributes of files and directories
 
-    path that is passed in is expected to be relative
-
-    soon changing all Node paths to be relative to the local system...
+    Node paths are the paths on the local system...
     i.e. how python would find them
     """
     def __init__(self, path):
         self.path = unicode(path)
-        #self.path = path
         #http://docs.python.org/lib/module-os.path.html        
         self.name = os.path.basename(self.path)
         if not self.name:
@@ -126,7 +127,7 @@ class Node:
         #name without file extension:
         self.name_only = name_only(self.name)
 
-        #we don't initialize this since it could be a directory
+        #we don't initialize this since it could be a directory and we don't want to recurse yet
         #should be initialized in File though
         self.size = 0
 
@@ -193,14 +194,23 @@ class Node:
     def reset_stats(self):
         """
         some actions (like image rotate) may update the file's modified times
-        but we sometimes want to keep the original time
+        but we might want to keep the original time
         this resets them to what they were when originally initialized
         """
         os.utime(self.path, (self.atime, self.mtime))
 
+    def change_stats(self, accessed, modified):
+        """
+        take new values for the accessed and modified times and update the file's properties
+        should convert from any time format to the correct one expected by python
+        """
+        print self.atime
+        print self.mtime
+        os.utime(self.path, (self.atime, self.mtime))
+
     #should just use generalized local_to_relative if needed directly
     #*2009.03.15 22:28:06
-    #in templates, is nice to have access to it through object
+    #in templates, is nice to have access to it through the object
     #wrapping general one
     def relative_path(self, add_prefix=False):
         return local_to_relative(self.path, add_prefix)
@@ -355,57 +365,6 @@ class Node:
 # should just call journal.log_action directly
 ##     def log_action(self, actions=["access"], data=None,
 ##                    log_in_media=False, log_in_outgoing=False, outgoing=None):
-##         """
-##         generic function for all nodes to have easy abilty to signal
-##         a loggable action
-
-##         also a good place to handle session actions if that is desired
-##         behavior
-
-##         probably won't want to handle the decision to log in calling functions
-##         better left to system specific configuration files
-
-##         to ensure this could remove:
-##         log_in_media=False, log_in_outgoing=False
-        
-        
-##         """
-##         #make the entry:
-##         t = datetime.now()
-##         #by using make_relative_path instead of self.path, should be able
-##         #to adapt to other servers if using the same structure for data
-##         #(even if it is mounted elsewhere locally)
-##         entry = None
-##         if not data:
-##             entry = Moment(local_to_relative(self.path), actions, t)
-##         else:
-##             entry = Moment(data, actions, t)
-            
-##         if config_log_in_media or log_in_media:
-##             log = ''
-##             if self.find_type() != "Directory":
-##                 #print "ITS NOT A DIRECTORY"
-##                 log = MomentLog(os.path.join(os.path.dirname(self.path), "action.txt"))
-##             else:
-##                 #print "ITS A DIRECTORY"
-##                 log = MomentLog(os.path.join(self.path, "action.txt"))
-##             log.from_file()
-##             entries = log.to_entries()
-##             entries.insert(0, entry)
-##             log.from_entries(entries)
-##             log.to_file()
-
-##         if outgoing or config_log_in_outgoing or log_in_outgoing:
-##             if not outgoing is None:
-##                 destination = outgoing
-##             else:
-##                 destination = log_path
-##             s_log = MomentLog(os.path.join(destination, t.strftime("%Y%m%d")+'.txt'))
-##             s_log.from_file()
-##             entries = s_log.to_entries()
-##             entries.insert(0, entry)
-##             s_log.from_entries(entries)
-##             s_log.to_file()
 
 class File(Node):
     """

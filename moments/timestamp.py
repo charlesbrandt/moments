@@ -2,6 +2,9 @@
 Timestamps have different ways of being formatted
 this object is a common place to store these
 
+*2009.11.04 11:15:10 todo
+need a way to convert Timestamps to a "seconds since epoc" format
+
 *2009.03.14 18:23:13
 would be nice if this were a subclass of datetime
 with special formatters built in
@@ -19,26 +22,25 @@ and make it settable/configurable.
 depending on format
 could have different output for date, time, accuracies, etc.
 
+moving time to be the first keyword argument
+that way Timestamp objects can be initialized from a standard python
+datetime object, without specifying the time keyword
 
-        moving time to be the first keyword argument
-        that way Timestamp objects can be initialized from a standard python
-        datetime object, without specifying the time keyword
-        
-        datetime objects in python are immutable
-        class attributes like year, month, and day are read-only
+datetime objects in python are immutable
+class attributes like year, month, and day are read-only
 
-        subclassing requires overriding __new__, not __init___
-        http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date
-        http://www.python.org/doc/current/reference/datamodel.html#object.__new__
-        
-        due to multiple ways of initializing, we don't want to require that
-        year, month, day
-        be passed in, like datetime does
+subclassing requires overriding __new__, not __init___
+http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date
+http://www.python.org/doc/current/reference/datamodel.html#object.__new__
 
-        could add those arguments to the init function if that was needed
-        by those using Timestamp objects in place of datetime objects
+due to multiple ways of initializing, we don't want to require that
+year, month, day
+be passed in, like datetime does
 
-        compact and cstamp are the same thing
+could add those arguments to the init function if that was needed
+by those using Timestamp objects in place of datetime objects
+
+compact and cstamp are the same thing
 
 """
 
@@ -229,11 +231,12 @@ class Timestamp(object):
             self.dt = None
         return self.dt
 
-    def from_utc(self, text_time):
-        #print text_time
-        time = datetime(*(strptime(str(text_time), "%Y-%m-%d %H:%M:%S")[0:6]))
-        self.dt = time
-        return time
+    # should be safe to replace these calls with from_text now
+    ## def from_utc(self, text_time):
+    ##     #print text_time
+    ##     time = datetime(*(strptime(str(text_time), "%Y-%m-%d %H:%M:%S")[0:6]))
+    ##     self.dt = time
+    ##     return time
     
     #was log.text_to_time
     #in ruby: parse

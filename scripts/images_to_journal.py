@@ -16,12 +16,15 @@ closely related to:
 /c/moments/scripts/images_to_journal.py 
 
 *2009.10.21 15:27:06
-could be used to generate a journal for any directory with files.
+could be generalized to generate a journal for any directory with files.
+
+*2009.11.04 07:14:06
+but in this case we wanted to filter all other content except images
 """
 import sys#, os, subprocess
 import moments
-import osbrowser
-from osbrowser.meta import make_node
+#from osbrowser.meta import make_node
+from moments.node import make_node
 
 def main():
     path = ''

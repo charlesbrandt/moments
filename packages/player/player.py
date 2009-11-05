@@ -33,7 +33,7 @@ from pyglet.window import key
 from moments.log import Log
 from moments.journal import load_journal
 
-from medialist.sources import Converter, Source, Sources
+from moments.sources import Converter, Source, Sources
     
 #window = pyglet.window.Window(resizable=True, visible=False)
 #start using a generalized Window with default configuration options

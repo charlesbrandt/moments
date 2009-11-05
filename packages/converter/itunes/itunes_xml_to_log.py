@@ -95,7 +95,7 @@ class Playlists(object):
         e.data = loc
         #print last_played
         if last_played:
-            e.created = Timestamp().from_utc(last_played)
+            e.created = Timestamp().from_text(last_played)
         else:
             e.created = Timestamp()
         e.tags = [ 'sound', 'play', 'itunes' ]
