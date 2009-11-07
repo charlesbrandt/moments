@@ -20,11 +20,12 @@ class Entry(object):
     """
     Object to hold a unique Journal Entry
     """
-    def __init__(self, data=u'', tags=[], source_file=u''):
+    def __init__(self, data=u'', tags=[], path=u''):
         self.data = data        
         self.tags = Tags(tags)
         #could rename this to path potentially
-        self.source_file = None
+        #self.source_file = None
+        self.path = path
 
     def tag_links(self):
         """
@@ -114,7 +115,7 @@ class Entry(object):
         #but when merging and reviewing (summarize)
         #it could be useful to see in a temporary file
         if include_path:
-            entry += self.source_file + "\n"
+            entry += self.path + "\n"
             
         entry += self.render_data()
         return entry

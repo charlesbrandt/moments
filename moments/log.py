@@ -129,7 +129,7 @@ class Log(StringIO.StringIO):
         entry_search = re.compile(entry_regex)
 
         cur_entry = Entry()
-        cur_entry.source_file = self.name
+        cur_entry.path = self.name
 
         new_entry = None
         
@@ -169,7 +169,7 @@ class Log(StringIO.StringIO):
                     if cur_entry.data or cur_entry.tags:
                         entries.append(cur_entry)
 
-                    new_entry.source_file = self.name
+                    new_entry.path = self.name
 
                     current_tags = line_tags.strip().split()
 

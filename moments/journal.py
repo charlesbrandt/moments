@@ -74,7 +74,7 @@ def load_journal(path, add_tags=[], create=False):
     By moving here, we minimize dependencies outside of Moments module
 
     load_journal cannot guarantee that the returned Journal item will have a
-    filename (self.name) associated with it for later saving.
+    filename (self.path) associated with it for later saving.
 
     in that case should use:
     ::
@@ -86,7 +86,7 @@ def load_journal(path, add_tags=[], create=False):
     ::
     
       j = load_journal(path)
-      j.name = destination
+      j.path = destination
 
     """
     #ignore_dirs = [ 'downloads', 'binaries' ]
@@ -124,7 +124,7 @@ class Journal(list):
 
     Based on a standard python list
     """
-    def __init__(self, name=None):
+    def __init__(self, path=None, title=''):
         list.__init__(self)
         #actual entries will be stored in self
 
@@ -133,11 +133,19 @@ class Journal(list):
         #keys must be tag name
         self.tags = Association()
 
-        #TODO: rename to path
-        # then use name as a general name for the journal, if displayed
-        #used for default filename:
-        self.name = name
+        # used for default file path:
+        self.path = path
 
+        # renamed self.name to self.path
+        # then use name as a general name for the journal, if displayed
+        # *2009.11.07 10:28:44 
+        # using title instead of name, then if anything else is still
+        # using name the old way, it will flag a more recognizable error
+        self.title = title
+
+        #could generate a title based on path basename if path exists:
+
+        
     def __repr__(self, entries=False):
         j = ''
         j += "Journal with %s entries.\n" % (len(self))
@@ -162,8 +170,8 @@ class Journal(list):
         """
         if filename:
             l = Log(filename)
-        elif self.name:
-            l = Log(self.name)
+        elif self.path:
+            l = Log(self.path)
         else:
             print "No name to save Journal to"
             exit()
@@ -226,10 +234,10 @@ class Journal(list):
         """
         if filename:
             f = codecs.open(filename, 'w', encoding='utf-8')
-        elif self.name:
-            f = codecs.open(self.name, 'w', encoding='utf-8')
+        elif self.path:
+            f = codecs.open(self.path, 'w', encoding='utf-8')
         else:
-            print "No name to save file to"
+            print "No path to save file to"
             exit()
 
         flat = ''
@@ -256,9 +264,9 @@ class Journal(list):
         if not log_name:
             log_name = Timestamp().filename()
 
-        #if our name wasn't originally initialized, go ahead and set it:
-        if not self.name:
-            self.name = log_name
+        #if our path wasn't originally initialized, go ahead and set it:
+        if not self.path:
+            self.path = log_name
 
         l = Log(log_name)
         l.from_file(log_name)
@@ -505,7 +513,7 @@ class Journal(list):
         return entries
 
     def make_graph(self):
-        g = graph.Graph(self.name, self.j)
+        g = graph.Graph(self.path, self.j)
         g.make_links()
         g.write_graph2()
 
