@@ -41,7 +41,7 @@ def sort_log(f1, output="temp.txt", sort="chronological"):
     j.from_file(f1)
 
     l = Log(output)
-    l.from_entries(j.to_entries(sort=sort))
+    l.from_entries(j.sort_entries(sort=sort))
     l.to_file()
     l.close()
 

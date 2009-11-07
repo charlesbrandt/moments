@@ -27,15 +27,15 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     
     j = Journal()
     j.from_file(f1, add_tags)
-    len1 = len(j.to_entries())
+    len1 = len(j)
 
     
     j2 = Journal()
     j2.from_file(f2)
-    len2 = len(j2.to_entries())
+    len2 = len(j2)
 
     j.from_file(f2)
-    len3 = len(j.to_entries())
+    len3 = len(j)
     
     result += "merge resulted in %s entries from %s and %s\n" % (len3, len1, len2)
 

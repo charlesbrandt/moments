@@ -102,12 +102,20 @@ class Entry(object):
             #print "no data in this entry! : %s" % self.render_first_line()
             return ''
 
-    def render(self):
+    def render(self, include_path=False):
         """
         return a textual representation of the entry
         """
         entry = u''
         entry += self.render_first_line()
+
+        #in most cases we do not want to show the source path,
+        #(it can change easily and frequently, and is determined on read)
+        #but when merging and reviewing (summarize)
+        #it could be useful to see in a temporary file
+        if include_path:
+            entry += self.source_file + "\n"
+            
         entry += self.render_data()
         return entry
 

@@ -1,5 +1,7 @@
 """
 Moments Journal object and functions related to using journals
+
+A journal holds a collection of Moments (or Entries, if no timestamps)
 """
 import re, codecs, os
 from datetime import datetime
@@ -57,7 +59,7 @@ def log_action(destination, message, tags=[]):
     #print entry.render()
     return entry
 
-def load_journal(path, add_tags=[]):
+def load_journal(path, add_tags=[], create=False):
     """
     walk the given path and
     create a journal object from all logs encountered in the path
@@ -106,6 +108,10 @@ def load_journal(path, add_tags=[]):
 
     elif os.path.isfile(path) and log_check.search(path):
         j.from_file(path, add_tags)
+    elif create and log_check.search(path):
+        #make a new log:
+        j.to_file(path)
+        j.from_file(path, add_tags)
     else:
         #no journal to create
         pass
@@ -142,12 +148,8 @@ class Journal(list):
         
     def show_entries(self):
         print self.__repr__(entries=True)
-        #this would also work:
-        #entries = self.to_entries()
-        #for e in entries:
-        #    print e.render()
     
-    def to_file(self, filename=None, sort='original'):
+    def to_file(self, filename=None, sort='original', include_path=False):
         """
         >>> from entry import Entry
         >>> e = Entry("test entry")
@@ -167,16 +169,13 @@ class Journal(list):
             exit()
 
         #l.from_journal(self, holder, entry)
-        l.from_entries(self.to_entries(sort=sort))
+        l.from_entries(self.sort_entries(sort=sort), include_path=include_path)
         l.to_file()
         l.close()
 
-    #*2009.08.09 05:19:35
-    #may want to rename to sort_self
-    #self is already a list of entries
-    def to_entries(self, sort='original', all_placeholders=True):
+    def sort_entries(self, sort='original'):
         """
-        return a list of entries the make up the current journal
+        rearrange the order of the entries in the journal
 
         can specify order:
 
@@ -217,20 +216,7 @@ class Journal(list):
             elist = self.dates[et]
             for entry in elist:
                 entries.update_entry(entry)
-                ## if entry not in entries:
-                ##     entries.append(entry)
-                ## else:
-                ##     print "multiple instances of same entry found."
-                ##     print "j.to_entries: %s" % entry.render()
-        ## entries = []
-        ## for et in entry_times:
-        ##     elist = self.dates[et]
-        ##     for entry in elist:
-        ##         if entry not in entries:
-        ##             entries.append(entry)
-        ##         else:
-        ##             print "multiple instances of same entry found."
-        ##             print "j.to_entries: %s" % entry.render()
+                
         self = entries
         return entries
 
@@ -246,9 +232,8 @@ class Journal(list):
             print "No name to save file to"
             exit()
 
-        entries = self.to_entries()
         flat = ''
-        for e in entries:
+        for e in self:
             flat += e.render_data()
 
         f.write(flat)

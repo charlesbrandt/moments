@@ -83,7 +83,7 @@ class TestJournal:
         tstamp = "20081218210057"
         (start, end) = timestamp.Timerange(tstamp).as_tuple()
         print start, end
-        #entries = self.j.to_entries()
+        #entries = self.j
         #assert len(entries) == 3
         entries = self.j.limit(start, end)
         assert len(entries) == 1

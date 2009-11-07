@@ -88,7 +88,7 @@ class Log(StringIO.StringIO):
         else:
             print "No log_name for this log"
 
-    def from_entries(self, entries, omits=[]):
+    def from_entries(self, entries, omits=[], include_path=False):
         """
         take a collection of entries and put together a log buffer
 
@@ -109,7 +109,7 @@ class Log(StringIO.StringIO):
         
         for entry in entries:
             entry.omit_tags(omits)
-            self.write(entry.render())
+            self.write(entry.render(include_path))
 
     def to_entries(self, add_tags=[], add_time=False, moments_only=False):
         """

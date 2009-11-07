@@ -52,7 +52,7 @@ def main():
         j.update_entry(e)
 
     print j
-    #j.to_entries("reverse-chronological")
+    #j.sort_entries("reverse-chronological")
     #l = Log(filename)
     #j.to_file('temp.txt')
     j.to_file('temp.txt', sort="reverse-chronological")

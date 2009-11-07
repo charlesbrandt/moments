@@ -26,7 +26,7 @@ def reverse_log(f1, f2="temp.txt"):
     j.from_file(f1)
 
     l = Log(f2)
-    l.from_entries(j.to_entries(sort="reverse"))
+    l.from_entries(j.sort_entries(sort="reverse"))
     l.to_file()
     l.close()
     

@@ -98,14 +98,14 @@ def extract_tag(path, tag_string, extract_type='intersect'):
         #no journal to create
         pass
 
-    if len(extracts.to_entries()):
+    if len(extracts):
         #now that we've extracted everything
         #save the extracts journal to a log
         t = datetime.now()
         now = t.strftime("%Y%m%d%H%M%S")
         fname = now + '-' + tag_string + '.txt'
         #dest = os.path.join(config['log_local_path'], fname)
-        print "saving %s entries to %s" % (len(extracts.to_entries()), fname)
+        print "saving %s entries to %s" % (len(extracts), fname)
         extracts.to_file(fname)
 
         #could gather print statements to have something to return here:
