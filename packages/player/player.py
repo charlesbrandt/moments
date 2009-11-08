@@ -29,10 +29,11 @@ import os, sys, re, codecs
 import pyglet
 from pyglet.media import Player as PygletPlayer
 from pyglet.window import key
+from pyglet.gl import *
 
 from moments.log import Log
 from moments.journal import load_journal
-
+from moments.node import Node, make_node
 from moments.sources import Converter, Source, Sources
     
 #window = pyglet.window.Window(resizable=True, visible=False)
@@ -76,6 +77,8 @@ class Player(object):
         self.jump_interval = 5
         self.jumping = False
 
+        self.img = None
+
     def list_previous(self):
         new_position = self.sources.position.previous()
         self.list_go(new_position)
@@ -100,65 +103,97 @@ class Player(object):
         if item.jumps.position.at_end():
             item.jumps.position.set(0)
         
-        #CHECK FOR something we can PLAY: (video or audio)
-        source = self.load_playable(item)
-        if source:
-            self.duration = source.duration
+        #make sure the previous player is stopped and deleted
+        #if it exists:
+        if self.player:
+            #not sure if we need to remove handlers for this player:
+            #self.player.remove_handlers()
+            self.player.pause()
+            del self.player
 
-            #make sure the previous player is stopped and deleted
-            #if it exists:
-            if self.player:
-                #not sure if we need to remove handlers for this player:
-                #self.player.remove_handlers()
-                self.player.pause()
-                del self.player
+        #this is the place for osbrowser to automatically determine
+        #path object and create list accordingly
 
-            #make a new one:
-            self.player = PygletPlayer()
-            self.player.on_eos = self.on_eos
-            self.player.queue(source)
-
-            #until we find out otherwise:
-            self.jumping = False
-            if item.jumps:
-                self.jumping = True
-                self.jump_next()
-            else:
-                self.player.play()
-
-            now_playing = self.sources.now_playing()
-            print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
-            print now_playing.render()
-
+        item_node = make_node(item.path, relative=False, create=False)
+        media_type = item_node.find_type()
+        print media_type
+        #if item is a image file path, show it
+        #if item is an entry, show it
         #MUST HAVE SOMETHING ELSE:
         # either static resource like image or an entry
         # or another playlist, log, etc.
+
+        #else:
+        #in the following cases, launch a new player
+        #and pause the current player:
+
+        #if path is a directory, launch player with contents
+
+        #these can be combined:
+        #if path is a log, load the journal, look for media entries, play those
+        #if path is a log without media entries, show all entries
+        #must be an entry only
+        #or maybe a picture?
+
+        if media_type == "Image":
+            try:
+                #image_path = image_node.path
+                #button = Image(image_path, batch=layout.batch)
+                
+                self.img = pyglet.image.load(item.path).get_texture(rectangle=True)
+            except:
+                print "falling back to thumbnail"
+                image_path = item_node.size_path('large')
+                self.img = pyglet.image.load(image_path).get_texture(rectangle=True)
+
+            self.img.anchor_x = self.img.width // 2
+            self.img.anchor_y = self.img.height // 2
+
+            checks = pyglet.image.create(32, 32, pyglet.image.CheckerImagePattern())
+            self.background = pyglet.image.TileableTexture.create_for_image(checks)
+
+            # Enable alpha blending, required for image.blit.
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+            window.width = self.img.width
+            window.height = self.img.height
+            window.set_visible()
+
+        #something we can PLAY: (video or audio)
         else:
-            #this is the place for osbrowser to automatically determine
-            #path object and create list accordingly
+            source = self.load_playable(item.path)
+            if source:
+                self.duration = source.duration
 
-            #if item is a image file path, show it
-            #if item is an entry, show it
 
-            #else:
-            #in the following cases, launch a new player
-            #and pause the current player:
+                #make a new one:
+                self.player = PygletPlayer()
+                self.player.on_eos = self.on_eos
+                self.player.queue(source)
 
-            #if path is a directory, launch player with contents
 
-            #these can be combined:
-            #if path is a log, load the journal, look for media entries, play those
-            #if path is a log without media entries, show all entries
-            #must be an entry only
-            #or maybe a picture?
-            pass
+                #until we find out otherwise:
+                self.jumping = False
+                if item.jumps:
+                    self.jumping = True
+                    self.jump_next()
+                else:
+                    self.player.play()
+
+        now_playing = self.sources.now_playing()
+        print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
+        print now_playing.render()
+
         
-    def load_playable(self, item):
+    def load_playable(self, path):
         """
         accepts a medialist.source.Source item made up of:
         -path
         -jumps
         -entry
+        *2009.11.06 14:18:41
+        now just takes the path we want to load... all that is needed here
         """
 
         #should decide if it is a stream here:
@@ -206,9 +241,9 @@ class Player(object):
 
 
         try:
-            source = pyglet.media.load(item.path)
+            source = pyglet.media.load(path)
         except:
-            print "Item path: %s" % item.path
+            print "Item path: %s" % path
             exit()
         format = source.video_format
         if not format:
@@ -352,29 +387,34 @@ def on_key_press(symbol, modifiers):
 @window.event
 def on_draw():
     window.clear()
-    texture = player.player.get_texture()
-    if texture:
-        texture.blit(0, 0)
+    if player.player:
+        texture = player.player.get_texture()
+        if texture:
+            texture.blit(0, 0)
 
-    if player.show_time:
-        time = player.player._get_time()
-        #print time
+        if player.show_time:
+            time = player.player._get_time()
+            #print time
 
-        #seconds only
-        seconds = int(time)
-        if str(seconds) != player.seconds.text:
-            player.seconds.text = str(seconds)
-        #more detail:
-        #label.text = str(time)
+            #seconds only
+            seconds = int(time)
+            if str(seconds) != player.seconds.text:
+                player.seconds.text = str(seconds)
+            #more detail:
+            #label.text = str(time)
 
-        player.seconds.draw()
+            player.seconds.draw()
 
-        #doesn't seem to be a way to get the total length of the current
-        #media item loaded via the Player object
+            #doesn't seem to be a way to get the total length of the current
+            #media item loaded via the Player object
 
-        #but it is available as source.duration property
-        player.d.text = " / %s" % int(player.duration)
-        player.d.draw()
+            #but it is available as source.duration property
+            player.d.text = " / %s" % int(player.duration)
+            player.d.draw()
+
+    elif player.img:
+        player.background.blit_tiled(0, 0, 0, window.width, window.height)
+        player.img.blit(window.width // 2, window.height // 2, 0)
                         
 def main():
     global sources
@@ -454,8 +494,7 @@ def main():
             # so that those tags are not included with subsequent entries
 
             j = load_journal(playlist_file)
-            entries = j.to_entries()
-            print len(entries)
+            print len(j)
 
             #condense and sort will change the order of an entry list
             #if there are not statistics to generate
