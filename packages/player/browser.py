@@ -121,7 +121,7 @@ def main():
             
             playlist_file = sys.argv.pop(pos)
             j = load_journal(playlist_file)
-            entries = j.to_entries()
+            entries = j
             pl = entries_to_playlist(entries)
 
             new_list = condense_and_sort_list(pl)

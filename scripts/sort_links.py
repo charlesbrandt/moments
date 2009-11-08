@@ -30,11 +30,10 @@ def order_links(f1, ofile="temp.txt"):
     
     j = Journal()
     j.from_file(f1)
-    entries = j.to_entries()
-    
+
     m = MediaList()
 
-    for e in entries:
+    for e in j:
         temp_m = MediaList()
         temp_m.from_copy_all_urls(e.data)
         updates = [ 

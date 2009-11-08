@@ -101,7 +101,7 @@ def copy_files(journal, translate=None):
     #m.from_journal(j, local_path='/c')
     sources = Sources()
     converter = Converter(sources)
-    converter.from_entries(j.to_entries())
+    converter.from_entries(j)
     for i in sources:
         print i
         if re.search('\.mp3', i.path):

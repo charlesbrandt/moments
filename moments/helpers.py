@@ -23,7 +23,7 @@ def load_instance(instances="/c/instances.txt", tag=None):
     #for sorting a list of entries:
     j2 = Journal()
     j2.from_entries(entries)
-    entries = j2.to_entries(sort='reverse-chronological')
+    entries = j2.sort_entries(sort='reverse-chronological')
 
     #should be the newest entry with tag "tag"
     e = entries[0]
@@ -56,16 +56,16 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", include_
     this_month_file = '%02d.txt' % now.month
     this_month_path = os.path.join(calendars, this_month_file)
     j = load_journal(this_month_path, ['calendar'])
-    #print len(j.to_entries())
+    #print len(j)
     # go ahead an convert recurring annual entries to this year
     # then if one is today, it should show up in the log
     annual_month_file = '%02d-annual.txt' % now.month
     annual_month_path = os.path.join(calendars, annual_month_file)
     annual = Journal()
     annual.from_file(annual_month_path, ['calendar', 'annual'])
-    #print len(annual.to_entries())
+    #print len(annual)
     #annual = load_journal(annual_month_path)
-    for e in annual.to_entries():
+    for e in annual:
         #print "processing: %s" % e.render()
         #year may be in the past... update it to this year:
         new_date = datetime(now.dt.year, e.created.month,

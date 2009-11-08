@@ -127,7 +127,8 @@ class Node:
         #name without file extension:
         self.name_only = name_only(self.name)
 
-        #we don't initialize this since it could be a directory and we don't want to recurse yet
+        #we don't initialize this since it could be a directory and
+        #we don't want to recurse unless needed
         #should be initialized in File though
         self.size = 0
 

@@ -20,9 +20,9 @@ class Moment(Entry):
     """
     Object to hold a unique Moment (Journal Entry with Time)
     """
-    def __init__(self, data=u'', tags=[], created=None, closed=None, placeholder=False, source_file=u''):
+    def __init__(self, data=u'', tags=[], created=None, closed=None, placeholder=False, path=u''):
 
-        Entry.__init__(self, data, tags, source_file)
+        Entry.__init__(self, data, tags, path)
         
         now = datetime.now()
         if not created:
@@ -41,9 +41,9 @@ class Moment(Entry):
         #should not be stored in any database
         self.placeholder = placeholder
 
-    #could also check sub_entries to see how much time was accounted for
-    #see if it gets close
     def total_time(self):
+        #could also check sub_entries to see how much time was accounted for
+        #see if it gets close
         return self.closed.datetime - self.created.datetime
 
     def is_placeholder(self):
@@ -63,14 +63,12 @@ class Moment(Entry):
         return str(date)
 
     def render_compact(self):
-        #ts = Timestamp(time=self.created)
         return self.created.compact()
 
     def render_first_line(self):
         """
         render the date and the tags for the entry
         """
-        #text_time = str(Timestamp(time=self.created))
         text_time = str(self.created)
         
         if self.is_placeholder():
@@ -85,7 +83,6 @@ class Moment(Entry):
         """
         render the date and the tags for the entry as a comment
         """
-        #text_time = str(Timestamp(time=self.created))
         text_time = str(self.created)
         
         line = '#'

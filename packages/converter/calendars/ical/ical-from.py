@@ -90,7 +90,7 @@ def from_ical(f1, trial_run=False, tags=['events'], annual=False):
             j.from_file(fpath)
             j.add_entry(entry)
             l = Log(fpath)
-            l.from_entries(j.to_entries(sort='chronological'))
+            l.from_entries(j.sort_entries(sort='chronological'))
             l.to_file()
             l.close()
         

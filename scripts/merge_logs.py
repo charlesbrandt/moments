@@ -12,9 +12,18 @@
 """
 
 import sys, os
-from moments.journal import Journal
+from moments.journal import Journal, load_journal
 from moments.timestamp import Timestamp
 
+def merge_many(source, destination, add_tags=[]):
+    """
+    use load journal to load the source directory
+    then save the resulting journal to the temporary destination
+    """
+    j = load_journal(source, add_tags)
+    j.sort_entries('reverse-chronlological')
+    j.to_file(destination)
+    
 def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     """
     add tags will only apply to the first file
@@ -27,15 +36,15 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     
     j = Journal()
     j.from_file(f1, add_tags)
-    len1 = len(j.to_entries())
+    len1 = len(j)
 
     
     j2 = Journal()
     j2.from_file(f2)
-    len2 = len(j2.to_entries())
+    len2 = len(j2)
 
     j.from_file(f2)
-    len3 = len(j.to_entries())
+    len3 = len(j)
     
     result += "merge resulted in %s entries from %s and %s\n" % (len3, len1, len2)
 

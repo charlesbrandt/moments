@@ -88,7 +88,7 @@ class Log(StringIO.StringIO):
         else:
             print "No log_name for this log"
 
-    def from_entries(self, entries, omits=[]):
+    def from_entries(self, entries, omits=[], include_path=False):
         """
         take a collection of entries and put together a log buffer
 
@@ -109,7 +109,7 @@ class Log(StringIO.StringIO):
         
         for entry in entries:
             entry.omit_tags(omits)
-            self.write(entry.render())
+            self.write(entry.render(include_path))
 
     def to_entries(self, add_tags=[], add_time=False, moments_only=False):
         """
@@ -129,7 +129,7 @@ class Log(StringIO.StringIO):
         entry_search = re.compile(entry_regex)
 
         cur_entry = Entry()
-        cur_entry.source_file = self.name
+        cur_entry.path = self.name
 
         new_entry = None
         
@@ -169,7 +169,7 @@ class Log(StringIO.StringIO):
                     if cur_entry.data or cur_entry.tags:
                         entries.append(cur_entry)
 
-                    new_entry.source_file = self.name
+                    new_entry.path = self.name
 
                     current_tags = line_tags.strip().split()
 
