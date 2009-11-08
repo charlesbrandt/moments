@@ -59,7 +59,7 @@ def log_action(destination, message, tags=[]):
     #print entry.render()
     return entry
 
-def load_journal(path, add_tags=[], create=False):
+def load_journal(path, add_tags=[], include_path_tags=True, create=False):
     """
     walk the given path and
     create a journal object from all logs encountered in the path
@@ -102,8 +102,9 @@ def load_journal(path, add_tags=[], create=False):
                 if not check_ignore(os.path.join(root, f), ignore_dirs):
                     these_tags = add_tags[:]
                     #will need to abstract context_tags() too... move to Tags
-                    filename_tags = path_to_tags(os.path.join(root, f))
-                    these_tags.extend(filename_tags)
+                    if include_path_tags:
+                        filename_tags = path_to_tags(os.path.join(root, f))
+                        these_tags.extend(filename_tags)
                     j.from_file(os.path.join(root, f), add_tags=these_tags)
 
     elif os.path.isfile(path) and log_check.search(path):
@@ -219,12 +220,16 @@ class Journal(list):
         else:
             raise ValueError, "Unknown sort option supplied: %s" % sort
             
-        entries = Journal()
+        entries = Journal(self.path, self.title)
         for et in entry_times:
             elist = self.dates[et]
             for entry in elist:
                 entries.update_entry(entry)
-                
+
+        # *2009.11.07 12:19:14 
+        # I'm not sure that this is actually getting reflected in self
+        # old order seems to persist
+        # may want to try using value that is returned 
         self = entries
         return entries
 

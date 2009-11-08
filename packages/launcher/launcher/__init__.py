@@ -48,7 +48,7 @@ def terminal(working_dirs=[], tabs=0):
 
 def emacs(source=''):
     #print os.name
-    print sys.platform
+    #print sys.platform
     if sys.platform == "darwin":
         command = "/Applications/Emacs.app/Contents/MacOS/Emacs %s &" % source
     else:
