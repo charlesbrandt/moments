@@ -461,15 +461,23 @@ class Converter(object):
                 if re.match('^media', source_file):
                     source_file = source_file.replace('media/', '')
                     source_file = '/c/' + source_file
+                #elif re.match('^graphics', source_file):
+                
+                ## if re.match('^/', source_file):
+                ##     source = Source()
+                ##     source.path = source_file
+                ##     source.entry = entry
+                ##     #print "adding source: %s" % source
+                ##     self.sources.append( source )
+                ## else:
+                ##     print "Non Source: %s" % source_file
 
-                if re.match('^/', source_file):
-                    source = Source()
-                    source.path = source_file
-                    source.entry = entry
-                    #print "adding source: %s" % source
-                    self.sources.append( source )
-                else:
-                    print "Non Source: %s" % source_file
+                source = Source()
+                source.path = source_file
+                source.entry = entry
+                #print "adding source: %s" % source
+                self.sources.append( source )
+
 
     def from_entries(self, entries):
         """
@@ -510,6 +518,8 @@ class Converter(object):
 
         tally = {}
 
+        print "Starting size: %s" % len(self.sources)
+
         #at this point we will be losing any entry associated
         #in order to condense
         #this will also lose any tag data
@@ -535,6 +545,16 @@ class Converter(object):
             new_items.append( list(i) )
         items = new_items
 
+        #NOTE ON WHAT IS STORED IN THE KEY:
+        ## if self.jumps:
+        ##     key = ( self.path, tuple(self.jumps) )
+        ## else:
+        ##     key = ( self.path )
+        ## return key
+        #
+        #AND ITEMS CONTAIN LISTS OF (KEY, VALUE)
+        #where value is the number of times a key appeared
+
         #condense items:
         condensed = items[:]
         for i in items:
@@ -543,6 +563,9 @@ class Converter(object):
                 #could be more than one condensed(c) that has jumps as subset...
                 #should stop after we find one that matches
                 #(hence using 'while' instead of 'for')
+                #if we find a subset, add the count of the subset
+                #to the count of the superset
+                #and then remove the subset from the condensed list
                 pos = 0
                 match = False
                 while not match:
@@ -582,8 +605,13 @@ class Converter(object):
                         #maybe no match, exit while loop
                         match = True
 
-
+            #must not have any jumps in this playlist item
+            else:
+                #in this case, the list should have been the same
+                pass
+            
         items = condensed
+        print "After Condensing: %s" % len(items)
 
         # see Items.sort()
 
@@ -600,6 +628,10 @@ class Converter(object):
         for i in new_items:
             items.append( i[1] )
 
+        print "After Sorting: %s" % len(items)
+
+        #re-assign the original entry with an item if we can
+        #
         #this will not catch the case when jumps were merged into a larger set
         #will lose entry association in that case
         for i in self.sources:
@@ -607,6 +639,9 @@ class Converter(object):
             if key in items:
                 pos = items.index(key)
                 items[pos] = [ i.path, i.jumps, i.entry ]
+
+        print "After Adding original entry back: %s" % len(items)
+
 
         #regenerate a new Sources object:
         for i in items:
@@ -618,6 +653,9 @@ class Converter(object):
                 source.entry = i[2]
             destination.append(source)
 
+        #should be smaller or the same if condensing and sorting is working:
+        print "Ending size: %s" % len(destination)
+        
         return destination
     
     def save(self):

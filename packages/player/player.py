@@ -31,6 +31,10 @@ from pyglet.media import Player as PygletPlayer
 from pyglet.window import key
 from pyglet.gl import *
 
+# Enable alpha blending, required for image.blit.
+glEnable(GL_BLEND)
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
 from moments.log import Log
 from moments.journal import load_journal
 from moments.node import Node, make_node
@@ -78,6 +82,11 @@ class Player(object):
         self.jumping = False
 
         self.img = None
+        self.previous = None
+        self.next = None
+
+        checks = pyglet.image.create(32, 32, pyglet.image.CheckerImagePattern())
+        self.background = pyglet.image.TileableTexture.create_for_image(checks)
 
     def list_previous(self):
         new_position = self.sources.position.previous()
@@ -111,80 +120,109 @@ class Player(object):
             self.player.pause()
             del self.player
 
-        #this is the place for osbrowser to automatically determine
-        #path object and create list accordingly
+        playing = self.load_item(item)
 
-        item_node = make_node(item.path, relative=False, create=False)
-        media_type = item_node.find_type()
-        print media_type
-        #if item is a image file path, show it
-        #if item is an entry, show it
-        #MUST HAVE SOMETHING ELSE:
-        # either static resource like image or an entry
-        # or another playlist, log, etc.
-
-        #else:
-        #in the following cases, launch a new player
-        #and pause the current player:
-
-        #if path is a directory, launch player with contents
-
-        #these can be combined:
-        #if path is a log, load the journal, look for media entries, play those
-        #if path is a log without media entries, show all entries
-        #must be an entry only
-        #or maybe a picture?
-
-        if media_type == "Image":
-            try:
-                #image_path = image_node.path
-                #button = Image(image_path, batch=layout.batch)
-                
-                self.img = pyglet.image.load(item.path).get_texture(rectangle=True)
-            except:
-                print "falling back to thumbnail"
-                image_path = item_node.size_path('large')
-                self.img = pyglet.image.load(image_path).get_texture(rectangle=True)
-
-            self.img.anchor_x = self.img.width // 2
-            self.img.anchor_y = self.img.height // 2
-
-            checks = pyglet.image.create(32, 32, pyglet.image.CheckerImagePattern())
-            self.background = pyglet.image.TileableTexture.create_for_image(checks)
-
-            # Enable alpha blending, required for image.blit.
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
-            window.width = self.img.width
-            window.height = self.img.height
-            window.set_visible()
-
-        #something we can PLAY: (video or audio)
-        else:
-            source = self.load_playable(item.path)
-            if source:
-                self.duration = source.duration
+        if playing:
+            now_playing = self.sources.now_playing()
+            print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
+            print now_playing.render()
 
 
-                #make a new one:
-                self.player = PygletPlayer()
-                self.player.on_eos = self.on_eos
-                self.player.queue(source)
+    def load_item(self, item):
+        """
+        this is the place for osbrowser to automatically determine
+        path object and create list accordingly
+        """
 
+        playing = False
 
-                #until we find out otherwise:
-                self.jumping = False
-                if item.jumps:
-                    self.jumping = True
-                    self.jump_next()
+        #make sure the file exists:
+        item_node = None
+        try:
+            item_node = make_node(item.path, relative=False, create=False)
+        except:
+            print "Item not found: %s" % item.path
+            self.list_next()
+
+        if item_node:
+            media_type = item_node.find_type()
+            print media_type
+
+            #if item is an entry, show it
+
+            #if item is a image file path, show it
+            if media_type == "Image":
+                if self.img:
+                    self.previous = self.img
+
+                if self.next:
+                    self.img = self.next
                 else:
-                    self.player.play()
+                    try:
+                        #image_path = image_node.path
+                        #button = Image(image_path, batch=layout.batch)
 
-        now_playing = self.sources.now_playing()
-        print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
-        print now_playing.render()
+                        self.img = pyglet.image.load(item.path).get_texture(rectangle=True)
+                    except:
+                        print "falling back to thumbnail"
+                        image_path = item_node.size_path('large')
+                        self.img = pyglet.image.load(image_path).get_texture(rectangle=True)
 
+
+                self.img.anchor_x = self.img.width // 2
+                self.img.anchor_y = self.img.height // 2
+
+                window.width = self.img.width
+                window.height = self.img.height
+                #window.set_visible()
+                self.img.blit(window.width // 2, window.height // 2, 0)
+                window.flip()
+
+                try:
+                    #image_path = image_node.path
+                    #button = Image(image_path, batch=layout.batch)
+
+                    self.next = pyglet.image.load(item.path).get_texture(rectangle=True)
+                except:
+                    print "falling back to thumbnail"
+                    image_path = item_node.size_path('large')
+                    self.next = pyglet.image.load(image_path).get_texture(rectangle=True)
+
+                playing = True
+
+            #something we can PLAY: (video or audio)
+            elif media_type == "Movie" or media_type == "Sound":
+                source = self.load_playable(item.path)
+                if source:
+                    self.duration = source.duration
+
+
+                    #make a new one:
+                    self.player = PygletPlayer()
+                    self.player.on_eos = self.on_eos
+                    self.player.queue(source)
+
+
+                    #until we find out otherwise:
+                    self.jumping = False
+                    if item.jumps:
+                        self.jumping = True
+                        self.jump_next()
+                    else:
+                        self.player.play()
+
+                playing = True
+
+            #if path is a directory, 
+            #or another playlist, log, etc.
+            #launch new player instance with contents
+
+            else:
+                print "Unknown media type, moving on"
+                self.list_next()
+                playing = False
+
+        return playing    
         
     def load_playable(self, path):
         """
@@ -334,18 +372,21 @@ def on_key_press(symbol, modifiers):
 
     #mark current position
     elif key.symbol_string(symbol) == "M":
-        #add current position to jump list... then it can be written to log
-        #will be written to log when jumps complete
-        time = player.player._get_time()
-        #print time
+        if player.player:
+            #add current position to jump list... then it can be written to log
+            #will be written to log when jumps complete
+            time = player.player._get_time()
+            #print time
 
-        #seconds only
-        seconds = int(time)
-        player.sources.current.jumps.append(seconds)
-        #player.jump_next(0)
+            #seconds only
+            seconds = int(time)
+            player.sources.current.jumps.append(seconds)
+            #player.jump_next(0)
 
-        print "added mark: %s" % seconds
-
+            print "added mark: %s" % seconds
+        else:
+            print "no player to mark"
+            
     #save an image of current buffer
     elif key.symbol_string(symbol) == "S":
         #this results in the timestamp showing up in the image (if on screen)
@@ -502,10 +543,13 @@ def main():
             # could export as a m3u instead
             # or have separate options not to sort.
             temp = Sources()
-            #converter = Converter(temp)
-            converter = Converter(sources)
-            converter.from_entries(entries)
-            #converter.condense_and_sort(sources)
+            converter = Converter(temp)
+            converter.from_entries(j)
+            converter.condense_and_sort(sources)
+
+            #for no condensing:
+            #converter = Converter(sources)
+            #converter.from_entries(j)
             
         else:
             #files passed in via command line:

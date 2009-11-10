@@ -37,6 +37,12 @@ def summarize(source, destination='', add_tags=[]):
     #j2.to_file(destination, include_path=True)
     j2.to_file(destination)
 
+    #would be good to load all entries from /c/charles/journal.txt
+    #into this month
+    #eventually journal should always end up with only items for current month
+    j_auto = load_journal('/c/charles/journal.txt', include_path_tags=False)
+    
+
     node = File(destination)
     print "%s bytes found!" % node.size
     
