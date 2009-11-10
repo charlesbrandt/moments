@@ -40,12 +40,13 @@ be passed in, like datetime does
 could add those arguments to the init function if that was needed
 by those using Timestamp objects in place of datetime objects
 
-compact and cstamp are the same thing
-
 """
 
-from datetime import datetime, timedelta, date, time
+from datetime import datetime, timedelta, date
+from datetime import time as dttime
 from time import strptime
+import time as pytime
+
 import re
 
 time_format = "%Y.%m.%d %H:%M"
@@ -119,8 +120,10 @@ class Timestamp(object):
     def __init__(self, time=None, tstamp=None, cstamp=None, compact=None,
                  now=True):
         """
-        something in the docstring was causing problems with autotab
-        see indented area in file docstring.
+        compact and cstamp are the same thing
+
+        something in the class docstring was causing problems with autotab
+        see file docstring.
         """
         #this is the internal datetime object:
         #it is available externally via self.datetime
@@ -206,6 +209,20 @@ class Timestamp(object):
         this makes it easy!
         """
         return self.compact(accuracy='day') + suffix
+
+    def epoch(self):
+        """
+        return the current timestamp object as the number of seconds since the
+        epoch.  aka POSIX timestamp
+        *2009.11.04 13:57:55
+        http://stackoverflow.com/questions/255035/converting-datetime-to-posix-time
+        *2009.11.10 10:00:21 
+        """
+        #import time, datetime
+
+        return pytime.mktime(self.dt.timetuple())
+
+        
 
     #was tstamp_to_time
     def from_compact(self, text_time):
@@ -595,7 +612,7 @@ class Timerange:
 #def this_week_last_year(today=date.today()):
 def this_week_last_year(today=None):
     if not today:
-        today = datetime.combine(date.today(), time(0))
+        today = datetime.combine(date.today(), dttime(0))
     #today = datetime.datetime.now()
 
     #could use date to same effect,

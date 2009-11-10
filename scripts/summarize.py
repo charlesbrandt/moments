@@ -11,6 +11,9 @@
 # License:  MIT
 
 # Requires: moments
+
+Usage:
+python /c/moments/scripts/summarize.py /c/outgoing/summarize/journal/2009/10/
 """
 
 import sys, os
@@ -24,25 +27,47 @@ def summarize(source, destination='', add_tags=[]):
     use load journal to load the source directory
     then save the resulting journal to the temporary destination
     """
+    month = 10
+    year = 2009
+    
     j = load_journal(source, add_tags, include_path_tags=False)
-    j2 = j.sort_entries('reverse-chronological')
+
+    #load all entries from /c/charles/journal.txt into this summary
+    #eventually journal should always end up with only items for current month
+    j_auto = load_journal('/c/charles/journal.txt', include_path_tags=False)
+
+    #TODO:
+    #would be good to determine these based on the month, context that we're
+    #summarizing:
+    #calculate next month
+    #then subtract one second
+    start = Timestamp(compact="200910")
+    end = Timestamp(compact="20091031235959")
+
+    print "j_auto pre-limit length: %s" % len(j_auto)
+    matches = j_auto.limit(start.datetime, end.datetime)
+    j_auto.remove_entries(matches)
+    print "j_auto post-limit length: %s" % len(j_auto)
+    #add found entries in:
+    j.from_entries(matches)
+
+    #sort and save what we've found
+    j2 = j.sort_entries('chronological')
+    print "following lengths should be the same, just sorted:"
     print len(j)
     print len(j2)
     if not destination:
         now = Timestamp(now=True)
-        temp_name = "summary-%s.temp" % (now.compact())
+        temp_name = "%s%s-combined.temp" % (year, month)
         #destination = os.path.join(os.path.dirname(f2), temp_name)
         destination = temp_name
     print "SAVING as: %s\n" % destination
     #j2.to_file(destination, include_path=True)
     j2.to_file(destination)
 
-    #would be good to load all entries from /c/charles/journal.txt
-    #into this month
-    #eventually journal should always end up with only items for current month
-    j_auto = load_journal('/c/charles/journal.txt', include_path_tags=False)
+    #save j_auto here after entries have been successfully applied to new j2
+    j_auto.to_file()
     
-
     node = File(destination)
     print "%s bytes found!" % node.size
     
@@ -56,7 +81,16 @@ def summarize(source, destination='', add_tags=[]):
     ## f.write(buff)
     ## f.close()
 
+    #a new file for summarizing the month
+    summary_name = "%s%s-summary.txt" % (year, month)
+    f = open(summary_name, 'w')
+    buff = "Summary for %s, %s" % (month, year)
+    f.write(buff)
+    #TODO: prepopulate with all days timestamps
+    f.close()
+
     # we may want to use the new version as the definitive one
+    print "WARNING!!!"
     print "ENTRIES NOW LIVE IN TWO PLACES."
     print "YOU SHOULD ONLY USE ONE VERSION AND ARCHIVE/REMOVE THE OTHER"
 
@@ -64,6 +98,7 @@ def summarize(source, destination='', add_tags=[]):
     files = []
     #can manually add files here
     files.append(destination)
+    files.append(summary_name)
     file_string = ' '.join(files)
     print emacs(file_string)
     
