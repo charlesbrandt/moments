@@ -158,17 +158,8 @@ class Player(object):
                 if self.next:
                     self.img = self.next
                 else:
-                    try:
-                        #image_path = image_node.path
-                        #button = Image(image_path, batch=layout.batch)
-
-                        self.img = pyglet.image.load(item.path).get_texture(rectangle=True)
-                    except:
-                        print "falling back to thumbnail"
-                        image_path = item_node.size_path('large')
-                        self.img = pyglet.image.load(image_path).get_texture(rectangle=True)
-
-
+                    self.img = self.load_image(item_node)
+                    
                 self.img.anchor_x = self.img.width // 2
                 self.img.anchor_y = self.img.height // 2
 
@@ -178,15 +169,8 @@ class Player(object):
                 self.img.blit(window.width // 2, window.height // 2, 0)
                 window.flip()
 
-                try:
-                    #image_path = image_node.path
-                    #button = Image(image_path, batch=layout.batch)
-
-                    self.next = pyglet.image.load(item.path).get_texture(rectangle=True)
-                except:
-                    print "falling back to thumbnail"
-                    image_path = item_node.size_path('large')
-                    self.next = pyglet.image.load(image_path).get_texture(rectangle=True)
+                #this should happen in the directional caller
+                self.next = self.load_image(item_node)
 
                 playing = True
 
@@ -224,6 +208,22 @@ class Player(object):
 
         return playing    
         
+    def load_image(self, item_node):
+        """
+        take a node, return a pyglet image
+        """
+        try:
+            #image_path = image_node.path
+            #button = Image(image_path, batch=layout.batch)
+
+            img = pyglet.image.load(item_node.path).get_texture(rectangle=True)
+        except:
+            print "falling back to thumbnail"
+            image_path = item_node.size_path('large')
+            img = pyglet.image.load(image_path).get_texture(rectangle=True)
+
+        return img
+    
     def load_playable(self, path):
         """
         accepts a medialist.source.Source item made up of:
