@@ -108,10 +108,6 @@ class Player(object):
             self.list_next()
 
     def list_go(self, position=None):
-        item = self.sources.go(position)
-        if item.jumps.position.at_end():
-            item.jumps.position.set(0)
-        
         #make sure the previous player is stopped and deleted
         #if it exists:
         if self.player:
@@ -120,13 +116,26 @@ class Player(object):
             self.player.pause()
             del self.player
 
-        playing = self.load_item(item)
+        playing = False
 
-        if playing:
-            now_playing = self.sources.now_playing()
-            print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
-            print now_playing.render()
+        original_position = position
+        
+        while not playing:
+            item = self.sources.go(position)
+            if item.jumps.position.at_end():
+                item.jumps.position.set(0)
 
+            playing = self.load_item(item)
+
+            if playing:
+                now_playing = self.sources.now_playing()
+                print "Playlist position: %s/%s" % (self.sources.position, len(self.sources))
+                print now_playing.render()
+            else:
+                position = self.sources.position.next()
+                if position == original_position:
+                    #must have made a full cycle with no playable
+                    break
 
     def load_item(self, item):
         """
@@ -142,9 +151,7 @@ class Player(object):
             item_node = make_node(item.path, relative=False, create=False)
         except:
             print "Item not found: %s" % item.path
-            self.list_next()
-
-        if item_node:
+        else:
             media_type = item_node.find_type()
             print media_type
 
@@ -159,7 +166,7 @@ class Player(object):
                     self.img = self.next
                 else:
                     self.img = self.load_image(item_node)
-                    
+
                 self.img.anchor_x = self.img.width // 2
                 self.img.anchor_y = self.img.height // 2
 
@@ -180,12 +187,10 @@ class Player(object):
                 if source:
                     self.duration = source.duration
 
-
-                    #make a new one:
+                    #make a new player:
                     self.player = PygletPlayer()
                     self.player.on_eos = self.on_eos
                     self.player.queue(source)
-
 
                     #until we find out otherwise:
                     self.jumping = False
@@ -195,7 +200,11 @@ class Player(object):
                     else:
                         self.player.play()
 
-                playing = True
+                    playing = True
+
+                else:
+                    print "Playable not found: %s" % item.path
+                    playing = False
 
             #if path is a directory, 
             #or another playlist, log, etc.
@@ -203,7 +212,6 @@ class Player(object):
 
             else:
                 print "Unknown media type, moving on"
-                self.list_next()
                 playing = False
 
         return playing    
@@ -537,6 +545,25 @@ def main():
             j = load_journal(playlist_file)
             print len(j)
 
+            #for no condensing:
+            converter = Converter(sources)
+            converter.from_entries(j)
+
+        elif '-sort' in sys.argv:
+            """
+            similar to -mlist, but we will also sort the list here
+            """
+            pos = sys.argv.index("-sort")
+            sys.argv.remove("-sort")
+            
+            playlist_file = sys.argv.pop(pos)
+            #TODO:
+            # way to pass in tags to ignore when loading a journal
+            # so that those tags are not included with subsequent entries
+
+            j = load_journal(playlist_file)
+            print len(j)
+
             #condense and sort will change the order of an entry list
             #if there are not statistics to generate
             # i.e. one of each only
@@ -546,10 +573,6 @@ def main():
             converter = Converter(temp)
             converter.from_entries(j)
             converter.condense_and_sort(sources)
-
-            #for no condensing:
-            #converter = Converter(sources)
-            #converter.from_entries(j)
             
         else:
             #files passed in via command line:
