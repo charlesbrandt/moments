@@ -81,6 +81,9 @@ class Player(object):
         self.jump_interval = 5
         self.jumping = False
 
+        self.auto_interval = 5
+        self.auto = False
+
         self.img = None
         self.previous = None
         self.next = None
@@ -88,13 +91,29 @@ class Player(object):
         checks = pyglet.image.create(32, 32, pyglet.image.CheckerImagePattern())
         self.background = pyglet.image.TileableTexture.create_for_image(checks)
 
-    def list_previous(self):
+    def list_previous(self, dt=0):
         new_position = self.sources.position.previous()
-        self.list_go(new_position)
+        self.list_go(new_position, direction="backward")
+        #try preloading
+        item = self.sources.get_previous()
+        media_type = self.check_for_item(item)
+        if media_type == "Image":
+            self.previous = self.load_image(item)
 
-    def list_next(self):
+    def list_next(self, dt=0):
         new_position = self.sources.position.next()
-        self.list_go(new_position)
+        self.list_go(new_position, direction="forward")
+        #try preloading
+        #try to load the next item 
+        #this should happen in the directional caller
+        item = self.sources.get_next()
+        media_type = self.check_for_item(item)
+        if media_type == "Image":
+            self.next = self.load_image(item)
+        if self.auto:
+            pyglet.clock.unschedule(self.list_next)
+            pyglet.clock.schedule_once(self.list_next, self.auto_interval)
+        
 
     def jump_next(self, dt=0):
         pyglet.clock.unschedule(self.jump_next)
@@ -107,7 +126,7 @@ class Player(object):
             self.sources.log_current()
             self.list_next()
 
-    def list_go(self, position=None):
+    def list_go(self, position=None, direction="forward"):
         #make sure the previous player is stopped and deleted
         #if it exists:
         if self.player:
@@ -125,7 +144,7 @@ class Player(object):
             if item.jumps.position.at_end():
                 item.jumps.position.set(0)
 
-            playing = self.load_item(item)
+            playing = self.load_item(item, direction=direction)
 
             if playing:
                 now_playing = self.sources.now_playing()
@@ -137,7 +156,7 @@ class Player(object):
                     #must have made a full cycle with no playable
                     break
 
-    def load_item(self, item):
+    def load_item(self, item, direction="forward"):
         """
         this is the place for osbrowser to automatically determine
         path object and create list accordingly
@@ -145,28 +164,28 @@ class Player(object):
 
         playing = False
 
-        #make sure the file exists:
-        item_node = None
-        try:
-            item_node = make_node(item.path, relative=False, create=False)
-        except:
-            print "Item not found: %s" % item.path
-        else:
-            media_type = item_node.find_type()
-            print media_type
-
-            #if item is an entry, show it
-
+        media_type = self.check_for_item(item)
+        if media_type:
             #if item is a image file path, show it
             if media_type == "Image":
-                if self.img:
-                    self.previous = self.img
-
-                if self.next:
-                    self.img = self.next
+                if direction == "forward":
+                    if self.img:
+                        self.previous = self.img
+                    #see if the image was pre-loaded
+                    if self.next:
+                        self.img = self.next
+                    else:
+                        self.img = self.load_image(item)
+                    
                 else:
-                    self.img = self.load_image(item_node)
-
+                    #going backwards in list
+                    if self.img:
+                        self.next = self.img
+                    if self.previous:
+                        self.img = self.previous
+                    else:
+                        self.img = self.load_image(item)
+                    
                 self.img.anchor_x = self.img.width // 2
                 self.img.anchor_y = self.img.height // 2
 
@@ -175,9 +194,6 @@ class Player(object):
                 #window.set_visible()
                 self.img.blit(window.width // 2, window.height // 2, 0)
                 window.flip()
-
-                #this should happen in the directional caller
-                self.next = self.load_image(item_node)
 
                 playing = True
 
@@ -206,20 +222,43 @@ class Player(object):
                     print "Playable not found: %s" % item.path
                     playing = False
 
+            #if item is an entry, show it
+
             #if path is a directory, 
             #or another playlist, log, etc.
             #launch new player instance with contents
 
             else:
-                print "Unknown media type, moving on"
+                print "Unknown media type: %s, moving on" % media_type
                 playing = False
 
         return playing    
+
+    def check_for_item(self, item):
+        """
+        use moments.node.make_node to verify that the item exists
+        if it is found, return the item type
+        """
+        found = False
+        #make sure the file exists:
+        item_node = None
+        try:
+            item_node = make_node(item.path, relative=False, create=False)
+        except:
+            print "Item not found: %s" % item.path
+        else:
+            #must have a file:
+            media_type = item_node.find_type()
+            found = media_type
+            #print media_type
+        return found
         
-    def load_image(self, item_node):
+    def load_image(self, item):
         """
         take a node, return a pyglet image
         """
+        #should have previously verified node exists with self.check_for_item:
+        item_node = make_node(item.path, relative=False, create=False)
         try:
             #image_path = image_node.path
             #button = Image(image_path, batch=layout.batch)
@@ -317,6 +356,7 @@ def on_text(text):
 
 @window.event
 def on_key_press(symbol, modifiers):
+    #print key.symbol_string(symbol)
     #global user_response
     #quit!
     if (key.symbol_string(symbol) == "Q" or
@@ -349,16 +389,14 @@ def on_key_press(symbol, modifiers):
         else:
             player.player.play()
 
-    #start playing
-    elif key.symbol_string(symbol) == "P":
-        player.player.play()
-
-    #toggle time display
-    elif key.symbol_string(symbol) == "O":
-        if player.show_time:
-            player.show_time = False
+    #toggle auto mode
+    elif key.symbol_string(symbol) == "A":
+        if player.auto:
+            pyglet.clock.unschedule(player.list_next)
+            player.auto = False
         else:
-            player.show_time = True
+            player.auto = True
+            pyglet.clock.schedule_once(player.list_next, 1)
 
     #toggle jump mode
     elif key.symbol_string(symbol) == "J":
@@ -368,10 +406,6 @@ def on_key_press(symbol, modifiers):
         else:
             pyglet.clock.schedule_once(player.jump_next, 1)
             player.jumping = True
-
-    #jump next timestamp in time list
-    elif key.symbol_string(symbol) == "N":
-        player.jump_next(0)
 
     #add an entry to the the log
     elif key.symbol_string(symbol) == "L":
@@ -395,6 +429,21 @@ def on_key_press(symbol, modifiers):
         else:
             print "no player to mark"
             
+    #jump next timestamp in time list
+    elif key.symbol_string(symbol) == "N":
+        player.jump_next(0)
+
+    #toggle time display
+    elif key.symbol_string(symbol) == "O":
+        if player.show_time:
+            player.show_time = False
+        else:
+            player.show_time = True
+
+    #start playing
+    elif key.symbol_string(symbol) == "P":
+        player.player.play()
+
     #save an image of current buffer
     elif key.symbol_string(symbol) == "S":
         #this results in the timestamp showing up in the image (if on screen)
@@ -433,6 +482,104 @@ def on_key_press(symbol, modifiers):
     elif key.symbol_string(symbol) == "DOWN":
         player.list_next()
 
+    elif key.symbol_string(symbol) == "_1":
+        #load tags from file
+        tags = load_tags(0)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_2":
+        #load tags from file
+        tags = load_tags(1)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_3":
+        #load tags from file
+        tags = load_tags(2)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_4":
+        #load tags from file
+        tags = load_tags(3)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_5":
+        #load tags from file
+        tags = load_tags(4)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_6":
+        #load tags from file
+        tags = load_tags(5)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_7":
+        #load tags from file
+        tags = load_tags(6)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_8":
+        #load tags from file
+        tags = load_tags(7)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_9":
+        #load tags from file
+        tags = load_tags(8)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+    elif key.symbol_string(symbol) == "_0":
+        #load tags from file
+        tags = load_tags(9)
+        print "tagging with: %s" % tags
+        player.sources.log_current(tags)
+        player.list_next()
+
+def load_tags(index=None):
+    try:
+        #will look in the current directory running player from
+        #allows for tags.txt to be located elsewhere:
+        f = open("tags.txt")
+    except:
+        path = sys.path[0]
+        #print path
+        full_path = os.path.join(path, "tags.txt")
+        f = open(full_path)
+        
+    tags = []
+    for line in f.readlines():
+        set = line.rstrip().split(' ')
+        tags.append(set)
+
+    #print tags
+    if index is None:
+        return tags
+    else:
+        try:
+            found = tags[index]
+        except:
+            #tag file must not have had our index
+            found = []
+        #found = tags[index]
+        return found
+        
 @window.event
 def on_draw():
     window.clear()
@@ -467,6 +614,7 @@ def on_draw():
                         
 def main():
     global sources
+    print "Welcome to the Pyglet Media Player"
     
     jumps = []
     start = 0
@@ -534,6 +682,7 @@ def main():
                 just open it as a journal file
             
             """
+            print "Parsing media list in journal format"
             pos = sys.argv.index("-mlist")
             sys.argv.remove("-mlist")
             
@@ -553,6 +702,7 @@ def main():
             """
             similar to -mlist, but we will also sort the list here
             """
+            print "Parsing and sorting media list in journal format"
             pos = sys.argv.index("-sort")
             sys.argv.remove("-sort")
             

@@ -3,6 +3,7 @@ from moments.journal import Journal, load_journal
 from moments.timestamp import Timestamp
 from moments.moment import Moment
 from moments.association import Association
+from moments.tags import Tags
 
 class Position(object):
     """
@@ -315,7 +316,7 @@ class Source(object):
         if self.entry:
             moment.tags = self.entry.tags
         else:
-            moment.tags = []
+            moment.tags = Tags()
 
         if self.jumps:
             moment.data = "# -sl %s %s" % (self.jumps.to_comma(), self.path)
@@ -351,7 +352,7 @@ class Sources(Items):
         else:
             self.log_path = log_path
         
-    def log_current(self):
+    def log_current(self, add_tags=[]):
         """
         log that a play was just completed
         
@@ -362,7 +363,8 @@ class Sources(Items):
         and the entry to use
         """
         entry = self.now_playing()
-
+        entry.tags.union(add_tags)
+        
         #log in default log directory
         j = Journal()
         now = Timestamp(now=True)
