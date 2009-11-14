@@ -24,7 +24,7 @@ import sys, subprocess, os, re
 
 from moments.journal import Journal
 from moments.tags import Tags
-from osbrowser.meta import make_node
+from moments.node import make_node
 from merge_logs import merge_logs
 
 def export_logs(source, destination, add_tags=[], recurse=True):
