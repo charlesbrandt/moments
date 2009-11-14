@@ -13,13 +13,16 @@ setup(
     name='Moments',
     version=version,
     description="Python package to process moments log files",
-    long_description="""Journal log files consist of text documents with the \
+    long_description="""Moment log files are simple text documents with the \
         format: 
         *YYYY.MM.DD hh:mm [tags]
         [entry]
         \n
 
-        these logs are useful for tracking notes with a time context
+        This simple format allows your notes to:
+	  -stay accessible (no proprietary formats)
+	  -be sorted by time or tag
+	  -easily synchronize across many machines using a distributed version control system
     """,
     # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[],
