@@ -1,9 +1,0 @@
-setup.cfg
-setup.py
-converter/__init__.py
-converter.egg-info/PKG-INFO
-converter.egg-info/SOURCES.txt
-converter.egg-info/dependency_links.txt
-converter.egg-info/entry_points.txt
-converter.egg-info/not-zip-safe
-converter.egg-info/top_level.txt

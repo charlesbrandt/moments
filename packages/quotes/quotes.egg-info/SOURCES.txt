@@ -1,8 +1,0 @@
-setup.cfg
-setup.py
-quotes.egg-info/PKG-INFO
-quotes.egg-info/SOURCES.txt
-quotes.egg-info/dependency_links.txt
-quotes.egg-info/entry_points.txt
-quotes.egg-info/not-zip-safe
-quotes.egg-info/top_level.txt

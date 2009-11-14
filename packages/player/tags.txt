@@ -1,7 +1,0 @@
-put tags
-on_first_ten_lines
-to_make available
-for:player
-can filter_later for_things_like
-rotate left
-right
