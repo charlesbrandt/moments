@@ -19,7 +19,7 @@
 import sys, os, subprocess
 from datetime import datetime
 from moments.journal import log_action
-from launcher import terminal, emacs, nautilus, evolution
+from moments.launcher import terminal, emacs, nautilus, evolution
 
 def main():
     if len (sys.argv) > 1:

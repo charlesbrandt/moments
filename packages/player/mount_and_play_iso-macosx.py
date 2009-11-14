@@ -20,7 +20,7 @@
 
 import sys, os
 from moments.journal import log_action
-from launcher import mount_iso_macosx
+from moments.launcher import mount_iso_macosx
     
 def main():
     if len (sys.argv) > 1:

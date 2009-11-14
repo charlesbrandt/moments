@@ -20,7 +20,7 @@ import sys, os
 from moments.journal import Journal, load_journal
 from moments.timestamp import Timestamp
 from moments.node import File
-from launcher import emacs
+from moments.launcher import emacs
 
 def summarize(source, destination='', add_tags=[]):
     """

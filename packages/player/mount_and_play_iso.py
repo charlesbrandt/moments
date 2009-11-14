@@ -20,7 +20,7 @@
 
 import sys, os
 from moments.journal import log_action
-from launcher import totem, mount_iso
+from moments.launcher import totem, mount_iso
     
 def main():
     if len (sys.argv) > 1:
