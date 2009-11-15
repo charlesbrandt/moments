@@ -16,8 +16,9 @@
 $Id$ (???)
 """
 import sys, os, subprocess
-from osbrowser.meta import make_node
-from osbrowser.image import Image
+#from osbrowser.meta import make_node
+#from osbrowser.image import Image
+from moments.node import Image, make_node
 
 def _move_files(source_dir, new_dir):
     """

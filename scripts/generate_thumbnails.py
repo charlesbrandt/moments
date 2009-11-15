@@ -17,7 +17,7 @@
 $Id$ (???)
 """
 import sys, codecs, os.path
-from osbrowser.meta import make_node
+from moments.node import make_node
 
 def generate_thumbnails(src, rotate=False):
     node = make_node(src)

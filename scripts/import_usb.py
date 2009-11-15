@@ -16,7 +16,7 @@ python /c/code/python/scripts/import_usb.py [source_dir] [destinatin_dir]
 """
 
 import sys, os, subprocess
-from osbrowser import meta
+from moments.node import make_node
 from split_by_day import split_by_day
 
 def main():
@@ -31,7 +31,7 @@ def main():
         for dest in destinations:
             #run rotate, thumbnail generation
             print dest
-            d = meta.make_node(dest)
+            d = make_node(dest)
             d.auto_rotate_images()
             d.make_thumbs()
 

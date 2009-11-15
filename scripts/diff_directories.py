@@ -32,8 +32,10 @@ from datetime import datetime
 from difflib import Differ
 from pprint import pprint
 
-from osbrowser import make_node
-from osbrowser.library import phraseUnicode2ASCII
+#from osbrowser import make_node
+#from osbrowser.library import phraseUnicode2ASCII
+from moments.node import make_node
+from moments.ascii import unaccented_map
 
 VAR = None
 
@@ -79,13 +81,16 @@ def diff_files(fname, path1, path2, indent, diff_system=False):
         pass
 
     else:
-        print " %s - BOTH, DIFFERENT SIZE" % phraseUnicode2ASCII(fname)
+        #print " %s - BOTH, DIFFERENT SIZE" % phraseUnicode2ASCII(fname)
+        print " %s - BOTH, DIFFERENT SIZE" % fname.translate(unaccented_map())
         if diff_system:
             print "diffing: %s %s\n" % (path1, path2)
             try:
-                diff_system( phraseUnicode2ASCII(path1),
-                             phraseUnicode2ASCII(path2) )
+                #diff_system( phraseUnicode2ASCII(path1),
+                #             phraseUnicode2ASCII(path2) )
                 #diff_playlists(n1, n2)
+                diff_system( path1.translate(unaccented_map()),
+                             path2.translate(unaccented_map()) )
             except:
                 print "Unable to diff."
 
@@ -116,7 +121,8 @@ def diff_dirs(dpath1, dpath2, recurse=True, indent=0, show_both=False ):
 
                 d2contents.remove(i)
                 if show_both:
-                    print "%s - BOTH" % phraseUnicode2ASCII(i)
+                    #print "%s - BOTH" % phraseUnicode2ASCII(i)
+                    print "%s - BOTH" % i.translate(unaccented_map())
                 
                 n1 = make_node(n1path)
                 n2 = make_node(n2path)
@@ -136,7 +142,7 @@ def diff_dirs(dpath1, dpath2, recurse=True, indent=0, show_both=False ):
 
             else:
                 is_difference = True
-                print "%s - D1 ONLY" % phraseUnicode2ASCII(i)
+                print "%s - D1 ONLY" % i.translate(unaccented_map())
                 #could move it if desired:
                 #os.rename(n1path, n2path)
 
@@ -144,7 +150,7 @@ def diff_dirs(dpath1, dpath2, recurse=True, indent=0, show_both=False ):
     if len(d2contents):
         is_difference = True
         for i in d2contents:
-            print "%s - D2 ONLY" % phraseUnicode2ASCII(i)
+            print "%s - D2 ONLY" % i.translate(unaccented_map())
 
     return is_difference
 
