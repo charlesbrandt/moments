@@ -59,7 +59,8 @@ def log_action(destination, message, tags=[]):
     #print entry.render()
     return entry
 
-def load_journal(path, add_tags=[], include_path_tags=True, create=False):
+def load_journal(path, add_tags=[], subtract_tags=[],
+                 include_path_tags=True, create=False):
     """
     walk the given path and
     create a journal object from all logs encountered in the path
@@ -105,6 +106,10 @@ def load_journal(path, add_tags=[], include_path_tags=True, create=False):
                     if include_path_tags:
                         filename_tags = path_to_tags(os.path.join(root, f))
                         these_tags.extend(filename_tags)
+                    #subtract tags last:
+                    for tag in subtract_tags:
+                        if tag in these_tags:
+                            these_tags.remove(tag)
                     j.from_file(os.path.join(root, f), add_tags=these_tags)
 
     elif os.path.isfile(path) and log_check.search(path):
