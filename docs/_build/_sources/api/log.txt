@@ -1,5 +1,0 @@
-The :mod:`log` Module
------------------------------
-
-.. automodule:: moments.log
-   :members:

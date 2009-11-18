@@ -75,7 +75,7 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
 
     
 def main():
-    if len (sys.argv) > 1:
+    if len(sys.argv) > 1:
         if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
             usage()
         f1 = sys.argv[1]

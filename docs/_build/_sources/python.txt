@@ -1,9 +1,0 @@
-*2009.07.17 06:57:09 
-http://www.greenteapress.com/thinkpython/thinkpython.html
-
-http://openbookproject.net//thinkCSpy/
-How to Think Like a Computer Scientist — How to Think Like a Computer Scientist: Learning with Python v2nd Edition documentation
-http://diveintopython.org/
-Dive Into Python
-http://diveintopython.org/toc/index.html
-Dive Into Python
