@@ -15,6 +15,7 @@ index*
 
 # switch to regexp syntax.
 syntax: regexp
+^docs/_build*
 ^binaries*
 ^packages/launcher/launcher.egg-info/SOURCES.txt
 ^tests/sample_log2.txt
