@@ -222,7 +222,14 @@ class Timestamp(object):
 
         return pytime.mktime(self.dt.timetuple())
 
-        
+    def from_epoch(self, posix_time):
+        """
+        accept a posix time and convert it to a local datetime
+        (in current Timestamp)
+        http://docs.python.org/library/datetime.html#datetime.datetime.fromtimestamp
+        see also datetime.utcfromtimestamp()
+        """
+        self.dt = datetime.fromtimestamp(posix_time)
 
     #was tstamp_to_time
     def from_compact(self, text_time):

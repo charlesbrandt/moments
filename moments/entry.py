@@ -68,14 +68,18 @@ class Entry(object):
 
         self.data = filtered_data
 
-    def render_first_line(self):
+    def render_first_line(self, format='text'):
         """
         return a textual representation of the first line only
         """
-        line = '* ' + ' '.join(self.tags) + "\n"
+        line = ''
+        if format == 'text':
+            line = '* ' + ' '.join(self.tags) + "\n"
+        elif format == 'html':
+            line = u'<div class="entry_header"><span class="asterisk">*</span><span class="tags">%s</span></div>' % (' '.join(self.tags))
         return unicode(line)
 
-    def render_data(self):
+    def render_data(self, format='text'):
         """
         return a textual representation of the entry data only
         """
@@ -97,18 +101,22 @@ class Entry(object):
                     #won't have enough new lines...
                     #should troubleshoot web entries
                     self.data += "\n\n"
-                   
-            return unicode(self.data)
+            if format == 'text':
+                return unicode(self.data)
+            elif format == 'html':
+                return u'<div class="data">%s</div>' % self.data
         else:
             #print "no data in this entry! : %s" % self.render_first_line()
             return ''
 
-    def render(self, include_path=False):
+    def render(self, format='text', include_path=False):
         """
         return a textual representation of the entry
+
+        include_path assumed to be false in some places
         """
         entry = u''
-        entry += self.render_first_line()
+        entry += self.render_first_line(format)
 
         #in most cases we do not want to show the source path,
         #(it can change easily and frequently, and is determined on read)
@@ -117,6 +125,6 @@ class Entry(object):
         if include_path:
             entry += self.path + "\n"
             
-        entry += self.render_data()
+        entry += self.render_data(format)
         return entry
 

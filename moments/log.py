@@ -109,7 +109,7 @@ class Log(StringIO.StringIO):
         
         for entry in entries:
             entry.omit_tags(omits)
-            self.write(entry.render(include_path))
+            self.write(entry.render(include_path=include_path))
 
     def to_entries(self, add_tags=[], add_time=False, moments_only=False):
         """

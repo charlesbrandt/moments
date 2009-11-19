@@ -57,6 +57,10 @@ class unaccented_map(dict):
         __getitem__ = mapchar
 
 
+def to_ascii(source):
+    #print type(source)
+    return source.translate(unaccented_map()).encode("ascii", "ignore")
+
 if __name__ == "__main__":
 
     text = u"""

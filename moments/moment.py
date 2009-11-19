@@ -65,18 +65,19 @@ class Moment(Entry):
     def render_compact(self):
         return self.created.compact()
 
-    def render_first_line(self):
+    def render_first_line(self, format='text'):
         """
         render the date and the tags for the entry
         """
         text_time = str(self.created)
-        
-        if self.is_placeholder():
-            line = '-'
+
+        line = ''
+        if format == 'text':
+            line = '*' + text_time + ' ' + ' '.join(self.tags) + "\n"
+        elif format == 'html':
+            line = u'<div class="entry_header"><span class="asterisk">*</span><span class="date">%s </span><span class="tags">%s</span></div>' % (text_time, ' '.join(self.tags))
         else:
-            line = '*'
-        line += text_time + " " + ' '.join(self.tags)
-        line += "\n"
+            print "Unknown format: %s" % format
         return unicode(line)
 
     def render_comment(self):

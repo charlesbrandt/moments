@@ -132,15 +132,8 @@ class Node:
         #should be initialized in File though
         self.size = 0
 
-        #http://docs.python.org/lib/os-file-dir.html
-        stat = os.stat(self.path)
-        #st_atime (time of most recent access)
-        self.atime = stat.st_atime
-        #st_mtime (time of most recent content modification)
-        self.mtime = stat.st_mtime
-        #st_ctime (platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows)
-        self.ctime = stat.st_ctime
-
+        self.check_stats()
+        
         self.md5 = None
         self.last_scan = None
 
@@ -192,6 +185,21 @@ class Node:
         else:
             return "Node"
 
+    def check_stats(self):
+        """
+        check and see what the operating system is reporting for
+        this node's stats
+        update our copy of the stats
+        """
+        #http://docs.python.org/lib/os-file-dir.html
+        stat = os.stat(self.path)
+        #st_atime (time of most recent access)
+        self.atime = stat.st_atime
+        #st_mtime (time of most recent content modification)
+        self.mtime = stat.st_mtime
+        #st_ctime (platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows)
+        self.ctime = stat.st_ctime        
+        
     def reset_stats(self):
         """
         some actions (like image rotate) may update the file's modified times
@@ -203,12 +211,19 @@ class Node:
     def change_stats(self, accessed, modified):
         """
         take new values for the accessed and modified times and update the file's properties
-        should convert from any time format to the correct one expected by python
+        should only accept Timestamp values.
+        Timestamp can be used for conversions as needed.
+        then use Timestamp.epoch() to get right values here:
         """
-        print self.atime
-        print self.mtime
-        os.utime(self.path, (self.atime, self.mtime))
+        new_atime = accessed.epoch()
+        new_mtime = modified.epoch()
+        os.utime(self.path, (new_atime, new_mtime))
 
+        #keeps/restores the originals:
+        #os.utime(self.path, (self.atime, self.mtime))
+
+        self.check_stats()
+        
     #should just use generalized local_to_relative if needed directly
     #*2009.03.15 22:28:06
     #in templates, is nice to have access to it through the object

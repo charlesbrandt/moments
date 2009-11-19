@@ -3,20 +3,41 @@ import os
 #for assert_equal
 from nose.tools import *
 
-from moments.node import Node
-from moments.node import make_node
 from moments import node
-
+from moments.timestamp import Timestamp
 class TestNode:
     def setUp(self):
-        self.node = Node(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
+        self.node = node.Node(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
 
     def test_name(self):
         assert str(self.node) == os.path.join(os.getcwd(), "IMG_6166_l.JPG")
 
     def test_change(self):
-        self.node.change_stats('a', 'm')
-        assert False == True
+        now = Timestamp()
+        #this does not work as expected:
+        #atime = Timestamp().from_epoch(self.node.atime)
+        atime = Timestamp()
+        atime.from_epoch(self.node.atime)
+        mtime = Timestamp()
+        mtime.from_epoch(self.node.mtime)
+
+        assert str(mtime) != str(now)
+        assert str(atime) != str(now)
+        print "Current atime: %s" % atime
+        print "Current mtime: %s" % mtime
+        print "POSIX FORMATS:"
+        print "New atime: %s" % now.epoch()
+        print "Current atime: %s" % self.node.atime
+        print "Current mtime: %s" % self.node.mtime
+        self.node.change_stats(now, now)
+
+        #regenerate updates:
+        atime = Timestamp()
+        atime.from_epoch(self.node.atime)
+        mtime = Timestamp()
+        mtime.from_epoch(self.node.mtime)
+        assert str(mtime) == str(now)
+        assert str(atime) == str(now)
 
             
 def test_osbrowser_get_images():
