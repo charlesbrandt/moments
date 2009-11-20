@@ -208,15 +208,23 @@ class Node:
         """
         os.utime(self.path, (self.atime, self.mtime))
 
-    def change_stats(self, accessed, modified):
+    def change_stats(self, accessed=None, modified=None):
         """
         take new values for the accessed and modified times and update the file's properties
         should only accept Timestamp values.
         Timestamp can be used for conversions as needed.
         then use Timestamp.epoch() to get right values here:
         """
-        new_atime = accessed.epoch()
-        new_mtime = modified.epoch()
+        if accessed is None:
+            new_atime = self.atime
+        else:
+            new_atime = accessed.epoch()
+
+        if modified is None:
+            new_mtime = self.mtime
+        else:
+            new_mtime = modified.epoch()
+            
         os.utime(self.path, (new_atime, new_mtime))
 
         #keeps/restores the originals:
