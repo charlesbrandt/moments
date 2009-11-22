@@ -2,8 +2,8 @@
 """
 #
 # Description:
-adapted from moments now.py launcher
-uses moments helper functions to launch the last instances in use for emacs sessions.
+# uses moments helper functions to
+# launch the last instances in use for emacs sessions.
 
 # By: Charles Brandt [code at contextiskey dot com]
 # On: *2009.09.28 15:12:44 
@@ -13,33 +13,36 @@ uses moments helper functions to launch the last instances in use for emacs sess
 """
 
 import sys, os
-from moments.helpers import assemble_today, load_instance
-from moments.launcher import emacs, terminal, nautilus
+from moments.launcher import launch
 
-# now only
-include_week = False
-files = []
-today = assemble_today("/c/personal/calendars/", "/c/outgoing", include_week)
-files.append(today)
-#can manually add files here
-files.append("/c/personal/journal.txt")
-file_string = ' '.join(files)
-print emacs(file_string)
+def main():
+    if len(sys.argv) > 1:
+        helps = ['--help', 'help', '-h']
+        for i in helps:
+            if i in sys.argv:
+                usage()
+                exit()
 
-#or can call the customized now script
-#from now import main
-#main()
+    #skip the first argument (filename):
+    args = sys.argv[1:]
+    if not len(args):
+        #go with defaults if nothing is passed in
+        #(ok to copy this file to multiple launch points)
+        args = [ "moments_documentation", "moments", "developer_todo",
+                 "testing" ]
+    launch(args)
+        
+if __name__ == '__main__':
+    main()
+    
+    print ""
+    # a reminder on how to extract finished, completed thoughts
+    # (as long as they have been marked complete, M-x com)
+    print "python /c/moments/moments/extract.py /c/todo.txt"
 
-files = load_instance("/c/personal/instances.txt", "todo")
-file_string = ' '.join(files)
-print emacs(file_string)
+    #other things todo, commands in development
+    #print "python /c/player/player.py"
 
-#blank emacs for next group
-#files = load_instance("/c/personal/instances.txt", "developer_todo")
-#files = []
-#file_string = ' '.join(files)
-#print emacs(file_string)
-
-# a reminder on how to extract finished, completed thoughts
-# (as long as they have been marked complete, M-x com)
-print "python /c/moments/moments/extract.py /c/personal/todo.txt"
+    #recent runs:
+    #*2009.11.17 19:20:54 
+    #./launch.py moments_documentation moments developer_todo testing

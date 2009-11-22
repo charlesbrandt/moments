@@ -401,25 +401,48 @@ class Converter(object):
     can just generate it here
     """
     
-    def __init__(self, sources=None, path=None):
+    def __init__(self, path=None, sources=None):
         """
         accept a path as the source
         generate the corresponding Sources object
 
         probably a good idea to pass sources in, so that when Converter
         is destroyed, sources doesn't go with it
+
+        if that's the case, makes sense,
+        but seems that returning souce should keep it around in caller
         """
         self.path = path
-        if sources is None:
-            self.sources = Sources()
-        else:
-            self.sources = sources
+
+        #if path is not None:
+            
+        ## if sources is None:
+        ##     self.sources = Sources()
+        ## else:
+        ##     self.sources = sources
+
+    def from_file(self, path=None, sort=False):
+        """
+        the default way to try to load a file
+        can add some intelligence based on file extensions here
+        """
+        if path is None:
+            if self.path is None:
+                raise ValueError, "Need a filename to load from file"
+            else:
+                path = self.path
+
+        sources = self.from_journal(path, sort)
+        return sources
+            
 
     def from_entry(self, entry):
         """
         take one journal entry
         and look for Sources items within it
         """
+        sources = Sources()
+        
         for line in entry.data.splitlines():
             if re.search("\ -sl\ ", line):
                 #this requires the first 3 items to be:
@@ -451,7 +474,7 @@ class Converter(object):
                 source.jumps = jumps
                 source.entry = entry
                 #print "adding source: %s" % source
-                self.sources.append( source )
+                sources.append( source )
                 
             elif line.strip():
                 #this will not work with entries that have file paths
@@ -478,8 +501,9 @@ class Converter(object):
                 source.path = source_file
                 source.entry = entry
                 #print "adding source: %s" % source
-                self.sources.append( source )
-
+                sources.append( source )
+                
+        return sources
 
     def from_entries(self, entries):
         """
@@ -488,11 +512,14 @@ class Converter(object):
         see if it will work as a playlist item
         add if so
         """
+        sources = Sources()
         for e in entries:
-            self.from_entry(e)
-        return self.sources
+            sources.extend(self.from_entry(e))
+        sources.update()
+        return sources
 
-    def condense_and_sort(self, destination=None):
+    #def condense_and_sort(self, destination=None):
+    def condense_and_sort(self, sources=None):
         """
         whatever is in the list,
         count the number of times items show up in the list
@@ -500,8 +527,8 @@ class Converter(object):
         and sort items by that frequency
         and return a condesed list in that order
         """
-        if destination is None:
-            destination = Sources()
+        #if destination is None:
+        destination = Sources()
         
         ## freq = Association()
         ## for i in pl:
@@ -520,7 +547,7 @@ class Converter(object):
 
         tally = {}
 
-        print "Starting size: %s" % len(self.sources)
+        print "Starting size: %s" % len(sources)
 
         #at this point we will be losing any entry associated
         #in order to condense
@@ -529,7 +556,9 @@ class Converter(object):
         #no guarantee which one will be reassociated
         # could go through all entries later and tally up tags there
         # don't want to do that just yet though
-        for i in self.sources:
+        for i in sources:
+            #print i
+            #print type(i)
             i.jumps.sort()
             key = i.as_key()
 
@@ -636,7 +665,7 @@ class Converter(object):
         #
         #this will not catch the case when jumps were merged into a larger set
         #will lose entry association in that case
-        for i in self.sources:
+        for i in sources:
             key = i.as_key()
             if key in items:
                 pos = items.index(key)
@@ -657,7 +686,8 @@ class Converter(object):
 
         #should be smaller or the same if condensing and sorting is working:
         print "Ending size: %s" % len(destination)
-        
+
+        destination.update()
         return destination
     
     def save(self):
@@ -692,87 +722,25 @@ class Converter(object):
             if line.startswith('http://') or line.startswith('/'):
                 self.append(line.strip())
 
-    def from_journal(self, journal, tags=[], updates=[], local_path=None):
+    def from_journal(self, path, sort=False):
         """
-        TODO:
-        refactor this
-        see if there is anything worth keeping
-        otherwise should use from_entries, and condense_and_sort()
-
-        
-        
-        filter_and_update
-        filter journal based on tags (union)
-
-        apply updates (filters) to all items in all entries
-
-        create a new journal from filtered entries
-
-        journal2medialist
-
+        use from_entries, and condense_and_sort()
         """
-        #m = MediaList(item_type='nodes', prioritize=True)
-        self.item_type='nodes'
-        self.prioritize=True
-
-        entries = journal.union_tags(tags)
-        #entries.reverse()
-
-        #normalize/filter all of the data first...
-        #as the system changes, so do the paths
-        new_entries = []
-        for e in entries:
-            filtered_data = ''
-            for line in e.data.splitlines():
-                if line:
-                    [ line ] = multi_filter( [line], updates)
-                    #[ line ] = multi_filter( [line], path_updates)
-                    if line:
-                        filtered_data += line + '\n'
-
-            e.data = filtered_data
-            new_entries.append(e)
-
-        #make a new journal with normalized/filtered data
-        j2 = Journal()
-        j2.from_entries(new_entries)
-
-        #now, create a media list based on the frequency of items in j2
-        ilist = j2.datas.frequency_list()
-        ilist.sort()
-        ilist.reverse()
-        for i in ilist:
-            #could possibly be more than one file listed in an entry,
-            #so other lines will be included
-            for line in i[1].splitlines():
-                try:
-                    if local_path:
-                        tnode = make_node(line, local_path=local_path)
-                    else:
-                        tnode = make_node(line)
-                except:
-                    tnode = None
-                    print "skipping item: %s" % i[1]
-                if tnode:
-                    self.add_item(tnode)
-
-        #return m
-        #m = journal2medialist(j2)
-        #return self
-
-
-    def to_file(self, filename=None):
-        """ Default way to save a file """
-        #self.to_m3u(filename)
-        #sf = filename + "-sorted"
+        j = load_journal(path)
+        print len(j)
+        print j
+        for i in j:
+            print i.render()
         
-        sf = filename
-        f = open(sf, 'w')
-        for i in self:
-            f.write(i)
-            f.write('\n')
-        f.close()
-
+        sources = self.from_entries(j)
+        print len(sources)
+        if sort:
+            #condense and sort will change the order of an entry list
+            new_sources = self.condense_and_sort(sources)
+            return new_sources
+        else:
+            return sources
+    
     def to_links(self, prefix='/dir'):
         links = ''
         for i in self:

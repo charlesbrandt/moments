@@ -17,6 +17,17 @@ pass the launch to call via command line
 (maybe someday a running process like quicksilver/gnome-do)
 """
 import os, sys, subprocess
+from moments.helpers import load_instance
+
+def launch(args):
+    for arg in args:
+        try:
+            files = load_instance("/c/charles/instances.txt", arg)
+            file_string = ' '.join(files)
+            emacs(file_string)
+            print "Loading: %s" % arg                
+        except:
+            print "Could not load instance: %s" % arg                
 
 def import_pictures():
     #could just as easily import the library and call the function directly here
