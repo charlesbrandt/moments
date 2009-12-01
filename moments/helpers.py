@@ -123,16 +123,17 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     yesterday_stamp = now.past(days=1)
     yesterday = os.path.join(destination, yesterday_stamp.filename())
     yesterday_j = load_journal(yesterday)
-    yps = yesterday_j.tags['priority']
-    print len(yps)
-    #get the first one:
-    p = yps[0]
+    if yesterday_j.tags.has_key('priority'):
+        yps = yesterday_j.tags['priority']
+        print len(yps)
+        #get the first one:
+        p = yps[0]
 
-    if p.data != e.data:
-        print "adding yesterday's priority to: %s" % priority
-        priorities.update_entry(p, position=0)
-        priorities.to_file(priority)
-        e = p
+        if p.data != e.data:
+            print "adding yesterday's priority to: %s" % priority
+            priorities.update_entry(p, position=0)
+            priorities.to_file(priority)
+            e = p
         
     j = load_journal(today)
     #should always have the same timestamp (in a given day)

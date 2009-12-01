@@ -14,6 +14,11 @@
 
 Usage:
 python /c/moments/scripts/summarize.py /c/outgoing/summarize/journal/2009/10/
+
+TODO:
+also [2009.11.11 11:02:33] todo 20091111
+could remove daily mention of priority from summarized log
+changes to these are stored in the priorities.txt file 
 """
 
 import sys, os
