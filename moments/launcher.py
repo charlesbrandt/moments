@@ -19,10 +19,10 @@ pass the launch to call via command line
 import os, sys, subprocess
 from moments.helpers import load_instance
 
-def launch(args):
+def launch(args, source='/c/instances.txt'):
     for arg in args:
         try:
-            files = load_instance("/c/charles/instances.txt", arg)
+            files = load_instance(source, arg)
             file_string = ' '.join(files)
             emacs(file_string)
             print "Loading: %s" % arg                

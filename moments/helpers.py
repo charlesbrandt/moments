@@ -31,7 +31,7 @@ def load_instance(instances="/c/instances.txt", tag=None):
     #print items
     return items
 
-def assemble_today(calendars="/c/calendars", destination="/c/outgoing", include_week=False):
+def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False):
     """
     look through all calendar items for events coming up
     today (at minumum) and
@@ -111,5 +111,36 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", include_
     if include_week:
         today_j.make_entry(flat, ['upcoming', 'this_week', 'delete'])
     today_j.to_file(today)
+
+    #add in priorities to today:
+    priorities = load_journal(priority)
+    entries = priorities.sort_entries(sort='reverse-chronological')
+    #should be the newest entry
+    e = entries[0]
+
+    #check to see if yesterday's priority is the same as the most recent
+    #entry in priorities.
+    yesterday_stamp = now.past(days=1)
+    yesterday = os.path.join(destination, yesterday_stamp.filename())
+    yesterday_j = load_journal(yesterday)
+    yps = yesterday_j.tags['priority']
+    print len(yps)
+    #get the first one:
+    p = yps[0]
+
+    if p.data != e.data:
+        print "adding yesterday's priority to: %s" % priority
+        priorities.update_entry(p, position=0)
+        priorities.to_file(priority)
+        e = p
+        
+    j = load_journal(today)
+    #should always have the same timestamp (in a given day)
+    #so multiple calls don't create
+    #mulitple entries with the same data
+    #now = Timestamp()
+    today_ts = Timestamp(compact=now.compact(accuracy="day"))
+    j.make_entry(e.data, ['priority'], today_ts)
+    j.to_file(today)
 
     return today
