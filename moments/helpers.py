@@ -131,7 +131,10 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
 
         if p.data != e.data:
             print "adding yesterday's priority to: %s" % priority
-            priorities.update_entry(p, position=0)
+            #think that putting this at the end is actually better...
+            #that way it's always there
+            #priorities.update_entry(p, position=0)
+            priorities.update_entry(p)
             priorities.to_file(priority)
             e = p
         

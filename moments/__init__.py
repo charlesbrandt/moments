@@ -8,4 +8,5 @@ __all__ = ["entry",
            "report",
            "tag",
            "association",
+           "timestamp"
            ]

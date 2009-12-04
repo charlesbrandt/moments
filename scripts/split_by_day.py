@@ -5,19 +5,18 @@
 # script to run through a supplied directory's files
 # create sub-directories that correspond to the day of the files' timestamps
 # move the files to their corresponding day subdirectory
+# in the new_dir destination
 
 # By: Charles Brandt [code at contextiskey dot com]
 # On: *2009.08.18 21:50:51 
 # License:  MIT
 
-# Requires: osbrowser
+# Requires: moments
 #
 
 $Id$ (???)
 """
 import sys, os, subprocess
-#from osbrowser.meta import make_node
-#from osbrowser.image import Image
 from moments.node import Image, make_node
 
 def _move_files(source_dir, new_dir):
@@ -158,6 +157,7 @@ def split_by_day(path, dest_prefix=None):
 
     last_date = None
     cur_batch = []
+    print "%s Files found in %s" % (len(d.files), path)
     for f in d.files:
         #print f.name
         if f.date() != last_date:

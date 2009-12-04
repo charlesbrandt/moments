@@ -19,13 +19,16 @@ import sys, os, subprocess
 from moments.node import make_node
 from split_by_day import split_by_day
 
+from moments.timestamp import Timestamp
+
 def main():
     if len (sys.argv) > 1:
         if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
             usage()
         src = sys.argv[1]
         dest_prefix = sys.argv[2]
-        
+
+        start = Timestamp()
         destinations = split_by_day(src, dest_prefix)
 
         for dest in destinations:
@@ -35,6 +38,13 @@ def main():
             d.auto_rotate_images()
             d.make_thumbs()
 
+        end = Timestamp()
+        print "From: %s To: %s," % (str(start), str(end))
+        if len(destinations):
+            print "Processed files from: %s to: %s" % (destinations[0], destinations[-1])
+        else:
+            print "No files found"
+              
         
 if __name__ == '__main__':
     main()

@@ -6,12 +6,15 @@ Home-page: http://www.contextiskey.com
 Author: Charles Brandt
 Author-email: code@contextiskey.com
 License: MIT
-Description: Journal log files consist of text documents with the         format:
+Description: Moment log files are simple text documents with the         format:
         *YYYY.MM.DD hh:mm [tags]
         [entry]
         
         
         
-        these logs are useful for tracking notes with a time context
+        This simple format allows your notes to:
+        -stay accessible (no proprietary formats)
+        -be sorted by time or tag
+        -easily synchronize across many machines using a distributed version control system
         
 Platform: UNKNOWN

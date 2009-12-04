@@ -27,7 +27,6 @@ sort_config = 'alpha'
 
 config_log_in_outgoing = False
 config_log_in_media = False
-
 try:
     #if not using in pylons, can define manually above
     from pylons import config
@@ -44,7 +43,6 @@ try:
         relative_prefix = config['relative_prefix']
 except:
     config = {}
-
 
 def local_to_relative(path=None, add_prefix=False):
     """

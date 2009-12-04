@@ -3,7 +3,7 @@
 #
 # Description:
 # script to run through a supplied directory's sub directory and generate
-# all thumbnails using osbrowser
+# all thumbnails using moments.node
 # this way they will be ready for future browsing.
 
 
@@ -11,7 +11,7 @@
 # On: *2009.06.10 07:41:07 
 # License:  MIT
 
-# Requires: osbrowser
+# Requires: moments
 #
 
 $Id$ (???)
@@ -24,8 +24,8 @@ def generate_thumbnails(src, rotate=False):
     node.scan_directory()
     node.scan_filetypes()
 
-    dirs = node.sub_directories
-    #print node.sub_directories
+    dirs = node.directories
+    #print node.directories
     for d in dirs:
         if rotate:
             d.auto_rotate_images(update_thumbs=False)        
