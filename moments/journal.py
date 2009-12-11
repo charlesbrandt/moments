@@ -89,18 +89,24 @@ def load_journal(path, add_tags=[], subtract_tags=[],
       j = load_journal(path)
       j.path = destination
 
+    of course you can always pass the path in explicitly to to_file:
+    to_file(filename=path)
+
     """
     #ignore_dirs = [ 'downloads', 'binaries' ]
-    ignore_dirs = [ 'downloads' ]
+
+    #this would be the place to add .hgignore items to the ignore_items list
+    ignore_items = [ 'downloads', 'index.txt' ]
     j = Journal()
     log_check = re.compile('.*\.txt$')
     if os.path.isdir(path):
         for root,dirs,files in os.walk(path):
             for f in files:
+                #make sure it at least is a log file (.txt):
                 if not log_check.search(f):
                     continue
 
-                if not check_ignore(os.path.join(root, f), ignore_dirs):
+                if not check_ignore(os.path.join(root, f), ignore_items):
                     these_tags = add_tags[:]
                     #will need to abstract context_tags() too... move to Tags
                     if include_path_tags:
@@ -402,8 +408,10 @@ class Journal(list):
                             #but we won't add the entry until we've checked them all
                             pass
                     if not found_match:
-                        print "MULTIPLE ENTRIES EXISTS AT: %s" % (entry_time)
-                        print "but none matched this one.  Adding now"
+                        #2009.12.04 16:03:15 
+                        #this information doesn't help much anymore:
+                        #print "MULTIPLE ENTRIES EXISTS AT: %s" % (entry_time)
+                        #print "but none matched this one.  Adding now"
                         self._add_entry(entry, position)
         else:
             print "Entry (%s) already exists in journal" % entry_time

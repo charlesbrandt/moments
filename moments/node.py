@@ -150,7 +150,7 @@ class Node:
 
         #PCD seems to cause a lot of trouble
         image_extensions = [ 'jpg', 'png', 'gif', 'jpeg', 'JPG', 'tif' ]
-        movie_extensions = [ 'mpg', 'avi', 'flv', 'vob', 'wmv', 'AVI', 'iso' ]
+        movie_extensions = [ 'mpg', 'avi', 'flv', 'vob', 'wmv', 'AVI', 'iso', 'asf' ]
         playlist_extensions = [ 'm3u', 'pls' ]
         #, 'm4p' are not playable by flash, should convert to use
         sound_extensions = [ 'mp3', 'wav', 'aif', 'ogg' ]

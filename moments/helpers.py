@@ -112,39 +112,42 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
         today_j.make_entry(flat, ['upcoming', 'this_week', 'delete'])
     today_j.to_file(today)
 
-    #add in priorities to today:
-    priorities = load_journal(priority)
-    entries = priorities.sort_entries(sort='reverse-chronological')
-    #should be the newest entry
-    e = entries[0]
+    #we only need to add the priority entry to today if this is the first time
+    #other wise it may have changed, and we don't want to re-add the prior one
+    if not today_j.tags.has_key('priority'):
+        #add in priorities to today:
+        priorities = load_journal(priority)
+        entries = priorities.sort_entries(sort='reverse-chronological')
+        #should be the newest entry
+        e = entries[0]
 
-    #check to see if yesterday's priority is the same as the most recent
-    #entry in priorities.
-    yesterday_stamp = now.past(days=1)
-    yesterday = os.path.join(destination, yesterday_stamp.filename())
-    yesterday_j = load_journal(yesterday)
-    if yesterday_j.tags.has_key('priority'):
-        yps = yesterday_j.tags['priority']
-        print len(yps)
-        #get the first one:
-        p = yps[0]
+        #check to see if yesterday's priority is the same as the most recent
+        #entry in priorities.
+        yesterday_stamp = now.past(days=1)
+        yesterday = os.path.join(destination, yesterday_stamp.filename())
+        yesterday_j = load_journal(yesterday)
+        if yesterday_j.tags.has_key('priority'):
+            yps = yesterday_j.tags['priority']
+            print len(yps)
+            #get the first one:
+            p = yps[0]
 
-        if p.data != e.data:
-            print "adding yesterday's priority to: %s" % priority
-            #think that putting this at the end is actually better...
-            #that way it's always there
-            #priorities.update_entry(p, position=0)
-            priorities.update_entry(p)
-            priorities.to_file(priority)
-            e = p
-        
-    j = load_journal(today)
-    #should always have the same timestamp (in a given day)
-    #so multiple calls don't create
-    #mulitple entries with the same data
-    #now = Timestamp()
-    today_ts = Timestamp(compact=now.compact(accuracy="day"))
-    j.make_entry(e.data, ['priority'], today_ts)
-    j.to_file(today)
+            if p.data != e.data:
+                print "adding yesterday's priority to: %s" % priority
+                #think that putting this at the end is actually better...
+                #that way it's always there
+                #priorities.update_entry(p, position=0)
+                priorities.update_entry(p)
+                priorities.to_file(priority)
+                e = p
+
+        j = load_journal(today)
+        #should always have the same timestamp (in a given day)
+        #so multiple calls don't create
+        #mulitple entries with the same data
+        #now = Timestamp()
+        today_ts = Timestamp(compact=now.compact(accuracy="day"))
+        j.make_entry(e.data, ['priority'], today_ts)
+        j.to_file(today)
 
     return today

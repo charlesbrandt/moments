@@ -75,13 +75,19 @@ class Log(StringIO.StringIO):
         else:
             print "NO FILE ASSOCIATED WITH LOG: %s" % self.name
 
-    def to_file(self):
+    def to_file(self, filename=None):
         """
         save our content to the file
         """
-        if self.name:
+        name = None
+        if filename is not None:
+            name = filename
+        elif self.name:
+            name = self.name
+
+        if name:
             #f = open(self.name, 'w')
-            f = codecs.open(self.name, 'w', encoding='utf-8')
+            f = codecs.open(name, 'w', encoding='utf-8')
             self.seek(0)
             f.write(self.read())
             f.close()
