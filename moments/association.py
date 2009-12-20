@@ -40,17 +40,6 @@ class Association(dict):
     Object to hold dict of tags as keys, and the list of times as items
     """
 
-    def keys_with_item(self, item):
-        """
-        return a list of keys that have that item
-        """
-        matches = []
-        for k in self.keys():
-            if self.key_has_item(k, item):
-                matches.append(k)
-
-        return matches
-            
     def key_has_item(self, key, item):
         """
         look at only one association
@@ -62,11 +51,22 @@ class Association(dict):
         else:
             return False
 
+    def keys_with_item(self, item):
+        """
+        return a list of keys that have that item
+        """
+        matches = []
+        for k in self.keys():
+            if self.key_has_item(k, item):
+                matches.append(k)
+
+        return matches
+            
     def associate(self, item, key):
         if self.has_key(key):
             if not item in self[key]:
                 self[key].append(item)
-                self[key].sort()
+                #self[key].sort()
         else:
             self[key] = [ item ]
 

@@ -29,91 +29,94 @@ from association import check_ignore, filter_list
 from ascii import unaccented_map
 
 class ExtractConfig(object):
+    """
+    used in /c/charles/system/extract_config.py
+    """
     def __init__(self):
         self.sources = ''
         self.ignores = ''
         self.extractions = []
         self.name = ''
         
-def extract_one(tags, path, extract_type):
+## def extract_one(tags, path, extract_type):
 
-    these_tags = []
-    filename_tags = path_to_tags(path)
-    these_tags.extend(filename_tags)
-    j = Journal()
-    j.from_file(path, add_tags=these_tags)
-    entries = j.extract(tags, extract_type)
-    #when it's time to save:
-    #j.to_file()
-    return entries
+##     these_tags = []
+##     filename_tags = path_to_tags(path)
+##     these_tags.extend(filename_tags)
+##     j = Journal()
+##     j.from_file(path, add_tags=these_tags)
+##     entries = j.extract(tags, extract_type)
+##     #when it's time to save:
+##     #j.to_file()
+##     return entries
 
-def extract_tag(path, tag_string, extract_type='intersect'):
-    """
-    extract one tag from many files
+## def extract_tag(path, tag_string, extract_type='intersect'):
+##     """
+##     extract one tag from many files
     
-    for merging, see admin controller in pose
-    could be tricky with only one file to specify
-    might need to use command line for this for now
+##     for merging, see admin controller in pose
+##     could be tricky with only one file to specify
+##     might need to use command line for this for now
 
-    for each file in fpath
-    add any entry that matches tag_string criteria
-    to a local buffer
-    [local buffer will need to be a static (pre-configured) path
-     since we only have one variable path to work with,
-     and that needs to be the source
-     we can generate the output filename based on date and tags extracted
-     ]
+##     for each file in fpath
+##     add any entry that matches tag_string criteria
+##     to a local buffer
+##     [local buffer will need to be a static (pre-configured) path
+##      since we only have one variable path to work with,
+##      and that needs to be the source
+##      we can generate the output filename based on date and tags extracted
+##      ]
 
-    and save original/source journal/log file without the extracted entries
+##     and save original/source journal/log file without the extracted entries
 
-    very similar to Node->create_journal() or moments.journal.load_journal()
-    but we are doing a different action on each file (_extract_one)
-    so they need to stay separate
-    """
+##     very similar to Node->create_journal() or moments.journal.load_journal()
+##     but we are doing a different action on each file (_extract_one)
+##     so they need to stay separate
+##     """
 
-    extracts = Journal()
+##     extracts = Journal()
 
-    tags = Tags().from_tag_string(tag_string)
+##     tags = Tags().from_tag_string(tag_string)
 
-    add_tags = []
-    ignore_dirs = [ 'downloads', 'binaries' ]
-    log_check = re.compile('.*\.txt$')
-    if os.path.isdir(path):
-        for root,dirs,files in os.walk(path):
-            for f in files:
-                if not log_check.search(f):
-                    continue
+##     add_tags = []
+##     ignore_dirs = [ 'downloads', 'binaries' ]
+##     log_check = re.compile('.*\.txt$')
+##     if os.path.isdir(path):
+##         for root,dirs,files in os.walk(path):
+##             for f in files:
+##                 if not log_check.search(f):
+##                     continue
                 
-                cur_file = os.path.join(root, f)
-                if not check_ignore(cur_file, ignore_dirs):
-                    entries = extract_one(tags, cur_file, extract_type)
-                    print "%s entries found in %s" % (len(entries), path)
-                    extracts.from_entries(entries)
+##                 cur_file = os.path.join(root, f)
+##                 if not check_ignore(cur_file, ignore_dirs):
+##                     entries = extract_one(tags, cur_file, extract_type)
+##                     print "%s entries found in %s" % (len(entries), path)
+##                     extracts.from_entries(entries)
                         
-    elif os.path.isfile(path) and log_check.search(path):
-        entries = extract_one(tags, path, extract_type)
-        print "%s entries found in %s" % (len(entries), path)
-        extracts.from_entries(entries)
-    else:
-        #no journal to create
-        pass
+##     elif os.path.isfile(path) and log_check.search(path):
+##         entries = extract_one(tags, path, extract_type)
+##         print "%s entries found in %s" % (len(entries), path)
+##         extracts.from_entries(entries)
+##     else:
+##         #no journal to create
+##         pass
 
-    if len(extracts):
-        #now that we've extracted everything
-        #save the extracts journal to a log
-        t = datetime.now()
-        now = t.strftime("%Y%m%d%H%M%S")
-        fname = now + '-' + tag_string + '.txt'
-        #dest = os.path.join(config['log_local_path'], fname)
-        print "saving %s entries to %s" % (len(extracts), fname)
-        extracts.to_file(fname)
+##     if len(extracts):
+##         #now that we've extracted everything
+##         #save the extracts journal to a log
+##         t = datetime.now()
+##         now = t.strftime("%Y%m%d%H%M%S")
+##         fname = now + '-' + tag_string + '.txt'
+##         #dest = os.path.join(config['log_local_path'], fname)
+##         print "saving %s entries to %s" % (len(extracts), fname)
+##         extracts.to_file(fname)
 
-        #could gather print statements to have something to return here:
-        #return output
+##         #could gather print statements to have something to return here:
+##         #return output
 
-        return fname
-    else:
-        print "nothing extracted"
+##         return fname
+##     else:
+##         print "nothing extracted"
 
 
 

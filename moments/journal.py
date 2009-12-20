@@ -530,6 +530,20 @@ class Journal(list):
         #or written directly to log by caller as they were here.
         return entries
 
+    def associate_data(self):
+        """
+        add a new property to the Journal: datas
+        at one point this was generated automaticaly,
+        but that slowed things down
+
+        this allows it to be generated when it is needed
+        which so far is only when then node.directory object
+        is looking for a default image
+        """
+        self.datas = Association()
+        for entry in self:
+            self.datas.associate(entry, entry.data)
+
     def make_graph(self):
         g = graph.Graph(self.path, self.j)
         g.make_links()

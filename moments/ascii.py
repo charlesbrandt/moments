@@ -28,7 +28,6 @@ CHAR_REPLACEMENT = {
 # dictionary as needed.
 
 class unaccented_map(dict):
-
     ##
     # Maps a unicode character code (the key) to a replacement code
     # (either a character code or a unicode string).
@@ -58,8 +57,25 @@ class unaccented_map(dict):
 
 
 def to_ascii(source):
-    #print type(source)
-    return source.translate(unaccented_map()).encode("ascii", "ignore")
+    print type(source)
+    #source = source.translate(unaccented_map()).encode("ascii", "ignore")
+    source = source.translate(unaccented_map())
+    return source
+
+def to_unicode(source):
+    s = u''
+    for c in source:
+        try:
+            s += unicode(c)
+        except:
+            pass
+    return s
+
+def to_ascii2(source):
+    s = to_unicode(source)
+    s = to_ascii(s)
+    return s
+
 
 if __name__ == "__main__":
 

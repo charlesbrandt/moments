@@ -20,6 +20,11 @@ could be generalized to generate a journal for any directory with files.
 
 *2009.11.04 07:14:06
 but in this case we wanted to filter all other content except images
+
+
+SEE ALSO:
+/c/moments/scripts/adjust_file_times.py
+
 """
 import sys#, os, subprocess
 import moments
@@ -38,7 +43,7 @@ def main():
         exit()
         
     node = make_node(path, relative=False)
-    node.scan_directory()
+    #node.scan_directory()
     node.scan_filetypes()
     #print node.images
     #app.sources = node.images

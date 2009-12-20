@@ -338,6 +338,8 @@ class Node:
         return all_tags
 
 ##     #should be load_journal  ... not really creating a new file here
+       # and if you need load_journal, just import the load journal
+       # directly from the journal object instead. (pass it the node path)
 ##     def create_journal(self, add_tags=[]):
 ##         """
 ##         create a temporary, in memory journal from logs
@@ -462,12 +464,18 @@ class Image(File):
             self.make_thumbs()
         return self.size_path_relative(size)
 
-    def move(self, rel_destination):
+    def move(self, destination, relative=True):
         """
         this utilizes the os.rename function
         but should also move thumbnails
+
+        if relative is true, will expect a relative path that is
+        joined with the local path
+        otherwise destination is assumed to be full local path
         """
-        destination = os.path.join(local_path, rel_destination)
+        if relative:
+            destination = os.path.join(local_path, destination)
+        
         #new_dir = os.path.join(image_dir, data)
         (new_dir, new_name) = os.path.split(destination)
 
@@ -671,6 +679,9 @@ class Directory(Node):
         """
         should scan path for different versions of existing indexes
         (if one exists)
+
+        *2009.12.15 09:44:59
+        right now this just creates an index every time
         """
         found = False
 
@@ -688,6 +699,22 @@ class Directory(Node):
 
         return found
 
+    def load_journal(self, journal="action.txt"):
+        """
+        node should not need a function for loading a journal
+        in that case just use journal's load_journal function directly for that
+
+        but in the case of a directory, can be nice to have more direct
+        access to the directory's journal.
+        """
+        source = os.path.join(self.path, journal)
+        if os.path.exists(source):
+            j = Journal()
+            j.from_file(source)
+            return j
+        else:
+            return None
+        
     def scan_directory(self, recurse=False):
         """
         only create the meta data in a python object in memory
@@ -775,8 +802,19 @@ class Directory(Node):
             #    paths = nodes_to_paths(self.libraries)
             #    paths.sort()
             #    self.libraries = paths_to_nodes(paths)                
-            else:
-                pass
+
+        else:
+            #recursively call self for all filetypes
+            all_types = [ "Image", "Movie", "Playlist", "Sound", "Log",
+                          "Document" ]
+            for t in all_types:
+                self.sort_by_paths(filetype=t)
+
+            #then sort the complete file list too:
+            paths = nodes_to_paths(self.files)
+            paths.sort()
+            self.files = paths_to_nodes(paths)                
+            
             
     def scan_filetypes(self):
         """
@@ -870,6 +908,9 @@ class Directory(Node):
                 #sort / analyze meta here for best candidate
                 j = Journal()
                 j.from_file(action_log)
+                #2009.12.19 13:19:27 
+                #need to generate the data association first now
+                j.associate_data()
 
                 #there is a problem if the max key is not an image
                 #could happen if other media is played more frequently

@@ -29,7 +29,7 @@ def generate_thumbnails(src, rotate=False):
     for d in dirs:
         if rotate:
             d.auto_rotate_images(update_thumbs=False)        
-        print "generating thumbs for directory: %s" % d.name
+        print "generating thumbs for directory: %s" % d.path
         d.make_thumbs()
         
     if rotate:
