@@ -17,6 +17,10 @@
 ;  (if (file-exists-p "~/.emacs")
 ;      (load-file "~/.emacs")))
 
+; *2009.12.27 17:49:12 
+(global-set-key (kbd "C-x r") 'revert-buffer)
+
+
 ;*2008.03.10 09:24 uncommenting:
 ;also [2007.11.01 13:50]
 ;(global-set-key (kbd "C-x w") 'browse-url-default-macosx-browser)

@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 """
+*2009.12.21 16:42:10
+see moments.node.directory.files_to_journal() function
+should be easier and more portable
+TODO:
+adapt this script to use the Directory class method
+
 *2009.08.09 04:02:25 
 convert a directory of images into the corresponding journal for entries that reference the image file.
 

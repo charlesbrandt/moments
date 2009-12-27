@@ -36,7 +36,18 @@ def main():
             print dest
             d = make_node(dest)
             d.auto_rotate_images()
+            #adjust times:
+            #-2 hours
+            #for multiple calls, may want to comment out
+            #(i.e. if it has been run on the directory once already... )
+            d.adjust_time(hours=-2)
             d.make_thumbs()
+            #something is causing old timestamps to show up in the journal
+            #trying to recreate directory object to fix
+            d = make_node(dest)
+            d.scan_filetypes()
+            d.files_to_journal(filetype="Image")
+            d.files_to_journal(filetype="Sound")
 
         end = Timestamp()
         print "From: %s To: %s," % (str(start), str(end))

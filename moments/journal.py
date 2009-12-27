@@ -351,7 +351,7 @@ class Journal(list):
 
         self._add_entry(entry)
 
-    def make_entry(self, data, tags=[], created=None):
+    def make_entry(self, data, tags=[], created=None, position=0):
         """
         helper for making a new entry right in a journal object
         this way should not need to import moments.entry.Entry items elsewhere
@@ -359,7 +359,7 @@ class Journal(list):
         if not created:
             created = datetime.now()
         entry = Moment(data, tags, created)
-        self.update_entry(entry, position=0)
+        self.update_entry(entry, position=position)
         return entry
         
     def update_entry(self, entry, position=None):
@@ -544,6 +544,32 @@ class Journal(list):
         for entry in self:
             self.datas.associate(entry, entry.data)
 
+    def associate_files(self):
+        """
+        add a new property to the Journal: files
+        similar to associate_datas
+
+        but checks each entry's data for path information
+        if path is found
+        just take the filename portion
+        and associate the entry with that portion
+
+        otherwise associate the whole data
+
+        """
+        self.files = Association()
+        for entry in self:
+            lines = entry.data.splitlines()
+            for line in lines:
+                if re.search('/', line):
+                    name = os.path.basename(line)
+                    self.files.associate(entry, name)
+                elif line.strip():
+                    self.files.associate(entry, line.strip())
+                else:
+                    #must be a blank line
+                    pass
+                
     def make_graph(self):
         g = graph.Graph(self.path, self.j)
         g.make_links()

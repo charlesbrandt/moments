@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 """
+*2009.12.21 17:27:50
+see moments.node.Node.adjust_time
+and
+moments.node.Directory.adjust_time
+
+
 Description:
 
 Accept path(s) from the command line
@@ -25,24 +31,19 @@ from moments.timestamp import Timestamp
 
 def adjust(path):
     node = make_node(path)
+    node.scan_filetypes()
     node_type = node.find_type()
     if node_type == "Directory":
-        for f in node.files:
-            modified = Timestamp()
-            modified.from_epoch(f.mtime)
-            print "Pre: %s" % modified
+        for d in node.directories:
+            print "Adjusting: %s" % d.name
+            d.adjust_time(hours=-2)
 
-            #****configure your adjustment here****
-            modified = modified.future(hours=1)
-            #**************************************
-            
-            accessed = Timestamp()
-            accessed.from_epoch(f.atime)
-            f.change_stats(accessed, modified)
-            modified = Timestamp()
-            modified.from_epoch(f.mtime)
-            print "Post: %s" % modified
-            
+            #new instance of same directory to make sure file stats update
+            d2 = make_node(d.path)
+            d2.scan_filetypes()
+            d2.files_to_journal(filetype="Image")
+            d2.files_to_journal(filetype="Sound")
+        
     else:
         print node_type
         

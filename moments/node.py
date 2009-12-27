@@ -16,6 +16,7 @@ from moment import Moment
 from journal import Journal, load_journal
 from association import check_ignore
 from tags import Tags, split_path # tags_from_string
+from timestamp import Timestamp
 
 #from paths import *
 #unless defined elsewhere, 
@@ -230,6 +231,28 @@ class Node:
 
         self.check_stats()
         
+    def adjust_time(self, hours=0):
+        """
+        wrap change stats in a more user friendly function
+        """
+        modified = Timestamp()
+        modified.from_epoch(self.mtime)
+        #print "Pre: %s" % modified
+
+        #****configure your adjustment here****
+        modified = modified.future(hours=hours)
+        #**************************************
+
+        accessed = Timestamp()
+        accessed.from_epoch(self.atime)
+        self.change_stats(accessed, modified)
+
+        #reset to check:
+        modified = Timestamp()
+        modified.from_epoch(self.mtime)
+        #print "Post: %s" % modified
+        
+
     #should just use generalized local_to_relative if needed directly
     #*2009.03.15 22:28:06
     #in templates, is nice to have access to it through the object
@@ -1016,6 +1039,45 @@ class Directory(Node):
             new_name = start
 
         return new_name
+
+    def files_to_journal(self, filetype="Image", journal_file="action.txt"):
+        jpath = os.path.join(self.path, journal_file)
+        j = load_journal(jpath, create=True)
+
+        files = []
+        tags = []
+        if filetype == "Image":
+            files = self.images
+            tags = [ 'camera', 'image', 'capture', 'created' ]
+        elif filetype == "Sound":
+            files = self.sounds
+            tags = [ 'sound', 'recorded', 'created' ]
+        elif filetype == "File":
+            files = self.files
+            tags = [ 'file', 'created' ]
+
+        for i in files:
+            #could also use j.make_entry() here:
+            #e = Moment()
+            #e.created = Timestamp(i.datetime())
+            #e.tags = tags
+            #e.data = i.path
+            #j.update_entry(e)
+            j.make_entry(data=i.path, tags=tags, created=i.datetime())
+
+        #print j
+        #j.sort_entries("reverse-chronological")
+        #l = Log(filename)
+        #j.to_file('temp.txt')
+        j.to_file(jpath, sort="reverse-chronological")
+
+    def adjust_time(self, hours=0):
+        """
+        adjust the modified time of all files in the directory by the number
+        of hours specified.
+        """
+        for f in self.files:
+            f.adjust_time(hours)
 
 def make_node(path='', node_type=None, relative=True, create=True, local_path=local_path):
     """

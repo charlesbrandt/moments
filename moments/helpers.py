@@ -106,7 +106,9 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     #print entries
     today_j = Journal()
     today_j.from_file(today)
-    #today_j = load_journal(today)
+
+
+
     today_j.from_entries(today_entries)
     if include_week:
         today_j.make_entry(flat, ['upcoming', 'this_week', 'delete'])
@@ -147,7 +149,7 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
         #mulitple entries with the same data
         #now = Timestamp()
         today_ts = Timestamp(compact=now.compact(accuracy="day"))
-        j.make_entry(e.data, ['priority'], today_ts)
+        j.make_entry(e.data, ['priority'], today_ts, position=None)
         j.to_file(today)
 
     return today
