@@ -120,36 +120,38 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
         #add in priorities to today:
         priorities = load_journal(priority)
         entries = priorities.sort_entries(sort='reverse-chronological')
-        #should be the newest entry
-        e = entries[0]
+        if len(entries):
+            #should be the newest entry
+            e = entries[0]
 
-        #check to see if yesterday's priority is the same as the most recent
-        #entry in priorities.
-        yesterday_stamp = now.past(days=1)
-        yesterday = os.path.join(destination, yesterday_stamp.filename())
-        yesterday_j = load_journal(yesterday)
-        if yesterday_j.tags.has_key('priority'):
-            yps = yesterday_j.tags['priority']
-            print len(yps)
-            #get the first one:
-            p = yps[0]
+            #check to see if yesterday's priority is the same as the most recent
+            #entry in priorities.
+            yesterday_stamp = now.past(days=1)
+            yesterday = os.path.join(destination, yesterday_stamp.filename())
+            yesterday_j = load_journal(yesterday)
+            if yesterday_j.tags.has_key('priority'):
+                yps = yesterday_j.tags['priority']
+                print len(yps)
+                #get the first one:
+                p = yps[0]
 
-            if p.data != e.data:
-                print "adding yesterday's priority to: %s" % priority
-                #think that putting this at the end is actually better...
-                #that way it's always there
-                #priorities.update_entry(p, position=0)
-                priorities.update_entry(p)
-                priorities.to_file(priority)
-                e = p
+                if p.data != e.data:
+                    print "adding yesterday's priority to: %s" % priority
+                    #think that putting this at the end is actually better...
+                    #that way it's always there
+                    #priorities.update_entry(p, position=0)
+                    priorities.update_entry(p)
+                    priorities.to_file(priority)
+                    e = p
 
-        j = load_journal(today)
-        #should always have the same timestamp (in a given day)
-        #so multiple calls don't create
-        #mulitple entries with the same data
-        #now = Timestamp()
-        today_ts = Timestamp(compact=now.compact(accuracy="day"))
-        j.make_entry(e.data, ['priority'], today_ts, position=None)
-        j.to_file(today)
-
+            j = load_journal(today)
+            #should always have the same timestamp (in a given day)
+            #so multiple calls don't create
+            #mulitple entries with the same data
+            #now = Timestamp()
+            today_ts = Timestamp(compact=now.compact(accuracy="day"))
+            j.make_entry(e.data, ['priority'], today_ts, position=None)
+            j.to_file(today)
+        else:
+            print "No priorities found"
     return today

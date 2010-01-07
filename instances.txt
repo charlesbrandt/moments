@@ -1,0 +1,9 @@
+*2010.01.06 18:14:56 launch
+/c/moments/instances.txt
+/c/moments/moments/helpers.py
+/c/moments/moments/launcher.py
+/c/moments/scripts/launch.py
+/c/clients/srl/launch.sh
+/c/motd.txt
+
+

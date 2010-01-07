@@ -348,7 +348,7 @@ class Sources(Items):
     def __init__(self, items=[], log_path=None):
         Items.__init__(self, items)
         if log_path is None:
-            self.log_path = '/c/charles/logs/daily/transfer'
+            self.log_path = '/c/logs/transfer'
         else:
             self.log_path = log_path
         
