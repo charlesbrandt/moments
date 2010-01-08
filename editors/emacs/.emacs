@@ -1,3 +1,10 @@
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 89 :width normal :foundry "unknown" :family "DejaVu Sans")))))
+
 ;uncomment the following on windows:
 ;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
 
@@ -54,8 +61,8 @@
 ;http://www.delorie.com/gnu/docs/emacs/emacs_465.html
 ;persistent buffers:
 ;The first time you save the state of the Emacs session, you must do it manually, with the command M-x desktop-save
-(desktop-load-default)
-(desktop-read)
+;(desktop-load-default)
+;(desktop-read)
 
 ;http://www.emacswiki.org/cgi-bin/wiki/RecentFiles
 (require 'recentf)
@@ -71,15 +78,3 @@
  '(global-font-lock-mode t)
  '(inhibit-startup-screen t))
 
-;(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
-; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 99 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 123 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
