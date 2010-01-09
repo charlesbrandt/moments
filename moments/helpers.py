@@ -154,4 +154,6 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
             j.to_file(today)
         else:
             print "No priorities found"
+        print ""
+        
     return today

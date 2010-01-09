@@ -93,7 +93,15 @@ def main():
 
             #today = assemble_today(calendars, destination, priority)
 
-            files = load_instance(instances, "now")            
+            try:
+                files = load_instance(instances, "now")
+            except:
+                #even if there is no instance, it is still helpful to be able
+                #to load the instance with today's log quickly.
+                print "'now' instance not found in instances: %s" % instances
+                print "additional files will not be loaded with daily log"
+                print ""
+                files = []
             now(files)
             
             #then remove now so it is not attempted later
@@ -125,4 +133,3 @@ if __name__ == '__main__':
     #reminder on how to extract finished, completed thoughts
     #(as long as they have been marked complete, M-x com)
     print "python /c/moments/moments/extract.py /c/todo.txt"
-    print ""
