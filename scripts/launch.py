@@ -46,13 +46,18 @@ def now(files=[]):
 
 def main():
     instances = "./instances.txt"
+    motd = "/c/technical/motd.txt"
     
     parser = OptionParser()
     parser.add_option("-i", "--instance", "--instances", dest="instances",
                       help="pass in the instance file to look for instances in")
+    parser.add_option("-m", "--motd", dest="motd",
+                      help="pass in the instance file to look for motd in")
     (options, args) = parser.parse_args()
     if options.instances:
         instances = options.instances
+    if options.motd:
+        motd = options.motd
 
     # if nothing was passed in, start with some defaults
     if not len(args):
@@ -98,6 +103,10 @@ def main():
 
         #launch the rest
         launch(args, instances)
+
+    f = open(motd)
+    print f.read()
+    f.close()
         
 if __name__ == '__main__':
     #TODO: incorporate updating permissions as needed with this script.
@@ -112,10 +121,6 @@ if __name__ == '__main__':
 
     #with open("/c/motd.txt") as f:
     #    print f.read()
-
-    f = open("/c/motd.txt")
-    print f.read()
-    f.close()
 
     #reminder on how to extract finished, completed thoughts
     #(as long as they have been marked complete, M-x com)
