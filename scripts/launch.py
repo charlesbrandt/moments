@@ -18,8 +18,8 @@ For development, see also:
 Example call:
 
 #!/bin/bash
-python /c/moments/scripts/launch.py -i /c/clients/srl/instances.txt todo code now
-echo "python /c/moments/moments/extract.py /c/clients/srl/srl-todo.txt"
+python /c/moments/scripts/launch.py -i /c/other/instances.txt todo code now
+echo "python /c/moments/moments/extract.py /c/other/todo.txt"
 """
 
 import sys, os
@@ -29,11 +29,8 @@ from moments.helpers import assemble_today, load_instance
 #http://docs.python.org/library/optparse.html?highlight=optparse#module-optparse
 from optparse import OptionParser
 
-def now(files=[]):
-    calendars = "/c/calendars/"
-    destination = "/c/outgoing"
-    priority = "/c/priorities.txt"
-    today = assemble_today(calendars, destination, priority)
+def now(files=[], destination="/c/outgoing", priorities="/c/priorities.txt", calendars="/c/calendars/"):
+    today = assemble_today(calendars, destination, priorities)
     files.append(today)
     file_string = ' '.join(files)
     #print "Launcing Editor"
@@ -45,19 +42,32 @@ def now(files=[]):
     emacs(file_string)
 
 def main():
+    destination = "/c/outgoing"
     instances = "./instances.txt"
     motd = "/c/technical/motd.txt"
-    
+    calendars = "/c/calendars/"
+    priorities = "/c/priorities.txt"
+
     parser = OptionParser()
+    parser.add_option("-c", "--context", dest="context",
+                      help="directory to look for all other files in")
     parser.add_option("-i", "--instance", "--instances", dest="instances",
                       help="pass in the instance file to look for instances in")
     parser.add_option("-m", "--motd", dest="motd",
                       help="pass in the instance file to look for motd in")
     (options, args) = parser.parse_args()
-    if options.instances:
-        instances = options.instances
-    if options.motd:
-        motd = options.motd
+    if options.context:
+        c = options.context
+        instances = os.path.join(c, "instances.txt")
+        calendars = os.path.join(c, "calendars")
+        priorities = os.path.join(c, "priorities.txt")
+        #motd = os.path.join(c, "motd.txt")
+        #destination = os.path.join(c, "outgoing")
+    else:
+        if options.instances:
+            instances = options.instances
+        if options.motd:
+            motd = options.motd
 
     # if nothing was passed in, start with some defaults
     if not len(args):
@@ -73,7 +83,7 @@ def main():
             files = files[1:]
             #need option to generate and load now here too
             #rather than adding files to now 
-            now(files)
+            now(files, destination, priorities, calendars)
             
         elif local_instance is None:
             #go with defaults instances to load if nothing is passed in
@@ -102,7 +112,8 @@ def main():
                 print "additional files will not be loaded with daily log"
                 print ""
                 files = []
-            now(files)
+            now(files, destination, priorities, calendars)
+            #now(files)
             
             #then remove now so it is not attempted later
             args.remove("now")
