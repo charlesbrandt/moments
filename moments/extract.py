@@ -118,9 +118,6 @@ class ExtractConfig(object):
 ##     else:
 ##         print "nothing extracted"
 
-
-
-
 def extract_many(path, extractions, ignores=[], save=False, extract_type="intersect"):
     """
     rather than go through all files for every extraction
@@ -145,7 +142,7 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
     
     #j.from_file(path, add_tags=these_tags)
     #can add tags to the export, but don't want to add them in here:
-    j.from_file(path)
+    has_entries = j.from_file(path)
     for (tags, destination) in extractions:
         entries = j.extract(tags, extract_type)
         if len(entries):
@@ -168,7 +165,11 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
                 # (and that can be filtered out later)
                 j2.to_file()
 
-    if save:
+    # do *not* want to save if the file passed to the journal did not get parsed as having entries
+    # this would result in a blank file being saved, resulting in data loss.
+    # i.e. check both if save is desired ('save' variable)
+    # and if journal had entries ('has_entries' variable)
+    if save and has_entries:
         #when it's time to save:
         j.to_file()
 

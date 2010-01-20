@@ -104,7 +104,44 @@ class Entry(object):
             if format == 'text':
                 return unicode(self.data)
             elif format == 'html':
-                return u'<div class="data">%s</div>' % self.data
+                data = u''
+                link_block = False
+                for line in self.data.split('\n'):
+
+                    #\s matches whitespace
+                    #\S matches alphanumeric
+                    #
+                    #if it has characters, make it a 'line block'
+                    #http://docutils.sourceforge.net/docs/user/rst/quickref.html
+                    #if re.search('\S', line) and not re.match('^\s', line):
+                    if re.search('^http:', line):
+                        link_block = True
+                    elif not re.search('\S', line):
+                        #found a blank line, must have reached the end of any block
+                        link_block = False
+
+                    if link_block:
+                        data += u"| " + line + u'\n'
+                    else:
+                        data += line + u'\n'
+
+                        
+                #to run through rest filter first:
+                from docutils import core
+                overrides = {'input_encoding': 'unicode',
+                             'doctitle_xform': 1,
+                             'initial_header_level': 1}
+                parts = core.publish_parts(
+                    source=data,
+                    writer_name='html', settings_overrides=overrides)
+                #fragment = parts['html_body']
+                fragment = parts['fragment']
+                #fragment = fragment.replace('\n', '<br>\n')
+                fragment += '<p>&nbsp;</p>'
+                return u'<div class="data">%s</div>' % fragment
+            
+                #no rest:
+                #return u'<div class="data">%s</div>' % self.data
         else:
             #print "no data in this entry! : %s" % self.render_first_line()
             return ''

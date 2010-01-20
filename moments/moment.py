@@ -65,7 +65,7 @@ class Moment(Entry):
     def render_compact(self):
         return self.created.compact()
 
-    def render_first_line(self, format='text'):
+    def render_first_line(self, format='text', link_tags=True):
         """
         render the date and the tags for the entry
         """
@@ -75,7 +75,13 @@ class Moment(Entry):
         if format == 'text':
             line = '*' + text_time + ' ' + ' '.join(self.tags) + "\n"
         elif format == 'html':
-            line = u'<div class="entry_header"><span class="asterisk">*</span><span class="date">%s </span><span class="tags">%s</span></div>' % (text_time, ' '.join(self.tags))
+            tags = ''
+            if link_tags:
+                for t in self.tags:
+                    tags += u'<a href="/tags/%s.html">%s</a> ' % (t, t)
+            else:
+                tags = ' '.join(self.tags)
+            line = u'<div class="entry_header"><span class="asterisk">*</span><span class="date">%s </span><span class="tags">%s</span></div>' % (text_time, tags)
         else:
             print "Unknown format: %s" % format
         return unicode(line)

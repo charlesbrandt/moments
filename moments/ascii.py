@@ -57,7 +57,7 @@ class unaccented_map(dict):
 
 
 def to_ascii(source):
-    print type(source)
+    #print type(source)
     #source = source.translate(unaccented_map()).encode("ascii", "ignore")
     source = source.translate(unaccented_map())
     return source

@@ -89,7 +89,7 @@ def main():
             #go with defaults instances to load if nothing is passed in
             #it is ok to copy this file to multiple launch points,
             #and then set these as the defaults
-            args = [ "now", "todo", "music", "system_simple" ]
+            args = [ "now", "todo", "music", "system" ]
         
     #see if some args exist
     if len(args):

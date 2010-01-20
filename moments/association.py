@@ -146,6 +146,8 @@ class Association(dict):
 
         inspired by:
         timfanelli.com/projects/tag_cloud.txt
+
+        url_template should have one string substitution for where the tag goes
         """
         cloud = ''
         maxkey = self.max_key(ignores)
@@ -173,7 +175,9 @@ class Association(dict):
                     size = "tinyTag"
                 elif len(self[key]) == mincount:
                     size = "tiniestTag"
-                cloud += "<a href='%s' class='%s' alt='There are %s entries tagged as %s'>%s</a>\n" % ( url_template % key, size, str(len(self[key])), key, key )
+                    
+                url = url_template % key
+                cloud += "<a href='%s' class='%s' alt='There are %s entries tagged as %s'>%s</a>\n" % ( url, size, str(len(self[key])), key, key )
         return cloud
 
     def make_log_cloud(self, steps):

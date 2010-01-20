@@ -30,6 +30,9 @@ class Log(StringIO.StringIO):
 
         self.seek(0)
 
+        # until we have entries (from to_entries or from_entries), assume we don't:
+        self.has_entries = False
+
     def from_file(self, filename=None):
         """
         if the file exists, read in its contents
@@ -117,6 +120,9 @@ class Log(StringIO.StringIO):
             entry.omit_tags(omits)
             self.write(entry.render(include_path=include_path))
 
+        if len(entries):
+            self.has_entries = True
+
     def to_entries(self, add_tags=[], add_time=False, moments_only=False):
         """
         convert log to a list of entry objects (essentially what a log is)
@@ -148,7 +154,8 @@ class Log(StringIO.StringIO):
             return entries
 
         #first line of a log should have an entry... this is our check
-        if entry_search.match(line):            
+        if entry_search.match(line):
+            self.has_entries = True
             while line:
                 #we might have found a new entry...
                 #see what kind, if any:

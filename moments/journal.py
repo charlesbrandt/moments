@@ -276,7 +276,11 @@ class Journal(list):
         >>> j.from_file("sample_log.txt")
         >>> len(j.entries)
         1
+
+        return True if the file was able to be loaded
+        False if it was not a journal/Log file
         """
+        found_entries = False
         if not log_name:
             log_name = Timestamp().filename()
 
@@ -296,8 +300,13 @@ class Journal(list):
         #print "%s entries in self before merging in entries" % len(self)
         self.from_entries(entries)
         #print "%s entries in self after merging in entries" % len(self)
+
+        if l.has_entries:
+            found_entries = l.has_entries
         
         l.close()
+        
+        return found_entries
 
     #aka add_entries:
     def from_entries(self, entries):
