@@ -1,7 +1,7 @@
 What is Moments?
 ==================
 
-Moments is python module that uses a simple, open and portable format for storing notes in the form of entries.  It is a tool that lets you organize these notes in a way that makes sense to you, and change that organization as your outlook on organization changes. 
+Moments is python module for reading, creating, and processing notes and logs.  It uses a simple and consistent text based format that is easy for both humans and computers to create and read.  The python modules helps you organize these notes in a way that makes sense to you, and change that organization as your outlook on organization changes. 
 
 The moment log format is easy to read and create without special software.  The moments python module gives developers a quick way to create software that utilize the format. 
 
