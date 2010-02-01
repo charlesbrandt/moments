@@ -68,13 +68,18 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     for e in annual:
         #print "processing: %s" % e.render()
         #year may be in the past... update it to this year:
-        new_date = datetime(now.dt.year, e.created.month,
-                            e.created.day, e.created.hour,
-                            e.created.minute, e.created.second)
-        new_stamp = Timestamp(new_date)
-        new_data = e.render_data() + 'original date: %s' % e.created
-        #j.make_entry(e.data, e.tags, new_stamp)
-        j.make_entry(new_data, e.tags, new_stamp)
+        try:
+            #could be the case that Februrary has leap year days
+            new_date = datetime(now.dt.year, e.created.month,
+                                e.created.day, e.created.hour,
+                                e.created.minute, e.created.second)
+        except:
+            new_date = None
+        if new_date:
+            new_stamp = Timestamp(new_date)
+            new_data = e.render_data() + 'original date: %s' % e.created
+            #j.make_entry(e.data, e.tags, new_stamp)
+            j.make_entry(new_data, e.tags, new_stamp)
 
     flat = ''
 
