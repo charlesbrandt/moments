@@ -18,7 +18,11 @@ python /c/moments/scripts/summarize.py /c/outgoing/summarize/journal/2009/10/
 TODO:
 also [2009.11.11 11:02:33] todo 20091111
 could remove daily mention of priority from summarized log
-changes to these are stored in the priorities.txt file 
+changes to these are stored in the priorities.txt file
+
+could also just keep all entries as days
+pull in the relevant entries from journals
+and then make sure each day is organized chronologically
 """
 
 import sys, os
