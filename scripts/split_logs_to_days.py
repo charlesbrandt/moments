@@ -18,6 +18,9 @@
 #
 
 see also:
+/c/moments/moments/launcher.py
+/c/moments/moments/journal.py
+/c/moments/moments/timestamp.py
 /c/moments/scripts/split_by_day.py
 
 $Id$ (???)
