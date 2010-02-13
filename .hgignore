@@ -16,6 +16,7 @@ index*
 # switch to regexp syntax.
 syntax: regexp
 ^docs/_build*
+^editors/emacs/.emacs.d/matlab-emacs/
 ^binaries*
 ^packages/launcher/launcher.egg-info/SOURCES.txt
 ^tests/sample_log2.txt
