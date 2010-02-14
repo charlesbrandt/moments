@@ -29,15 +29,16 @@ def main():
         dest_prefix = sys.argv[2]
 
         start = Timestamp()
-        #destinations = split_by_day(src, dest_prefix)
+
+        destinations = split_by_day(src, dest_prefix)
 
         #if something goes wrong and you need to run this again:
-        dirs = os.listdir(dest_prefix)
-        if '.DS_Store' in dirs:
-            dirs.remove('.DS_Store')
-        destinations = []
-        for d in dirs:
-            destinations.append(os.path.join(dest_prefix, d))
+        #dirs = os.listdir(dest_prefix)
+        #if '.DS_Store' in dirs:
+        #    dirs.remove('.DS_Store')
+        #destinations = []
+        #for d in dirs:
+        #    destinations.append(os.path.join(dest_prefix, d))
         
         for dest in destinations:
             #run rotate, thumbnail generation
