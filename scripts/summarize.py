@@ -35,6 +35,10 @@ def summarize(source, destination='', add_tags=[]):
     """
     use load journal to load the source directory
     then save the resulting journal to the temporary destination
+
+    also [2010.02.14 12:16:27]
+    this is good for loading,
+    then limiting a moments.Journal object to a certain date range
     """
     month = 10
     year = 2009
