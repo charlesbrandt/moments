@@ -7,8 +7,10 @@ from moments.tags import Tags
 
 class Position(object):
     """
-    we just want to hold a position
-    and length
+    more than just a number of an item
+    or index of a list
+    
+    we just want to hold a position and length
 
     from this we can determine the number for previous, next
     and provide increment and decrement options
@@ -18,8 +20,8 @@ class Position(object):
     error checking and representing positions
     """
     def __init__(self, length=0, position=0, loop=True):
-        self.position = position
-        self.length = length
+        self._position = position
+        self._length = length
         self.loop = loop
 
     def __int__(self):
@@ -30,6 +32,26 @@ class Position(object):
 
     def __repr__(self):
         return self.position
+
+    def _get_length(self):
+        return self._length
+    def _set_length(self, l):
+        self.change_length(l)
+    length = property(_get_length, _set_length)
+
+    def _get_position(self):
+        return self._position
+    def _set_position(self, p):
+        self._position = self.check(p)
+    position = property(_get_position, _set_position)
+    
+##     def set(self, position):
+##         """
+##         would be nice if this just overrides the default set
+##         TODO: look up overriding that, maybe check moments.timestamp
+##         """
+##         self.position = self.check(position)
+
 
     def end(self):
         """
@@ -48,16 +70,10 @@ class Position(object):
         position needs to know how long the list is
         we can change that later if we don't know the length
         """
-        self.length = length
+        self._length = length
         #go ahead one just to make sure we weren't beyond the new length
-        self.next()
-
-    def set(self, position):
-        """
-        would be nice if this just overrides the default set
-        TODO: look up overriding that, maybe check moments.timestamp
-        """
-        self.position = self.check(position)
+        self.decrement()
+        self.increment()
 
     def check(self, position):
         """
@@ -128,12 +144,13 @@ class Items(list):
     generic list with a position associated with it
     position will get updated with call to update()
 
+    otherwise...
     changing the position is left to the caller
     """
-    def __init__(self, items=[]):
+    def __init__(self, items=[], position=0):
         list.__init__(self)
         self.extend(items)
-        self.position = Position(len(items))
+        self._position = Position(len(items), position)
         
         #quick way to access the current item directly
         #rather than having get return the value
@@ -142,31 +159,41 @@ class Items(list):
         else:
             #if nothing was sent, be sure to initialize current later!
             self.current = None
-        
 
+    #wrap position object, so that we can assign a new position to the list
+    #as though it were an attribute.
+    #this simplifies the interface to the list of items.
+    def _get_position(self):
+        return self._position
+    def _set_position(self, p):
+        self.go(p)
+    position = property(_get_position, _set_position)
+    
+    #aka get_current?
     def get(self, position=None):
         """
         get calls will not change our position
         """
-        #lets make sure our position's length is always up to date:
+        #make sure position's length is always current:
         self.update()
         
         #print "Received position: %s" % position
-        #print "Current position: %s" % self.position
+        #print "Current position: %s" % self._position
         #print "Length: %s" % len(self)
-        
+
+        #should we update current here? or use current?
         if position is None:
             #use our current position
-            return self[int(self.position)]
+            return self[int(self._position)]
         else:
             #checking if position is out of range here:
-            return self[self.position.check(position)]
+            return self[self._position.check(position)]
 
     def get_previous(self):
-        return self.get(self.position.previous())
+        return self.get(self._position.previous())
 
     def get_next(self):
-        return self.get(self.position.next())
+        return self.get(self._position.next())
 
     def go(self, position=None):
         """
@@ -174,22 +201,24 @@ class Items(list):
         """
         item = self.get(position)
         if position is not None:
-            self.position.set(position)
+            #whew!  that's a tricky line...
+            #setting the position object's internal position:
+            self._position.position = position
         self.current = item
         return item
 
     def go_next(self):
-        return self.go(self.position.next())
+        return self.go(self._position.next())
         
     def go_previous(self):
-        return self.go(self.position.previous())
+        return self.go(self._position.previous())
 
     def update(self):
         """
         update the position so it knows our new length
         should be called any time items are added or removed to the list
         """
-        self.position.change_length(len(self))
+        self._position.change_length(len(self))
 
     ## def sort(self, *args, **kwargs):
     ##     ## The sort() method takes optional arguments
@@ -222,7 +251,7 @@ class Jumps(Items):
     def __init__(self, comma='', items=[]):
         Items.__init__(self, items)
         #we don't want to loop over jumps
-        self.position.loop = False
+        self._position.loop = False
         if comma:
             self.from_comma(comma)
         
@@ -306,7 +335,6 @@ class Source(object):
         self.path = path
         self.jumps = Jumps()
         self.entry = None
-
 
     def __str__(self):
         return self.as_moment().render()
