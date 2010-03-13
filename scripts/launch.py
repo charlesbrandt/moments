@@ -18,7 +18,7 @@ For development, see also:
 Example call:
 
 #!/bin/bash
-python /c/moments/scripts/launch.py -i /c/other/instances.txt todo code now
+python /c/moments/scripts/launch.py -i /c/instances.txt todo code now
 echo "python /c/moments/moments/extract.py /c/other/todo.txt"
 """
 
@@ -54,7 +54,7 @@ def main():
     parser.add_option("-i", "--instance", "--instances", dest="instances",
                       help="pass in the instance file to look for instances in")
     parser.add_option("-m", "--motd", dest="motd",
-                      help="pass in the instance file to look for motd in")
+                      help="pass in the file to look for motd in")
     (options, args) = parser.parse_args()
     if options.context:
         c = options.context
@@ -77,6 +77,7 @@ def main():
         #if we don't have a file with instance entries in it,
         #we can create a temporary instance here:
         #local_instance = """ """
+
         if local_instance:
             #print "Loading the local instance: %s" % local_instance
             files = local_instance.splitlines()

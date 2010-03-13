@@ -1,72 +1,30 @@
 """
 *2009.10.21 16:07:53 
 module for interacting with the filesystem.
-Main focus is on abstracting files and directories.
+Main focus is on abstracting files and directories and paths.
 
-adapted from osbrowser package.  
+adapted from osbrowser package.
+
+Path loads Files, Directories, etc
+Files, Directories, etc have a path associated with them
+circular dependency
+hence, one file
 """
-import os, os.path, re
+import os, re, random, subprocess
 import urllib
-import random
-import subprocess
-
 from datetime import datetime
 
-from moment import Moment
-from journal import Journal, load_journal
-from association import check_ignore
-from tags import Tags, split_path # tags_from_string
 from timestamp import Timestamp
+from journal import Journal
 
-#from paths import *
-#unless defined elsewhere, 
-#will assume all paths passed in to Node objects are relative to this dir:
-relative_prefix = ''
-local_path = u'./'
-log_path = u'./'
-sort_config = 'alpha'
+from tags import Tags
 
-config_log_in_outgoing = False
-config_log_in_media = False
-try:
-    #if not using in pylons, can define manually above
-    from pylons import config
-    if config.has_key('local_path'):
-        local_path = unicode(config['local_path'])
-    if config.has_key('log_local_path'):
-        log_path = unicode(config['log_local_path'])
-        config_log_in_outgoing = True
-    if config.has_key('log_in_media') and config['log_in_media'] == "True":
-        config_log_in_media = True
-    if config.has_key('sort_order'):
-        sort_config = config['sort_order']
-    if config.has_key('relative_prefix'):
-        relative_prefix = config['relative_prefix']
-except:
-    config = {}
-
-def local_to_relative(path=None, add_prefix=False):
+def load_journal(path, **kwargs):
     """
-    convert a local file path into one acceptable for use as a relative path in a URL
-    
-    if node is a file, this will include the filename at the end!!!
+    helper to simplify call
     """
-    #want to make sure that the path we're looking at contains local_path
-    prefix = os.path.commonprefix([local_path, path])
-    if prefix == local_path:
-        #take everything after prefix as relative
-        temp_path = path[len(prefix)+1:]
-    else:
-        #not sure what was sent, might as well just give it back
-        temp_path = path
-
-    #if re.search(r'\\', temp_path):
-    #temp_path = re.subn(r'\\', '/', temp_path)
-    temp_path = temp_path.replace(r'\\', '/')
-    
-    if add_prefix:
-        temp_path = os.path.join(config['relative_prefix'], temp_path)
-    return temp_path
+    path = Path(path)
+    return path.load_journal(**kwargs)
 
 def name_only(name):
     """
@@ -102,40 +60,108 @@ def extension(name):
     #print extension
     return extension
 
-class Node:
-    """
-    could be a file or a directory
 
-    one thing connected to other things on the filesystem
+#from paths import *
+#unless defined elsewhere, 
+#will assume all paths passed in to Node objects are relative to this dir:
+relative_prefix = ''
+local_path = u'./'
+log_path = u'./'
+sort_config = 'alpha'
+
+config_log_in_outgoing = False
+config_log_in_media = False
+try:
+    #if not using in pylons, can define manually above
+    from pylons import config
+    if config.has_key('local_path'):
+        local_path = unicode(config['local_path'])
+    if config.has_key('log_local_path'):
+        log_path = unicode(config['log_local_path'])
+        config_log_in_outgoing = True
+    if config.has_key('log_in_media') and config['log_in_media'] == "True":
+        config_log_in_media = True
+    if config.has_key('sort_order'):
+        sort_config = config['sort_order']
+    if config.has_key('relative_prefix'):
+        relative_prefix = config['relative_prefix']
+except:
+    config = {}
+
+
+class Path(object):
+    """
+    a path to a specific destination
+
+    represented as a string with separators
+
+    very similar in purpose to os.path
+
+    is not involved with what is contained at the path destination
+
+    this is a collection of common operations needed for manipulating paths,
+    in some cases wrapping the standard library os.path module
+    """
     
-    structure to hold the meta data of a node on a filesystem
-    should hold the common attributes of files and directories
+    def __init__(self, path=None, parts=None, relative=False, local_path=''):
+        """
+        take either a relative or absolute path
+        """
+        
+        if not path and not parts:
+            raise AttributeError, "Need either path or parts"
 
-    Node paths are the paths on the local system...
-    i.e. how python would find them
-    """
-    def __init__(self, path):
-        self.path = unicode(path)
+        if path:
+            #self.path = path
+            #could check if it is an actual path here
+            self.path = unicode(path)
+        else:
+            self.path = self.from_parts(parts)
+
+        if relative:
+            actual_path = os.path.join(unicode(local_path), self.path)
+            actual_path = unicode(actual_path)
+            actual_path = os.path.normpath(actual_path)
+            self.path = actual_path
+
+        #*2010.03.13 09:59:05
+        #maybe it should be file_name or _file_name instead of full_name???
+            
+        #this should be a property, that combines name and extension
+        #self.full_name = ''
+
         #http://docs.python.org/lib/module-os.path.html        
-        self.name = os.path.basename(self.path)
-        if not self.name:
+        self._full_name = os.path.basename(self.path)
+        if not self._full_name:
             #might have been passed in a path with a trailing '/'
             self.path = os.path.dirname(self.path)
-            self.name = os.path.basename(self.path)
+            self._full_name = os.path.basename(self.path)
+
 
         #name without file extension:
-        self.name_only = name_only(self.name)
+        self.name = name_only(self._full_name)
+        self.extension = extension(self._full_name)
 
-        #we don't initialize this since it could be a directory and
-        #we don't want to recurse unless needed
-        #should be initialized in File though
-        self.size = 0
+        #file (local), http, smb, etc
+        self.protocol = ''
 
-        self.check_stats()
+        self.separator = '/'
         
-        self.md5 = None
-        self.last_scan = None
 
+        #todo, general name for storage objects...
+        #instances?  Node is *too* abstract... other things can be a node
+        #but file is too specific
+        #local instance? binary representation?
+        
+        #if a node has been loaded, can reference it here
+        #or this could also be a property
+        #that loads the node when called.
+        self.storage = None
+
+        #parent object
+        self.content = None
+
+        
     def __str__(self):
         #this will fail if path has unicode characters it doesn't know 
         return str(self.path)
@@ -143,122 +169,394 @@ class Node:
     def __unicode__(self):
         return unicode(self.path)
 
-    def find_type(self):
+    def type(self):
         """
-        determine the subclass that should be associated with this Node
+        determine the subclass that should be associated with this Path
         this gives us a central place to track this
         """
 
         #PCD seems to cause a lot of trouble
         image_extensions = [ 'jpg', 'png', 'gif', 'jpeg', 'JPG', 'tif' ]
         movie_extensions = [ 'mpg', 'avi', 'flv', 'vob', 'wmv', 'AVI', 'iso', 'asf' ]
-        playlist_extensions = [ 'm3u', 'pls' ]
+
         #, 'm4p' are not playable by flash, should convert to use
         sound_extensions = [ 'mp3', 'wav', 'aif', 'ogg' ]
+
         journal_extensions = [ 'txt', 'log' ]
-        #library_extensions = [ 'xml' ]
-        document_extensions = [ 'html', 'htm', 'mako' ]
-        
+
+        #others
+        #playlist_extensions = [ 'm3u', 'pls' ]
+        #document_extensions = [ 'html', 'htm', 'mako' ]
+
         #determine what the right type of node should be based on path
         if (os.path.isfile(self.path)):
-            ext = extension(self.name)
+            #ext = extension(self.name)
+            ext = self.extension
             if ext in image_extensions:
                 return "Image"
             elif ext in movie_extensions:
                 return "Movie"
-            elif ext in playlist_extensions:
-                return "Playlist"
             elif ext in sound_extensions:
                 return "Sound"
             elif ext in journal_extensions:
                 return "Log"
             #elif ext in library_extensions:
             #    return "Library"
-            elif ext in document_extensions:
-                return "Document"
+            #elif ext in playlist_extensions:
+            #    return "Playlist"
+            #elif ext in document_extensions:
+            #    return "Document"
             else:
                 return "File"
-                
+
         elif (os.path.isdir(self.path)):
             return "Directory"
         else:
             return "Node"
 
-    def check_stats(self):
+    def load(self, node_type=None, create=True):
         """
-        check and see what the operating system is reporting for
-        this node's stats
-        update our copy of the stats
-        """
-        #http://docs.python.org/lib/os-file-dir.html
-        stat = os.stat(self.path)
-        #st_atime (time of most recent access)
-        self.atime = stat.st_atime
-        #st_mtime (time of most recent content modification)
-        self.mtime = stat.st_mtime
-        #st_ctime (platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows)
-        self.ctime = stat.st_ctime        
-        
-    def reset_stats(self):
-        """
-        some actions (like image rotate) may update the file's modified times
-        but we might want to keep the original time
-        this resets them to what they were when originally initialized
-        """
-        os.utime(self.path, (self.atime, self.mtime))
+        return a storage.Node of the destination
 
-    def change_stats(self, accessed=None, modified=None):
-        """
-        take new values for the accessed and modified times and update the file's properties
-        should only accept Timestamp values.
-        Timestamp can be used for conversions as needed.
-        then use Timestamp.epoch() to get right values here:
-        """
-        if accessed is None:
-            new_atime = self.atime
-        else:
-            new_atime = accessed.epoch()
+        can look at types here
+        and return the appropriate type
 
-        if modified is None:
-            new_mtime = self.mtime
+        looks at the path,
+        determines the right kind of storage object to associate with that path
+        returns the storage object
+        """
+        new_node = None
+        if (create and not os.path.exists(self.path) and
+            extension(self.path) == "txt"):
+            #only want to create new log files, and then only if logging
+            #is enabled
+            #should be equivalent to a touch
+
+            #f = file(self.path, 'w')
+            #f.close()
+            self.create()
+
+        #to skip throwing an error if no file exists, uncomment following:
+        #if os.path.exists(self.path):
+        if not node_type:
+            node_type = self.type()
+            ## new_node = Node(self.path)
+            ## node_type = new_node.find_type()
+            ## if node_type in [ "Playlist", "Movie", "Document", "Library", "Log" ]:
+            ##     #special case
+            ##     node_type = "File"
+
+        #ah ha!
+        #passing in path as unicode is very important if planning to work
+        #with unicode paths... otherwise gets converted to ascii here:
+        #new_node = eval("%s(u'%s')" % (node_type, self.path))
+        #above is causing trouble on windows, trying without
+
+        #node_create = "%s(r'%s')" % (node_type, self.path)
+        #node_create = r'%s("%s")' % (node_type, self.path)
+        #re.subn(r"\\", r"\\\\", node_create)
+        #new_node = eval(node_create)
+
+        #2008.12.23 14:18:59
+        #eval having a hard time with windows.  switching to a nested if-else:
+
+        ## if node_type == "Node":
+        ##     #new_node already defined:
+        ##     pass
+        if node_type == "Directory":
+            new_node = Directory(self.path)
+        elif node_type == "Image":
+            new_node = Image(self.path)
+        #elif node_type == "Sound":
+        #    new_node = Sound(self.path)
+        else: # node_type == "File":
+            new_node = File(self.path)
+
+        return new_node
+
+    def load_journal(self, add_tags=[], subtract_tags=[],
+                     include_path_tags=True, create=False):
+        """
+        walk the given path and
+        create a journal object from all logs encountered in the path
+
+        create a temporary, in memory, journal from logs
+
+        this works for both directories and log files
+
+        *2009.06.18 12:38:45
+
+        this was started to be abstracted from osbrowser in player.py.  
+        By moving here, we minimize dependencies outside of Moments module
+
+        load_journal cannot guarantee that the returned Journal item will have a
+        filename (self.path) associated with it for later saving.
+
+        in that case should use:
+        ::
+
+          j = Journal()
+          j.from_file(path, add_tags=these_tags)
+
+        -or-
+        ::
+
+          j = load_journal(path)
+          j.path = destination
+
+        of course you can always pass the path in explicitly to to_file:
+        to_file(filename=path)
+
+        """
+        #ignore_dirs = [ 'downloads', 'binaries' ]
+
+        #this would be the place to add .hgignore items to the ignore_items list
+        ignore_items = [ 'downloads', 'index.txt' ]
+        j = Journal()
+        log_check = re.compile('.*\.txt$')
+        if os.path.isdir(self.path):
+            for root,dirs,files in os.walk(self.path):
+                for f in files:
+                    #make sure it at least is a log file (.txt):
+                    if not log_check.search(f):
+                        continue
+
+                    if not check_ignore(os.path.join(root, f), ignore_items):
+                        these_tags = add_tags[:]
+                        #will need to abstract context_tags() too... move to Tags
+                        if include_path_tags:
+                            filename_tags = Path(os.path.join(root, f)).to_tags()
+                            these_tags.extend(filename_tags)
+                        #subtract tags last:
+                        for tag in subtract_tags:
+                            if tag in these_tags:
+                                these_tags.remove(tag)
+                        j.from_file(os.path.join(root, f), add_tags=these_tags)
+
+        elif os.path.isfile(self.path) and log_check.search(self.path):
+            j.from_file(self.path, add_tags)
+        elif create and log_check.search(self.path):
+            #make a new log:
+            j.to_file(self.path)
+            j.from_file(self.path, add_tags)
         else:
-            new_mtime = modified.epoch()
+            #no journal to create
+            pass
+        return j
+
+    def exists(self):
+        """
+        check if the actual path exists.
+        """
+        return os.path.exists(self.path)
+
+    def create(self, mode=None):
+        """
+        see if we have an extension
+        create a blank file if so
+
+        otherwise make a new directory
+        """
+        if self.extension:
+            f = file(self.path, 'w')
+            f.close()
+        else:
+            if mode:
+                os.mkdir(self.path, mode)
+            else:
+                os.mkdir(self.path)
+
+    def remove(self):
+        if os.path.exists(self.path):
+            os.remove(self.path)
             
-        os.utime(self.path, (new_atime, new_mtime))
+    def rename(self, destination):
+        destination = str(destination)
+        os.rename(str(self), destination)
 
-        #keeps/restores the originals:
-        #os.utime(self.path, (self.atime, self.mtime))
+    def move(self, destination):
+        self.rename(destination)
 
-        self.check_stats()
         
-    def adjust_time(self, hours=0):
+    #???
+    def make_tree(self):
         """
-        wrap change stats in a more user friendly function
+        go through all parts and make a node for each of them
+        return the root node
         """
-        modified = Timestamp()
-        modified.from_epoch(self.mtime)
-        #print "Pre: %s" % modified
+        pass
 
-        #****configure your adjustment here****
-        modified = modified.future(hours=hours)
-        #**************************************
-
-        accessed = Timestamp()
-        accessed.from_epoch(self.atime)
-        self.change_stats(accessed, modified)
-
-        #reset to check:
-        modified = Timestamp()
-        modified.from_epoch(self.mtime)
-        #print "Post: %s" % modified
+    #def parent_path(self):
+    def parent(self):
+        """
+        return a Path object to our parent
+        don't want to do this on initialization,
+        since it would recursively call
         
+        Similar in concept to:
+        os.path.dirname(self.path)
+        """
+        if (self.path != os.path.dirname(self.path) and
+            os.path.dirname(self.path)):
+            
+            parent_path = os.path.dirname(self.path)
+            #print parent_path
+            parent = Path(parent_path)
+            return parent
+        else:
+            #special case for root path
+            return None
+            #return self #???
+        
+    ## def parent(self):
+    ##     """
+    ##     return a Directory object for the current Node's parent 
+    ##     """
+    ##     if self.path != os.path.dirname(self.path):
+    ##         parent_path = os.path.dirname(self.path)
+    ##         parent = Directory(parent_path)
+    ##         return parent
+    ##     else:
+    ##         #special case for root directory
+    ##         return self
+
+    ## def get_parent(self):
+    ##     pass
+
+    #aka split_path
+    #as_list
+    def parts(self):
+        """
+        return a list of all parts of the path
+        (os.path.split only splits into two parts, this does all)
+        """
+        #we'll be chopping this up
+        path = self.path
+
+        parts = []
+        #make sure our path starts with a slash for a common end case
+        if not re.match('^\/', path):
+            path = os.path.join('/', path)
+            #print "new: %s" % path
+        while path and path != '/':
+            (path, suffix) = os.path.split(path)
+            parts.insert(0, suffix)
+        #print parts
+        return parts
+
+    def from_parts(self, parts):
+        path = os.path.join(parts)
+        return path
+
+    #def path_to_tags(self):
+    def to_tags(self, include_name=True):
+        """
+        looks at the specified path to generate a list of tags
+        based on the file name and location
+
+        check if the last item in the path is a file with an extension
+        get rid of the extension if so
+        """
+
+        all_tags = Tags()
+        parts = []
+        parent = self.parent()
+        if parent:
+            path_parts = parent.parts()
+            parts.extend(path_parts)
+        if include_name:
+            parts.append(self.name)
+
+        #convert each item to tags individually
+        #each item in a path could be made up of multiple tags
+        #i.e work-todo
+        for p in parts:
+            if p:
+                part_tags = Tags().from_tag_string(p)
+                for tag in part_tags:
+                    if tag not in all_tags:
+                        all_tags.append(tag)
+
+        return all_tags
+
+    ## def context_tags(self):
+    ##     """
+    ##     looks at the relative path and filename to generate a list of tags
+    ##     based on the file name and location
+
+    ##     *2009.06.18 13:11:55 
+    ##     could consider using moments.tags.path_to_tags
+    ##     but this likely approaches the problem slightly differently
+    ##     """
+    ##     all_tags = []
+    ##     rel_parent_dir = os.path.dirname(local_to_relative(self.path))
+    ##     path_parts = split_path(rel_parent_dir)
+    ##     #since each item in a path could be made up of multiple tags
+    ##     #i.e work-todo
+    ##     for p in path_parts:
+    ##         if p:
+    ##             ptags = Tags().from_tag_string(p)
+    ##             #ptags = tags_from_string(p)
+    ##             for pt in ptags:
+    ##                 if pt not in all_tags:
+    ##                     all_tags.append(pt)
+    ##     #name_tags = tags_from_string(self.name_only)
+    ##     name_tags = Tags().from_tag_string(self.name_only)
+
+    ##     #print "name tags: %s, name_only: %s" % (name_tags, self.name_only)
+    ##     for nt in name_tags:
+    ##         if nt not in all_tags:
+    ##             all_tags.append(nt)
+    ##     #all_tags.extend(name_tags)
+    ##     #print "all tags: %s" % all_tags
+    ##     return all_tags
+
+    def distance(self, path):
+        """
+        the shortest number of nodes between self and path
+
+        find common prefix
+        then count from there
+        """
+        pass
+
+    #def local_to_relative(path=None, add_prefix=False):
+    def to_relative(self, path):
+        """
+        accept a path (either Path or path... will get resolved down to str)
+        return the relative part
+        by removing the path sent from our prefix
+
+        return a new path object
+
+        convert a local file path into one acceptable for use as a relative path in a URL
+
+        if node is a file, this will include the filename at the end!!!
+        """
+        #want to make sure that the path we're looking at contains local_path
+        prefix = os.path.commonprefix([local_path, path])
+        if prefix == local_path:
+            #take everything after prefix as relative
+            temp_path = path[len(prefix)+1:]
+        else:
+            #not sure what was sent, might as well just give it back
+            temp_path = path
+
+        #if re.search(r'\\', temp_path):
+        #temp_path = re.subn(r'\\', '/', temp_path)
+        temp_path = temp_path.replace(r'\\', '/')
+
+        if add_prefix:
+            temp_path = os.path.join(config['relative_prefix'], temp_path)
+        return temp_path
+
 
     #should just use generalized local_to_relative if needed directly
     #*2009.03.15 22:28:06
     #in templates, is nice to have access to it through the object
     #wrapping general one
-    def relative_path(self, add_prefix=False):
-        return local_to_relative(self.path, add_prefix)
+    #def relative_path(self, add_prefix=False):
+    #    return local_to_relative(self.path, add_prefix)
     
     def custom_relative_path(self, prefix=None, path=None):
         """
@@ -266,9 +564,7 @@ class Node:
 
         if path on file system is different than path displayed by viewer
         generate it here
-
-        stub for child classes to customize how relative path is returned
-
+        
         ideally would just use routes here... heavy overlap        
         """
         if not path:
@@ -301,64 +597,146 @@ class Node:
             path = prefix
         return parts
 
-    def parent_path(self):
-        """
-        might be easier to just call the equivalent python code directly:
-        os.path.dirname(self.path)
-        """
-        return os.path.dirname(self.path)
 
-    def parent_part(self):
-        """
-        could consider returning actual parent here
-        return the suffix and path for the parent directory only
-        """
-        parts = self.relative_path_parts()
-        return parts[-2]
+    #this is now parent().name:
+    ## def parent_part(self):
+    ##     """
+    ##     could consider returning actual parent here
+    ##     return the suffix and path for the parent directory only
+    ##     """
+    ##     parts = self.relative_path_parts()
+    ##     return parts[-2]
 
-    def parent(self):
+
+#from path import Path, load_journal
+
+#import os, re
+#from storage import *
+#from journal import Journal
+
+#RENAME LocalNode ???
+#StorageNode?
+#DriveNode?
+
+#class LocalNode(object):
+#class File(LocalNode):
+class File(object):
+    """
+    files are Nodes with sizes
+    also leafs in tree structure
+
+    could be a file or a directory
+
+    one thing connected to other things on the filesystem
+    
+    structure to hold the meta data of a node on a filesystem
+    should hold the common attributes of files and directories
+
+    Node paths are the paths on the local system...
+    i.e. how python would find them
+
+    operations common to both files and directories
+    """
+
+    #def __init__(self, **kwargs):
+
+    def __init__(self, path):
+        #Node.__init__(self, **kwargs)
+        #LocalNode.__init__(self, path)
+
+        self.path = Path(path)
+
+        #we don't initialize this since it could be a directory and
+        #we don't want to recurse unless needed
+        #can always call check_size later
+        self.size = None
+
+        self.check_stats()
+        
+        self.md5 = None
+        #self.last_scan = None
+        #self.last_scan = datetime.now()
+        self.last_scan = Timestamp()
+
+    def __str__(self):
+        #this will fail if path has unicode characters it doesn't know 
+        return str(self.path)
+    
+    def __unicode__(self):
+        return unicode(self.path)
+
+    def check_stats(self):
         """
-        return a Directory object for the current Node's parent 
+        check and see what the operating system is reporting for
+        this node's stats
+        update our copy of the stats
         """
-        if self.path != os.path.dirname(self.path):
-            parent_path = os.path.dirname(self.path)
-            parent = Directory(parent_path)
-            return parent
+        #http://docs.python.org/lib/os-file-dir.html
+        stat = os.stat(str(self.path))
+        #st_atime (time of most recent access)
+        self.atime = stat.st_atime
+        #st_mtime (time of most recent content modification)
+        self.mtime = stat.st_mtime
+        #st_ctime (platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows)
+        self.ctime = stat.st_ctime        
+
+    def check_size(self):
+        self.size = os.path.getsize(str(self.path))        
+        return self.size
+    
+    def reset_stats(self):
+        """
+        some actions (like image rotate) may update the file's modified times
+        but we might want to keep the original time
+        this resets them to what they were when originally initialized
+        """
+        os.utime(self.path, (self.atime, self.mtime))
+
+    def change_stats(self, accessed=None, modified=None):
+        """
+        take new values for the accessed and modified times and update the file's properties
+        should only accept Timestamp values.
+        Timestamp can be used for conversions as needed.
+        then use Timestamp.epoch() to get right values here:
+        """
+        if accessed is None:
+            new_atime = self.atime
         else:
-            #special case for root directory
-            return self
+            new_atime = accessed.epoch()
 
-    def context_tags(self):
+        if modified is None:
+            new_mtime = self.mtime
+        else:
+            new_mtime = modified.epoch()
+            
+        os.utime(str(self.path), (new_atime, new_mtime))
+
+        #keeps/restores the originals:
+        #os.utime(self.path, (self.atime, self.mtime))
+
+        self.check_stats()
+        
+    def adjust_time(self, hours=0):
         """
-        looks at the relative path and filename to generate a list of tags
-        based on the file name and location
-
-        *2009.06.18 13:11:55 
-        could consider using moments.tags.path_to_tags
-        but this likely approaches the problem slightly differently
+        wrap change stats in a more user friendly function
         """
-        all_tags = []
-        rel_parent_dir = os.path.dirname(local_to_relative(self.path))
-        path_parts = split_path(rel_parent_dir)
-        #since each item in a path could be made up of multiple tags
-        #i.e work-todo
-        for p in path_parts:
-            if p:
-                ptags = Tags().from_tag_string(p)
-                #ptags = tags_from_string(p)
-                for pt in ptags:
-                    if pt not in all_tags:
-                        all_tags.append(pt)
-        #name_tags = tags_from_string(self.name_only)
-        name_tags = Tags().from_tag_string(self.name_only)
+        modified = Timestamp()
+        modified.from_epoch(self.mtime)
+        #print "Pre: %s" % modified
 
-        #print "name tags: %s, name_only: %s" % (name_tags, self.name_only)
-        for nt in name_tags:
-            if nt not in all_tags:
-                all_tags.append(nt)
-        #all_tags.extend(name_tags)
-        #print "all tags: %s" % all_tags
-        return all_tags
+        #****configure your adjustment here****
+        modified = modified.future(hours=hours)
+        #**************************************
+
+        accessed = Timestamp()
+        accessed.from_epoch(self.atime)
+        self.change_stats(accessed, modified)
+
+        #reset to check:
+        modified = Timestamp()
+        modified.from_epoch(self.mtime)
+        #print "Post: %s" % modified
+
 
 ##     #should be load_journal  ... not really creating a new file here
        # and if you need load_journal, just import the load journal
@@ -409,28 +787,25 @@ class Node:
         t = datetime.fromtimestamp(self.mtime)
         return t.strftime("%Y%m%d")
 
+    def timestamp(self):
+        self.check_stats()
+        modified = Timestamp()
+        modified.from_epoch(self.mtime)
+        return modified
+    
+
 # should just call journal.log_action directly
 ##     def log_action(self, actions=["access"], data=None,
 ##                    log_in_media=False, log_in_outgoing=False, outgoing=None):
 
-class File(Node):
-    """
-    files are Nodes with sizes
-    also leafs in tree structure
-    """
-    def __init__(self, path):
-        Node.__init__(self, path)
-        self.size = os.path.getsize(path)
-        self.last_scan = datetime.now()
+## #from sound import Sound
+## class Sound(File):
+##     """
+##     object to hold sound/music specific meta data for local sound file
 
-#from sound import Sound
-class Sound(File):
-    """
-    object to hold sound/music specific meta data for local sound file
-
-    """
-    def __init__(self, path):
-        File.__init__(self, path)
+##     """
+##     def __init__(self, path):
+##         File.__init__(self, path)
 
 #from image import Image
 import Image as PILImage
@@ -444,20 +819,26 @@ class Image(File):
     def __init__(self, path):
         File.__init__(self, path)
         self.thumb_dir_name = "sized"
-        parent_dir_path = os.path.dirname(self.path)
-        self.thumb_dir_path = os.path.join(parent_dir_path, self.thumb_dir_name)
+        #2010.03.02 22:43:35 
+        # could use the actual path object to handle this 
+        #parent_dir_path = os.path.dirname(str(self.path))
+        #self.thumb_dir_path = os.path.join(parent_dir_path, self.thumb_dir_name)
+        self.thumb_dir_path = os.path.join(str(self.path.parent()),
+                                           self.thumb_dir_name)
         
         self.sizes = { 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
 
-        parts = self.name.split('.')
-        self.last_four = parts[-2][-4:]
+        #parts = self.path.name.split('.')
+        #self.last_four = parts[-2][-4:]
+        self.last_four = self.path.name[-4:]
 
     def size_name(self, size):
         """
         take a size and create the corresponding thumbnail filename
         """
-        parts = self.name.split('.')
-        new_name = '.'.join(parts[:-1]) + self.sizes[size] + '.' + parts[-1]
+        #parts = self.name.split('.')
+        #new_name = '.'.join(parts[:-1]) + self.sizes[size] + '.' + parts[-1]
+        new_name = self.path.name + self.sizes[size] + '.' + self.path.extension
         return new_name                  
         
     def size_path(self, size):
@@ -467,15 +848,15 @@ class Image(File):
         thumb_path = os.path.join(self.thumb_dir_path, size, self.size_name(size))
         return thumb_path
 
-    def size_path_relative(self, size):
-        """
-        some overlap here with relative_path,
-        but it isn't working for thumbnails anyway
-        """            
-        if size == 'full':
-            return os.path.join(relative_prefix, local_to_relative(self.path))
-        else:
-            return os.path.join(relative_prefix, os.path.dirname(local_to_relative(self.path)), self.thumb_dir_name, size, self.size_name(size))
+    ## def size_path_relative(self, size):
+    ##     """
+    ##     some overlap here with relative_path,
+    ##     but it isn't working for thumbnails anyway
+    ##     """            
+    ##     if size == 'full':
+    ##         return os.path.join(relative_prefix, local_to_relative(self.path))
+    ##     else:
+    ##         return os.path.join(relative_prefix, os.path.dirname(local_to_relative(self.path)), self.thumb_dir_name, size, self.size_name(size))
         
 
     def get_size(self, size):
@@ -485,7 +866,7 @@ class Image(File):
         thumb_path = self.size_path(size)
         if not os.path.isfile(thumb_path):
             self.make_thumbs()
-        return self.size_path_relative(size)
+        return self.size_path(size)
 
     def move(self, destination, relative=True):
         """
@@ -638,7 +1019,7 @@ class Image(File):
         self.make_thumbs()
         self.reset_stats()
 
-class Directory(Node):
+class Directory(File):
     """
     
     object to hold a summary of a single directory
@@ -655,10 +1036,11 @@ class Directory(Node):
         if so load it
         otherwise create one.
         """
-        Node.__init__(self, path, **args)
+        File.__init__(self, path, **args)
 
         #print "initializing directory: %s" % self.path
 
+        #*2010.03.01 19:15:33 TODO rename: count?
         self.items = 0
 
         #names only!!
@@ -736,6 +1118,11 @@ class Directory(Node):
             j.from_file(source)
             return j
         else:
+            #otherwise just fall back to the standard load_journal
+            #j = load_journal(self.path)
+            #return j
+            #if load_journal behavior is wanted, just call it directly
+            #this is for looking for the default action logs of a directory
             return None
         
     def scan_directory(self, recurse=False):
@@ -755,7 +1142,7 @@ class Directory(Node):
                 else:
                     #item_path = unicode(self.path) + u'/' + unicode(item)
                     try:
-                        item_path = os.path.normpath(os.path.join(self.path, item))
+                        item_path = os.path.normpath(os.path.join(str(self.path), item))
                     except:
                         item_path = ''
                         print "could not open: %s" % item
@@ -764,8 +1151,11 @@ class Directory(Node):
                 
                 if (os.path.isfile(item_path)):
                     node = File(item_path)
-
-                    self.size += node.size
+                    node.check_size()
+                    if not self.size:
+                        self.size = node.size
+                    else:
+                        self.size += node.size
                     self.files.append(node)
                     
                 elif (os.path.isdir(item_path)):
@@ -862,7 +1252,7 @@ class Directory(Node):
         # we should only need to scan the filetypes once per instance:
         if not self.filetypes_scanned:
             for f in self.files:
-                t = f.find_type()
+                t = f.path.type()
                 #multiple ifs are desired behavior here
                 # (as opposed to one if with and)
                 # otherwise multiple calls with same files
@@ -924,13 +1314,8 @@ class Directory(Node):
         self.scan_filetypes()
             
         if len(self.images):
-            action_log = os.path.join(self.path, "action.txt")
-            #by not checking pick_by, action logs will always be evaluated
-            #then can fall back to other method.
-            if os.path.exists(action_log):
-                #sort / analyze meta here for best candidate
-                j = Journal()
-                j.from_file(action_log)
+            j = self.load_journal("action.txt")
+            if j:
                 #2009.12.19 13:19:27 
                 #need to generate the data association first now
                 j.associate_data()
@@ -938,27 +1323,24 @@ class Directory(Node):
                 #there is a problem if the max key is not an image
                 #could happen if other media is played more frequently
                 
-                #maxkey = j.datas.max_key().strip()
                 maxkey = j.datas.max_key()
                 if maxkey:
                     maxkey = maxkey.strip()
                     altkey = os.path.join(self.path, os.path.basename(maxkey))
                 else:
                     altkey = ''
-                    
-                if os.path.exists(maxkey):
-                    #print "Max Key: %s" % maxkey
-                    #node = make_node(maxkey)
-                    node = Node(maxkey)
-                    if node.find_type() == "Image":
+
+                mk = Path(maxkey)
+                ak = Path(altkey)
+                if mk.exists():
+                    if mk.type() == "Image":
                         return Image(maxkey)
                     else:
                         return self.images[0]
+                    
                 #maybe the path has changed in the log:
-                elif os.path.exists(altkey):
-                    #node = make_node(altkey, relative=False)
-                    node = Node(altkey)
-                    if node.find_type() == "Image":
+                elif ak.exists():
+                    if ak.type() == "Image":
                         return Image(altkey)
                     else:
                         return self.images[0]
@@ -966,7 +1348,6 @@ class Directory(Node):
             elif pick_by == "random":
                 random.seed()
                 r = random.randint(0, len(self.images)-1)
-                #return self.images.get_object(self.images[r])
                 return self.images[r]
 
             #must not have found anything statistical if we make it here
@@ -1079,72 +1460,6 @@ class Directory(Node):
         for f in self.files:
             f.adjust_time(hours)
 
-def make_node(path='', node_type=None, relative=True, create=True, local_path=local_path):
-    """
-    take either a relative or absolute path
-    looks at the path,
-    determines the right kind of node to associate with that path
-    returns the node
-
-    [2008.11.18 19:47:46]
-    might be a way to do this with meta classes
-
-    looks like this is a bit of a class factory
-
-    suggestions welcome!
-    """
-    if relative:
-        actual_path = os.path.join(unicode(local_path), path)
-        #actual_path = unicode(os.path.join(local_path, path))
-    else:
-        actual_path = path
-
-    actual_path = unicode(actual_path)
-    actual_path = os.path.normpath(actual_path)
-
-    new_node = None
-    if (create and not os.path.exists(actual_path) and
-        extension(actual_path) == "txt"):
-        #only want to create new log files, and then only if logging
-        #is enabled
-        #should be equivalent to a touch
-        f = file(actual_path, 'w')
-        f.close()
-
-    #to skip throwing an error if no file exists, uncomment following:
-    #if os.path.exists(actual_path):
-    if not node_type:
-        new_node = Node(actual_path)
-        node_type = new_node.find_type()
-        if node_type in [ "Playlist", "Movie", "Document", "Library", "Log" ]:
-            #special case
-            node_type = "File"
-            
-    #ah ha!  passing in path as unicode is very important if planning to work
-    #with unicode paths... otherwise gets converted to ascii here:
-    #new_node = eval("%s(u'%s')" % (node_type, actual_path))
-    #above is causing trouble on windows, trying without
-
-    #node_create = "%s(r'%s')" % (node_type, actual_path)
-    #node_create = r'%s("%s")' % (node_type, actual_path)
-    #re.subn(r"\\", r"\\\\", node_create)
-    #new_node = eval(node_create)
-
-    #2008.12.23 14:18:59
-    #eval having a hard time with windows.  switching to a nested if-else:
-    if node_type == "Node":
-        #new_node already defined:
-        pass
-    elif node_type == "Directory":
-        new_node = Directory(actual_path)
-    elif node_type == "Image":
-        new_node = Image(actual_path)
-    elif node_type == "Sound":
-        new_node = Sound(actual_path)
-    else:# node_type == "File":
-        new_node = File(actual_path)
-
-    return new_node
 
 def nodes_to_paths(nodes):
     """
@@ -1165,3 +1480,4 @@ def paths_to_nodes(paths):
     for p in paths:
         new_list.append(make_node(p))
     return new_list
+

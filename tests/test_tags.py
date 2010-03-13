@@ -14,20 +14,10 @@ def test_tag():
     s = from_tag(s)
     assert_equal (s, "Hello Tag")
 
-def test_path_to_tag():
-    s = path_to_tags("a/b/c/d.txt")
-    #assert s == "hello_tag", s
-    assert_equal (s, ["a", "b", "c", "d"])
-
-    s = path_to_tags("/d/e/f.g.txt")
-    assert_equal (s, ["d", "e", "f.g"])
-
-    s = path_to_tags("/h/i/j/k/")
-    assert_equal (s, ["h", "i", "j", "k"])
-
 class TestTags:
     def setUp(self):
         self.tags = Tags(['tag1', 'tag2'])
+        self.tags2 = Tags(['tag2', 'tag1'])
         
     def test_init(self):
         #make sure it loads
@@ -52,4 +42,7 @@ class TestTags:
         a = "blahblah"
         b =  Tags().from_tag_string(a)
         assert b == ['blahblah']
-        
+
+    def test_equal(self):
+        assert self.tags != self.tags2
+        assert self.tags.is_equal(self.tags2)

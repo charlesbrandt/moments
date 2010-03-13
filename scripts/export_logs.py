@@ -24,7 +24,8 @@ import sys, subprocess, os, re
 
 from moments.journal import Journal
 from moments.tags import Tags
-from moments.node import make_node
+#from moments.node import make_node
+from moments.path import Path
 from merge_logs import merge_logs
 
 def export_logs(source, destination, add_tags=[], recurse=True):
@@ -36,9 +37,11 @@ def export_logs(source, destination, add_tags=[], recurse=True):
     """
     conflicts = []
 
-    src = make_node(source, relative=False)
+    #src = make_node(source, relative=False)
+    src = Path(source).load()
     src.scan_directory()
-    dst = make_node(destination, relative=False)
+    #dst = make_node(destination, relative=False)
+    dst = Path(destination).load()
     dst.scan_directory()
     dstcontents = dst.contents[:]
 
@@ -49,8 +52,8 @@ def export_logs(source, destination, add_tags=[], recurse=True):
         if i not in [ "ignore_me.txt", ".hg", "README.txt" ] and re.search("\.txt", i):
 
             #print datetime.now()
-            n1path = os.path.join(source, i)
-            n2path = os.path.join(destination, i)
+            n1path = Path(os.path.join(source, i))
+            n2path = Path(os.path.join(destination, i))
 
             print "exporting: %s" % i
 
@@ -59,9 +62,11 @@ def export_logs(source, destination, add_tags=[], recurse=True):
 
                 dstcontents.remove(i)
                 
-                n1 = make_node(n1path)
-                n2 = make_node(n2path)
-                if n1.find_type() == "Directory":
+                #n1 = make_node(n1path)
+                #n2 = make_node(n2path)
+                n1 = n1path.load()
+                n2 = n2path.load()
+                if n1path.type() == "Directory":
                     if recurse:
                         conflicts.extend(export_logs(n1, n2, add_tags, recurse))
                     else:
@@ -77,9 +82,11 @@ def export_logs(source, destination, add_tags=[], recurse=True):
                         #merge came back with correct number of new entries
                         #lets remove the originals
                         #and rename the new one
-                        os.remove(n2path)
-                        os.rename(merged, n2path)
-                        os.remove(n1path)
+                        #os.remove(str(n2path))
+                        n2path.remove()
+                        os.rename(merged, str(n2path))
+                        #os.remove(n1path)
+                        n1path.remove()
             else:
                 # the file is in the source only
                 # lets add tags (if any) then move the file to dst
@@ -93,7 +100,7 @@ def export_logs(source, destination, add_tags=[], recurse=True):
                 mv.wait()
 
     #if anything is left in dstcontents, it must not have been in src
-    #in the case of an export, it's already on the destination... fine
+    #in the case of an export, it's already on the destination... fin
     if len(dstcontents):
         pass
 

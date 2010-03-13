@@ -29,7 +29,8 @@ $Id$ (???)
 import sys, os, subprocess, re
 from moments.journal import Journal
 from moments.association import check_ignore
-from moments.tags import path_to_tags
+#from moments.tags import path_to_tags
+from moments.path import Path
 
 def split_log(path, add_tags, destination='/c/'):
     print path
@@ -42,7 +43,8 @@ def split_log(path, add_tags, destination='/c/'):
             assert e.created
             
         for e in j:
-            dest_path = os.path.join(destination, str(e.created.year), str(e.created.month))
+            month = "%02d" % e.created.month
+            dest_path = os.path.join(destination, str(e.created.year), month)
             dest = os.path.join(dest_path, e.created.filename())
             print dest
             #print e.render()
@@ -97,7 +99,8 @@ def walk_logs(path, add_tags=[], subtract_tags=[],
                 if not check_ignore(os.path.join(root, f), ignore_items):
                     these_tags = add_tags[:]
                     if include_path_tags:
-                        filename_tags = path_to_tags(os.path.join(root, f))
+                        filename_tags = Path(os.path.join(root, f)).to_tags()
+                        #filename_tags = path_to_tags(os.path.join(root, f))
                         these_tags.extend(filename_tags)
                     #subtract tags last:
                     for tag in subtract_tags:

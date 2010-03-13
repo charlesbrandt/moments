@@ -1,50 +1,5 @@
 import re, os
 
-def split_path(path):
-    """
-    return a list of all parts of the path
-    (os.path.split only splits into two parts, this does all)
-    """
-    parts = []
-    #make sure the path we were sent starts with a slash for end case
-    if not re.match('^\/', path):
-        path = os.path.join('/', path)
-        #print "new: %s" % path
-    while path and path != '/':
-        (path, suffix) = os.path.split(path)
-        parts.insert(0, suffix)
-    #print parts
-    return parts
-
-def path_to_tags(path):
-    """
-    looks at the specified path to generate a list of tags
-    based on the file name and location
-
-    check if the last item in the path is a file with an extension
-    get rid of the extension if so
-    """
-
-    all_tags = Tags()
-    path_parts = split_path(path)
-
-    #get rid of filename extension
-    last_part = path_parts[-1]
-    last_part_name, last_part_extension = os.path.splitext(last_part)
-    path_parts[-1] = last_part_name
-    
-    #convert each item to tags individually
-    #each item in a path could be made up of multiple tags
-    #i.e work-todo
-    for p in path_parts:
-        if p:
-            part_tags = Tags().from_tag_string(p)
-            for tag in part_tags:
-                if tag not in all_tags:
-                    all_tags.append(tag)
-
-    return all_tags
-
 def to_tag(item):
     """
     take any string and convert it to an acceptable tag
@@ -114,8 +69,12 @@ class Tags(list):
             if t not in self:
                 self.append(t)
 
-
-
+    def is_equal(self, other):
+        equal = True
+        for t in other:
+            if t not in self:
+                equal = False
+        return equal
                 
 
 

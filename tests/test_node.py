@@ -3,11 +3,12 @@ import os
 #for assert_equal
 from nose.tools import *
 
-from moments import node
+import moments.path
 from moments.timestamp import Timestamp
-class TestNode:
+
+class TestStorage:
     def setUp(self):
-        self.node = node.Node(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
+        self.node = moments.path.File(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
 
     def test_name(self):
         assert str(self.node) == os.path.join(os.getcwd(), "IMG_6166_l.JPG")
@@ -42,7 +43,7 @@ class TestNode:
             
 def test_osbrowser_get_images():
     path = '.'
-    d = node.Directory(path)
+    d = moments.path.Directory(path)
 
     d.scan_filetypes()
     images = []
@@ -63,18 +64,18 @@ def test_osbrowser_get_images():
     assert images == images2
 
 def test_image_size_name():
-    i = node.Image('./IMG_6166_l.JPG')
+    i = moments.path.Image('./IMG_6166_l.JPG')
     new_name = i.size_name('small')
-    assert new_name == 'IMG_6166_l_s.JPG'
+    assert_equal(new_name, 'IMG_6166_l_s.JPG')
 
 def test_image_get_size():
-    i = node.Image('./IMG_6166_l.JPG')
+    i = moments.path.Image('./IMG_6166_l.JPG')
 
     path = i.get_size('small')
     #print path
-    assert path == 'sized/small/IMG_6166_l_s.JPG'
+    assert_equal(path, './sized/small/IMG_6166_l_s.JPG')
 
-from moments.node import Directory
+from moments.path import Directory
 class TestDirectory:
     def setUp(self):
         self.d = Directory(os.getcwd())

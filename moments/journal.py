@@ -10,11 +10,13 @@ from log import Log
 from moment import Moment
 from timestamp import Timestamp
 from association import Association, check_ignore
-from tags import path_to_tags
+#from path import Path
 
 # not to be confused with association.filter_list
 def filter_items(items, updates):
     """
+    aka find_and_replace
+    
     apply all updates in updates list 
     to all items in items list
 
@@ -59,84 +61,13 @@ def log_action(destination, message, tags=[]):
     #print entry.render()
     return entry
 
-def load_journal(path, add_tags=[], subtract_tags=[],
-                 include_path_tags=True, create=False):
-    """
-    walk the given path and
-    create a journal object from all logs encountered in the path
-    
-    create a temporary, in memory, journal from logs
-
-    this works for both directories and log files
-
-    *2009.06.18 12:38:45
-    
-    this was started to be abstracted from osbrowser in player.py.  
-    By moving here, we minimize dependencies outside of Moments module
-
-    load_journal cannot guarantee that the returned Journal item will have a
-    filename (self.path) associated with it for later saving.
-
-    in that case should use:
-    ::
-    
-      j = Journal()
-      j.from_file(path, add_tags=these_tags)
-
-    -or-
-    ::
-    
-      j = load_journal(path)
-      j.path = destination
-
-    of course you can always pass the path in explicitly to to_file:
-    to_file(filename=path)
-
-    """
-    #ignore_dirs = [ 'downloads', 'binaries' ]
-
-    #this would be the place to add .hgignore items to the ignore_items list
-    ignore_items = [ 'downloads', 'index.txt' ]
-    j = Journal()
-    log_check = re.compile('.*\.txt$')
-    if os.path.isdir(path):
-        for root,dirs,files in os.walk(path):
-            for f in files:
-                #make sure it at least is a log file (.txt):
-                if not log_check.search(f):
-                    continue
-
-                if not check_ignore(os.path.join(root, f), ignore_items):
-                    these_tags = add_tags[:]
-                    #will need to abstract context_tags() too... move to Tags
-                    if include_path_tags:
-                        filename_tags = path_to_tags(os.path.join(root, f))
-                        these_tags.extend(filename_tags)
-                    #subtract tags last:
-                    for tag in subtract_tags:
-                        if tag in these_tags:
-                            these_tags.remove(tag)
-                    j.from_file(os.path.join(root, f), add_tags=these_tags)
-
-    elif os.path.isfile(path) and log_check.search(path):
-        j.from_file(path, add_tags)
-    elif create and log_check.search(path):
-        #make a new log:
-        j.to_file(path)
-        j.from_file(path, add_tags)
-    else:
-        #no journal to create
-        pass
-    return j
-
-
 class Journal(list):
     """
     Main Moments module for collecting Moment objects in one place
 
     Based on a standard python list
     """
-    def __init__(self, path=None, title=''):
+    def __init__(self, path=None, title='', items=[]):
         list.__init__(self)
         #actual entries will be stored in self
 
@@ -146,7 +77,12 @@ class Journal(list):
         self.tags = Association()
 
         # used for default file path:
-        self.path = path
+        # convert to string just incase a Path object is sent
+        self.path = str(path)
+        if path:
+            self.from_file(self.path)
+        elif items:
+            self.from_entries(items)
 
         # renamed self.name to self.path
         # then use name as a general name for the journal, if displayed
@@ -181,8 +117,9 @@ class Journal(list):
         2
         """
         if filename:
-            l = Log(filename)
-        elif self.path:
+            self.path = str(filename)
+
+        if self.path:
             l = Log(self.path)
         else:
             print "No name to save Journal to"
@@ -281,15 +218,19 @@ class Journal(list):
         False if it was not a journal/Log file
         """
         found_entries = False
-        if not log_name:
-            log_name = Timestamp().filename()
 
-        #if our path wasn't originally initialized, go ahead and set it:
-        if not self.path:
-            self.path = log_name
-
-        l = Log(log_name)
-        l.from_file(log_name)
+        if log_name:
+            #if something is passed in, that will override the original path
+            self.path = str(log_name)
+        elif not self.path:
+            #if our path wasn't originally initialized, go ahead and set it:
+            self.path = Timestamp().filename()
+        else:
+            #no log_name sent, but self.path was set
+            pass
+        
+        l = Log(self.path)
+        l.from_file(self.path)
 
         #*2009.08.05 11:01:28 
         #since we are no longer using the dates as the primary way to index
@@ -400,9 +341,11 @@ class Journal(list):
                     options = self.dates[entry_time]
                     found_match = False
                     for existing in options:
-                        if ( (existing.data == entry.data) and
-                               (existing.tags == entry.tags) ):
+                        #if ( (existing.data == entry.data) and
+                        #       (existing.tags == entry.tags) ):
+                        if existing.is_equal(entry):
                             #print "DUPE, but tags and data are same... skipping"
+                            
                             found_match = True
                         elif existing.data == entry.data:
                             #tags must differ... those are easy to merge:
@@ -488,6 +431,65 @@ class Journal(list):
                 entry_set = entry_set.union(set(self.tags[tag]))
         return list(entry_set)
 
+    def union(self, other):
+        """
+        take another journal
+        combine all entries in it and self
+
+        similar to merge_logs
+        (to be consistent with intersect and difference behavior:
+        return a new Journal with those entries)
+
+        this is also what from_entries does
+        """
+        self.from_entries(other)
+
+    def intersect(self, other):
+        """
+        take another journal,
+        return a new journal
+        with only the entries that are in common to both
+        """
+        common = []
+        for entry in other:
+            entry_time = str(entry.created)
+            matched = False
+            if self.dates.has_key(entry_time):
+                options = self.dates[entry_time]
+            else:
+                options = []
+            for existing in options:
+                if existing.is_equal(entry):
+                    common.append(existing)
+        return Journal(items=common)
+
+    def difference(self, other):
+        """
+        take another journal,
+        return a new journal
+        with only the entries that are only in the other journal
+        not in ourself
+
+        NOTE:
+        we may have entries in self that are not in other...
+        those will not be returned.
+        this can be called in the opposite direction if those are wanted
+        """
+        diffs = []
+        for entry in other:
+            entry_time = str(entry.created)
+            matched = False
+            if self.dates.has_key(entry_time):
+                options = self.dates[entry_time]
+            else:
+                options = []
+            for existing in options:
+                if existing.is_equal(entry):
+                    matched = True
+            if not matched:
+                diffs.append(entry)
+        return Journal(items=diffs)
+        
 #UNTESTED BELOW HERE:
 
     def filter_entries(self, updates):
@@ -579,11 +581,6 @@ class Journal(list):
                     #must be a blank line
                     pass
                 
-    def make_graph(self):
-        g = graph.Graph(self.path, self.j)
-        g.make_links()
-        g.write_graph2()
-
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

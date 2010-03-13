@@ -26,7 +26,7 @@ class TestLog:
 	l.from_file()
         entries = l.to_entries()
         print "ENTRIES LOADED: %s" % len(entries)
-        assert len(entries) == 3
+        assert len(entries) == 4
 
     def test_render(self):
         l = Log("./sample_log.txt")

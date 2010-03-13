@@ -22,11 +22,12 @@ these functions are higher level operations that utilize Journal.extract
 
 import sys, os, re
 from datetime import datetime
-from journal import load_journal, Journal
+from journal import Journal
 from timestamp import Timestamp
-from tags import Tags, path_to_tags
+from tags import Tags
 from association import check_ignore, filter_list
 from ascii import unaccented_map
+from path import Path, load_journal
 
 class ExtractConfig(object):
     """
@@ -41,7 +42,7 @@ class ExtractConfig(object):
 ## def extract_one(tags, path, extract_type):
 
 ##     these_tags = []
-##     filename_tags = path_to_tags(path)
+##     filename_tags = Path(path).to_tags()
 ##     these_tags.extend(filename_tags)
 ##     j = Journal()
 ##     j.from_file(path, add_tags=these_tags)
@@ -130,7 +131,7 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
     can print actions or make temp logs
     """
     these_tags = []
-    filename_tags = path_to_tags(path)
+    filename_tags = Path(path).to_tags()
     #print filename_tags
     filename_tags = filter_list(filename_tags, ignores, search=True)
     #print filename_tags
@@ -272,7 +273,7 @@ def extract_completes():
     ignores = []
     #consider adding filename path tags to ignores
     #we don't really want to add or remove tags at this stage.
-    ignores = path_to_tags(source)
+    ignores = Path(source).to_tags()
 
     #look at the source,
     #the prefix path should be the same (dirname)

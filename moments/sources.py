@@ -1,9 +1,10 @@
 import os, re
-from moments.journal import Journal, load_journal
+from moments.journal import Journal
 from moments.timestamp import Timestamp
 from moments.moment import Moment
 from moments.association import Association
 from moments.tags import Tags
+from moments.path import load_journal
 
 class Position(object):
     """

@@ -3,7 +3,7 @@ sys.path.append(os.path.dirname(os.getcwd()))
 
 #from extract_tags import *
 from moments.extract import *
-from moments.journal import load_journal
+from moments.path import load_journal
 
 ## def test_extract():
 ##     new = extract(test, "todo")

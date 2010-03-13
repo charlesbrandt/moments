@@ -22,7 +22,7 @@ class TestJournal:
         j = journal.Journal()
         j.from_file("sample_log.txt")
         print self.j
-        assert len(j) == 3
+        assert len(j) == 4
 
     def test_to_file(self):
         e = moment.Moment("test entry")
@@ -30,7 +30,8 @@ class TestJournal:
         self.j.to_file("sample_log2.txt")
         k = journal.Journal()
         k.from_file("sample_log2.txt")
-        assert len(k) == 4
+        print len(k)
+        assert len(k) == 5
 
     def test_merge(self):
         #f1 = "sample_log.txt"
@@ -38,14 +39,14 @@ class TestJournal:
         j2 = journal.Journal()
         j2.from_file(f2)
         print j2
-        assert len(j2) == 2
+        assert len(j2) == 4
 
         self.j.from_file(f2)
 
         #will have 1 dupe timestamp,
         #but now dupes are added so there should be 5:
         print self.j
-        assert len(self.j) == 5
+        assert len(self.j) == 6
 
     def test_merge2(self):
         f2 = "sample_log3.txt"
@@ -53,7 +54,7 @@ class TestJournal:
         #will have 1 dupe timestamp,
         #but now dupes are added so there should be 5:
         print self.j
-        assert len(self.j) == 5
+        assert len(self.j) == 6
 
     def test_entry_position(self):
         e = moment.Moment("Testing position")
@@ -69,7 +70,7 @@ class TestJournal:
         entry = self.j[1]
         print entry.render()
         self.j.remove_entry(entry)
-        assert len(self.j) == 2
+        assert len(self.j) == 3
         print "In dates?: %s" % self.j.dates.keys_with_item(entry)
         assert self.j.dates.keys_with_item(entry) == []
         assert self.j.tags.keys_with_item(entry) == []
@@ -77,7 +78,7 @@ class TestJournal:
     def test_limit(self):
         entries = self.j.limit(datetime(2008, 10, 21))
         print entries
-        assert len(entries) == 2
+        assert len(entries) == 3
 
         #get specific moment entry using that entry's timestamp:
         tstamp = "20081218210057"
@@ -99,6 +100,15 @@ class TestJournal:
         entries = self.j.intersect_tags(tags)
         print "%s entries found from intersect" % len(entries)
         assert len(entries) == 2
+
+    def test_newest_entries_from_file(self):
+        k = journal.Journal("sample_log2.txt")
+        others = self.j.difference(k)
+        assert len(others) == 1
+
+        print others[0]
+        print others[0].data
+        assert others[0].data == "test entry\n\n"
 
     ## def test_to_db(self):
     ##     f2 = "sample_log3.txt"

@@ -6,12 +6,13 @@ helper functions for use with moments.
 import os
 from datetime import datetime
 from moments.timestamp import Timestamp, Timerange
-from moments.journal import log_action, load_journal, Journal
+from moments.journal import log_action, Journal
+from moments.path import Path, load_journal
 
 def load_instance(instances="/c/instances.txt", tag=None):
     """
     load instances.txt journal
-    look for the newest entry with tag "default"
+    look for the newest entry with tag 
     return the data of the entry as a list of each file/line
     """
     j = load_journal(instances)
@@ -55,7 +56,7 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     #CALENDAR LOADING:
     this_month_file = '%02d.txt' % now.month
     this_month_path = os.path.join(calendars, this_month_file)
-    j = load_journal(this_month_path, ['calendar'])
+    j = load_journal(this_month_path, add_tags=['calendar'])
     #print len(j)
     # go ahead an convert recurring annual entries to this year
     # then if one is today, it should show up in the log

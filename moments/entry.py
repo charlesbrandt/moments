@@ -27,6 +27,19 @@ class Entry(object):
         #self.source_file = None
         self.path = path
 
+
+    def is_equal(self, other):
+        """
+        take another entry/moment
+        see if our contents are equal
+        """
+        equal = True
+        if not self.tags.is_equal(other.tags):
+            equal = False
+        elif self.data != other.data:
+            equal = False
+        return equal
+
     def tag_links(self):
         """
         return a list of tuples for each tag's association with all other tags

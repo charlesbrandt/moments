@@ -12,7 +12,8 @@
 """
 
 import sys, os
-from moments.journal import Journal, load_journal
+from moments.journal import Journal
+from moments.path import load_journal
 from moments.timestamp import Timestamp
 
 def merge_many(source, destination, add_tags=[]):
@@ -26,6 +27,12 @@ def merge_many(source, destination, add_tags=[]):
     
 def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     """
+    this is a common operation involving two log files or two Journal objects
+
+    it is fairly simple with the Journal object,
+    but this handles all of the calls
+    for creating those Journal objects from files
+    
     add tags will only apply to the first file
     it is being merged into the second
     """
@@ -50,8 +57,8 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
 
     if not ofile:
         now = Timestamp(now=True)
-        temp_name = "merge-%s-%s.txt" % (now.compact(), os.path.basename(f2))
-        ofile = os.path.join(os.path.dirname(f2), temp_name)
+        temp_name = "merge-%s-%s.txt" % (now.compact(), f2.name)
+        ofile = os.path.join(str(f2.parent()), temp_name)
     result += "SAVING as: %s\n" % ofile
     j.to_file(ofile)
 

@@ -41,6 +41,16 @@ class Moment(Entry):
         #should not be stored in any database
         self.placeholder = placeholder
 
+    def is_equal(self, other):
+        """
+        take another entry/moment
+        see if our contents are equal
+        """
+        equal = Entry.is_equal(self, other)
+        if equal and str(self.created) != str(other.created):
+            equal = False
+        return equal
+
     def total_time(self):
         #could also check sub_entries to see how much time was accounted for
         #see if it gets close

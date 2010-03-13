@@ -25,3 +25,22 @@ class TestMoment:
         print entry
         print self.moment.render()
         assert entry == self.moment.render()
+
+    def test_equal(self):
+
+        m1 = moment.Moment(created=self.now)
+        m2 = moment.Moment(created=self.now)
+        #these should be different objects, that will fail equality testing:
+        assert m1 != m2
+        assert m1.is_equal(m2)
+
+        later = timestamp.Timestamp(compact="20100309")
+        m3 = moment.Moment(created=later)
+        assert not m1.is_equal(m3)
+
+        m2.data = "on second thought..."
+        assert not m1.is_equal(m2)
+
+        m1.data = "on second thought..."
+        assert m1.is_equal(m2)
+        
