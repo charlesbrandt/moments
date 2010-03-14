@@ -18,8 +18,14 @@
 ;      (load-file "~/.emacs")))
 
 ; *2009.12.27 17:49:12 
-(global-set-key (kbd "C-x r") 'revert-buffer)
-
+(global-set-key (kbd "C-x r") 'search-backwards)
+(global-set-key (kbd "C-r") 'revert-buffer)
+; *2010.03.12 13:37:19 
+; http://zhangda.wordpress.com/2009/04/13/hacking-on-revert-buffer/
+; autorevert for log files
+(setq revert-without-query (quote (".*20.*.txt")))
+; regular expressions reference:
+; http://www.cs.utah.edu/dept/old/texinfo/emacs18/emacs_17.html
 
 ;*2008.03.10 09:24 uncommenting:
 ;also [2007.11.01 13:50]
