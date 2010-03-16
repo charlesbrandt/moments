@@ -21,20 +21,10 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-Timestamps have different ways of being formatted
-this object is a common place to store these
-
-*2009.11.04 11:15:10 todo
-need a way to convert Timestamps to a "seconds since epoc" format
-
-*2009.03.14 18:23:13
-would be nice if this were a subclass of datetime
-with special formatters built in
-tried this last week with ill effects, but still desirable
-
-*2009.03.19 16:17:04 
-may want to integrate time related methods of osbrowser.node (day, date...)
-and also Directory.file_date_range (best migrated to Timerange)
+*2010.03.16 10:56:36 todo
+would be nice if format was more generalized
+it is difficult when there are different versions of a string
+depending on the degree of accuracy. (seconds, no seconds, etc)
 
 *2009.07.17 07:36:52
 considering that timestamps have different formats
@@ -44,9 +34,16 @@ and make it settable/configurable.
 depending on format
 could have different output for date, time, accuracies, etc.
 
-moving time to be the first keyword argument
+*2010.03.16 10:20:38
+some time ago...
+moved time to be the first keyword argument
 that way Timestamp objects can be initialized from a standard python
 datetime object, without specifying the time keyword
+
+*2009.03.14 18:23:13 subclass datetime why_not
+would be nice if this were a subclass of datetime
+with special formatters built in
+tried this last week with ill effects, because...
 
 datetime objects in python are immutable
 class attributes like year, month, and day are read-only
@@ -61,6 +58,7 @@ be passed in, like datetime does
 
 could add those arguments to the init function if that was needed
 by those using Timestamp objects in place of datetime objects
+
 
 """
 
@@ -136,12 +134,13 @@ def parse_line_for_time(line):
 
     return [ts, remainder]
 
-    
-
 class Timestamp(object):
     def __init__(self, time=None, tstamp=None, cstamp=None, compact=None,
                  now=True):
         """
+        Timestamps have different ways of being formatted
+        this object is a common place to store these
+
         compact and cstamp are the same thing
 
         something in the class docstring was causing problems with autotab
@@ -168,6 +167,10 @@ class Timestamp(object):
             self.dt = datetime.now()
             
     def __getattr__(self, name):
+        """
+        if the Timestamp class doesn't have the attribute,
+        check if the associated datetime object does have the attribute.
+        """
         if name == 'datetime' or name == 'time':
             return self.__getattribute__('dt')
             #return self.dt
@@ -234,6 +237,8 @@ class Timestamp(object):
 
     def epoch(self):
         """
+        convert Timestamps to a 'seconds since epoc' format
+        
         return the current timestamp object as the number of seconds since the
         epoch.  aka POSIX timestamp
         *2009.11.04 13:57:55
@@ -277,13 +282,6 @@ class Timestamp(object):
             self.dt = None
         return self.dt
 
-    # should be safe to replace these calls with from_text now
-    ## def from_utc(self, text_time):
-    ##     #print text_time
-    ##     time = datetime(*(strptime(str(text_time), "%Y-%m-%d %H:%M:%S")[0:6]))
-    ##     self.dt = time
-    ##     return time
-    
     #was log.text_to_time
     #in ruby: parse
     def from_text(self, text_time):
