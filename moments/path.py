@@ -78,7 +78,8 @@ def extension(name):
     will not work with file names with multiple '.'s in them
     """
     #could also check if there is a '.' in the string, return none if not
-    parts = name.split('.')
+    #parts = name.split('.')
+    parts = os.path.splitext(name)
     extension = parts[-1]
     #print extension
     return extension
@@ -130,40 +131,12 @@ class Path(object):
         """
         take either a relative or absolute path
         """
+
+        #these get set in parse_path and parse_name
+        self.name = ''
+        self.extension = ''
         
-        if not path and not parts:
-            raise AttributeError, "Need either path or parts"
-
-        if path:
-            #self.path = path
-            #could check if it is an actual path here
-            self.path = unicode(path)
-        else:
-            self.path = self.from_parts(parts)
-
-        if relative:
-            actual_path = os.path.join(unicode(local_path), self.path)
-            actual_path = unicode(actual_path)
-            actual_path = os.path.normpath(actual_path)
-            self.path = actual_path
-
-        #*2010.03.13 09:59:05
-        #maybe it should be file_name or _file_name instead of full_name???
-            
-        #this should be a property, that combines name and extension
-        #self.full_name = ''
-
-        #http://docs.python.org/lib/module-os.path.html        
-        self._full_name = os.path.basename(self.path)
-        if not self._full_name:
-            #might have been passed in a path with a trailing '/'
-            self.path = os.path.dirname(self.path)
-            self._full_name = os.path.basename(self.path)
-
-
-        #name without file extension:
-        self.name = name_only(self._full_name)
-        self.extension = extension(self._full_name)
+        self.parse_path(path, parts, relative, local_path)
 
         #file (local), http, smb, etc
         self.protocol = ''
@@ -184,7 +157,20 @@ class Path(object):
         #parent object
         self.content = None
 
+        #self.filename = self._full_name
         
+    def _get_filename(self):
+        return self.name + self.extension
+    def _set_filename(self, name):
+        self.parse_name(name)
+    filename = property(_get_filename, _set_filename)
+
+    def _get_path(self):
+        return os.path.join(self._dirname, self.filename)
+    def _set_path(self, path):
+        self.parse_path(path)
+    path = property(_get_path, _set_path)
+            
     def __str__(self):
         #this will fail if path has unicode characters it doesn't know 
         return str(self.path)
@@ -192,20 +178,64 @@ class Path(object):
     def __unicode__(self):
         return unicode(self.path)
 
+    def parse_name(self, name):
+        #name without file extension:
+        self.name = name_only(name)
+        self.extension = extension(name)
+        self._full_name = name
+
+    def parse_path(self, path=None, parts=None, relative=False, local_path=''):
+        #print "parsing path: %s" % path
+        if not path and not parts:
+            raise AttributeError, "Need either path or parts"
+
+        if path:
+            #self._dirname = path
+            #could check if it is an actual path here
+            self._dirname = unicode(path)
+        else:
+            self._dirname = self.from_parts(parts)
+
+        if relative:
+            actual_path = os.path.join(unicode(local_path), self._dirname)
+            actual_path = unicode(actual_path)
+            actual_path = os.path.normpath(actual_path)
+            self._dirname = actual_path
+
+        #*2010.03.13 09:59:05
+        #maybe it should be file_name or _file_name instead of full_name???
+            
+        #this should be a property, that combines name and extension
+        #self.full_name = ''
+
+        #http://docs.python.org/lib/module-os.path.html        
+        self._full_name = os.path.basename(self._dirname)
+        if not self._full_name:
+            #might have been passed in a path with a trailing '/'
+            self._dirname = os.path.dirname(self._dirname)
+            self._full_name = os.path.basename(self._dirname)
+
+        self._dirname = os.path.dirname(self._dirname)
+        #print "fullname: %s" % self._full_name
+        self.parse_name(self._full_name)
+        
+    def from_parts(self, parts):
+        path = os.path.join(parts)
+        return path
+                   
     def type(self):
         """
         determine the subclass that should be associated with this Path
         this gives us a central place to track this
         """
-
-        #PCD seems to cause a lot of trouble
-        image_extensions = [ 'jpg', 'png', 'gif', 'jpeg', 'JPG', 'tif' ]
-        movie_extensions = [ 'mpg', 'avi', 'flv', 'vob', 'wmv', 'AVI', 'iso', 'asf' ]
+        #PCD image format seems to cause a lot of trouble
+        image_extensions = [ '.jpg', '.png', '.gif', '.jpeg', '.JPG', '.tif' ]
+        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.AVI', '.iso', '.asf' ]
 
         #, 'm4p' are not playable by flash, should convert to use
-        sound_extensions = [ 'mp3', 'wav', 'aif', 'ogg' ]
+        sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg' ]
 
-        journal_extensions = [ 'txt', 'log' ]
+        journal_extensions = [ '.txt', '.log' ]
 
         #others
         #playlist_extensions = [ 'm3u', 'pls' ]
@@ -250,13 +280,14 @@ class Path(object):
         """
         new_node = None
         if (create and not os.path.exists(self.path) and
-            extension(self.path) == "txt"):
+            self.extension == ".txt"):
             #only want to create new log files, and then only if logging
             #is enabled
             #should be equivalent to a touch
 
             #f = file(self.path, 'w')
             #f.close()
+            #print "creating"
             self.create()
 
         #to skip throwing an error if no file exists, uncomment following:
@@ -380,14 +411,18 @@ class Path(object):
 
         otherwise make a new directory
         """
+        #print "Extension: %s" % self.extension
         if self.extension:
             f = file(self.path, 'w')
             f.close()
+            assert self.exists()
         else:
             if mode:
-                os.mkdir(self.path, mode)
+                #os.mkdir(self.path, mode)
+                os.makedirs(self.path, mode)
             else:
-                os.mkdir(self.path)
+                #os.mkdir(self.path)
+                os.makedirs(self.path)
 
     def remove(self):
         if os.path.exists(self.path):
@@ -466,10 +501,6 @@ class Path(object):
             parts.insert(0, suffix)
         #print parts
         return parts
-
-    def from_parts(self, parts):
-        path = os.path.join(parts)
-        return path
 
     #def path_to_tags(self):
     def to_tags(self, include_name=True):
@@ -811,10 +842,31 @@ class File(object):
         return t.strftime("%Y%m%d")
 
     def timestamp(self):
+        """
+        return a corresponding moments Timestamp object for the file's mtime
+        """
         self.check_stats()
         modified = Timestamp()
         modified.from_epoch(self.mtime)
         return modified
+
+    def make_md5(self):
+        """
+        calculate the md5 hash for ourself
+
+        could store this in metadata at some point
+
+        http://docs.python.org/library/hashlib.html#module-hashlib
+        """
+        import hashlib
+        m = hashlib.md5()
+        fd = open(str(self.path),"rb")
+        m.update(fd.read())
+        self.md5 = m.hexdigest()
+        #not sure how this differs
+        #self.md5 = m.digest()
+        
+        return self.md5
     
 
 # should just call journal.log_action directly
@@ -849,7 +901,7 @@ class Image(File):
         self.thumb_dir_path = os.path.join(str(self.path.parent()),
                                            self.thumb_dir_name)
         
-        self.sizes = { 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
+        self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
 
         #parts = self.path.name.split('.')
         #self.last_four = parts[-2][-4:]
@@ -861,14 +913,20 @@ class Image(File):
         """
         #parts = self.name.split('.')
         #new_name = '.'.join(parts[:-1]) + self.sizes[size] + '.' + parts[-1]
-        new_name = self.path.name + self.sizes[size] + '.' + self.path.extension
+        #new_name = self.path.name + self.sizes[size] + '.' +self.path.extension
+        new_name = self.path.name + self.sizes[size] + self.path.extension
         return new_name                  
         
     def size_path(self, size):
         """
         take a size and create the corresponding thumbnail (local) path 
         """
-        thumb_path = os.path.join(self.thumb_dir_path, size, self.size_name(size))
+        if size == 'tiny_o':
+            #can keep the different tiny versions together:
+            size_dir = 'tiny'
+        else:
+            size_dir = size
+        thumb_path = os.path.join(self.thumb_dir_path, size_dir, self.size_name(size))
         return thumb_path
 
     ## def size_path_relative(self, size):
@@ -889,7 +947,7 @@ class Image(File):
         thumb_path = self.size_path(size)
         if not os.path.isfile(thumb_path):
             self.make_thumbs()
-        return self.size_path(size)
+        return thumb_path
 
     def move(self, destination, relative=True):
         """
@@ -930,9 +988,10 @@ class Image(File):
             
         #make separate directories for each thumbnail size
         for k in self.sizes.keys():
-            size_path = os.path.join(base, k)
-            if not os.path.isdir(size_path):
-                os.mkdir(size_path)
+            if k != 'tiny_o':
+                size_path = os.path.join(base, k)
+                if not os.path.isdir(size_path):
+                    os.mkdir(size_path)
 
     def _square_image(self, small):
         if small.size[0] != small.size[1]:
@@ -966,13 +1025,13 @@ class Image(File):
             t = int(config['thumb.t'])
             u = int(config['thumb.u'])
         else:
-            l = 800
-            m = 200
-            s = 150
+            l = 1280
+            m = 800
+            s = 200
             t = 100
             u = 25
             
-        name = self.name
+        name = self.path.name
 
         self.make_thumb_dirs()
         
@@ -982,27 +1041,34 @@ class Image(File):
         #    if os.path.isdir(self.size_path(s)):
         #        os.remove(self.size_path(s))
 
+        #try:
+        image = PILImage.open(str(self.path))
+        image.thumbnail((l,l), PILImage.ANTIALIAS)
+
+        medium = image.copy()
+        medium.thumbnail((m,m), PILImage.ANTIALIAS)
+        
+        small = medium.copy()
+        small = self._square_image(small)
+        small.thumbnail((s,s), PILImage.ANTIALIAS)
+
+        tiny = small.copy()
+        tiny.thumbnail((t,t), PILImage.ANTIALIAS)
+
+        #o for original dimensions
+        tiny_o = image.copy()
+        #we want to fix the width at t, not concerned about height
+        tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
+
         try:
-            image = PILImage.open(self.path)
-            image.thumbnail((l,l), PILImage.ANTIALIAS)
-
-            medium = image.copy()
-            medium = self._square_image(medium)
-            medium.thumbnail((m,m), PILImage.ANTIALIAS)
-            small = medium.copy()
-            small.thumbnail((s,s), PILImage.ANTIALIAS)
-
-
-            tiny = small.copy()
-            tiny.thumbnail((t, t), PILImage.ANTIALIAS)
-
             image.save(self.size_path('large'), "JPEG")
             medium.save(self.size_path('medium'), "JPEG")
             small.save(self.size_path('small'), "JPEG")
             tiny.save(self.size_path('tiny'), "JPEG")
+            tiny_o.save(self.size_path('tiny_o'), "JPEG")
         except:
-            print "error generating thumbs for: %s" % self.name
-            pass
+            print "error generating thumbs for: %s" % self.path.name
+            #pass
 
     def rotate_pil(self, degrees=90):
         """

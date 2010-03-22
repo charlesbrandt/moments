@@ -59,7 +59,6 @@ be passed in, like datetime does
 could add those arguments to the init function if that was needed
 by those using Timestamp objects in place of datetime objects
 
-
 """
 
 from datetime import datetime, timedelta, date
@@ -136,7 +135,7 @@ def parse_line_for_time(line):
 
 class Timestamp(object):
     def __init__(self, time=None, tstamp=None, cstamp=None, compact=None,
-                 now=True):
+                 now=True, format=None):
         """
         Timestamps have different ways of being formatted
         this object is a common place to store these
@@ -165,7 +164,9 @@ class Timestamp(object):
             self.from_compact(compact)
         elif now:
             self.dt = datetime.now()
-            
+
+        self.format = format
+        
     def __getattr__(self, name):
         """
         if the Timestamp class doesn't have the attribute,
@@ -173,7 +174,6 @@ class Timestamp(object):
         """
         if name == 'datetime' or name == 'time':
             return self.__getattribute__('dt')
-            #return self.dt
         elif name in dir(self.dt):
             return self.dt.__getattribute__(name)
         else:
@@ -182,14 +182,9 @@ class Timestamp(object):
     def __setattr__(self, name, value):
         if name == 'datetime' or name == 'dt':
             object.__setattr__(self, 'dt', value)
-            #self.__dict__['dt'] = value
-            
         #get all of the typical assignments:
-        elif self.__dict__.has_key(name):
-            object.__setattr__(self, name, value)
-            #self.__dict__[name] = value
         else:
-            raise AttributeError
+            object.__setattr__(self, name, value)
 
     def __str__(self):
         text_time = ''
@@ -361,6 +356,19 @@ class Timestamp(object):
         """
         return self.dt.strftime("%Y%m%dT%H%M%S")
 
+    def from_blog(self, text):
+        """
+        the following format is often used in blogs
+        """
+        pass
+
+    def from_format(self, text, format):
+        """
+        use the supplied format to parse the text
+        """
+        pass
+
+    
     def _links_part(self, accuracy, prefix, suffix):
         """
         helper for links

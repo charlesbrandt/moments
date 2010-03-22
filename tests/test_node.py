@@ -14,6 +14,7 @@ class TestStorage:
         assert str(self.node) == os.path.join(os.getcwd(), "IMG_6166_l.JPG")
 
     def test_change(self):
+        print "THIS WILL FAIL ON MAC OSX.  NO SUPPORT FOR os.utime"
         now = Timestamp()
         #this does not work as expected:
         #atime = Timestamp().from_epoch(self.node.atime)

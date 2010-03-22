@@ -167,6 +167,7 @@ class Journal(list):
         oldest entries first in the list
 
         'reverse-chronological'  or 'newest to oldest'
+        
         if not all entries are wanted, see self.limit()
         """
         if sort == "original":            

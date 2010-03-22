@@ -26,7 +26,7 @@ from moments.timestamp import Timestamp
 from moments.moment import Moment
 from moments.association import Association
 from moments.tags import Tags
-from moments.path import load_journal
+from moments.path import load_journal, Path
 
 class Position(object):
     """
@@ -791,7 +791,7 @@ class Converter(object):
             return new_sources
         else:
             return sources
-    
+
     def to_links(self, prefix='/dir'):
         links = ''
         for i in self:
