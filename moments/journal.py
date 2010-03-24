@@ -170,6 +170,7 @@ class Journal(list):
         
         if not all entries are wanted, see self.limit()
         """
+        #print sort
         if sort == "original":            
             #could copy for pure list object:
             #return self[:]
@@ -187,21 +188,26 @@ class Journal(list):
             entry_times.sort()
             entry_times.reverse()
         elif sort == "chronological" or sort == 'oldest to newest':
+            print "oldest to newest"
             entry_times.sort()
         else:
             raise ValueError, "Unknown sort option supplied: %s" % sort
             
-        entries = Journal(self.path, self.title)
+        entries = Journal()
         for et in entry_times:
             elist = self.dates[et]
             for entry in elist:
                 entries.update_entry(entry)
 
+        #now that journals can be load on create, don't want to pass path in
+        #if we want an empty journal
+        entries.path = self.path
+        entries.title = self.title
         # *2009.11.07 12:19:14 
-        # I'm not sure that this is actually getting reflected in self
+        # self is not updated to new version automatically
         # old order seems to persist
         # may want to try using value that is returned 
-        self = entries
+        #self = entries
         return entries
 
     def flatten(self, filename=None):

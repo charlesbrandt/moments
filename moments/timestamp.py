@@ -196,11 +196,25 @@ class Timestamp(object):
             text_time = self.dt.strftime("%Y.%m.%d")
         return text_time
 
-    def now(self):
+    def text(self, accuracy=None):
         """
-        update the timestamp to be the current time (when now() is called)
+        return a string representation of our internal datetime object
+        with a format like:
+        YYYYMMDDHHMMSS
+        controlled by 'accuracy'
         """
-        self.dt = datetime.now()
+        if accuracy == 'year':
+            return self.dt.strftime("%Y")
+        elif accuracy == 'month':
+            return self.dt.strftime("%Y.%m")
+        elif (accuracy == 'day') or ((self.dt.hour == 0) and (self.dt.minute == 0) and (self.dt.second == 0)):
+            return self.dt.strftime("%Y.%m.%d")
+        elif accuracy == 'hour':
+            return self.dt.strftime("%Y.%m.%d %H")
+        elif (accuracy == 'minute') or (self.dt.second == 0):
+            return self.dt.strftime("%Y.%m.%d %H:%M")
+        else:
+            return self.dt.strftime("%Y.%m.%d %H:%M:%S")
 
     #was time_to_tstamp
     def compact(self, accuracy=None):
@@ -222,6 +236,12 @@ class Timestamp(object):
             return self.dt.strftime("%Y%m%d%H%M")
         else:
             return self.dt.strftime("%Y%m%d%H%M%S")
+
+    def now(self):
+        """
+        update the timestamp to be the current time (when now() is called)
+        """
+        self.dt = datetime.now()
 
     def filename(self, suffix=".txt"):
         """
