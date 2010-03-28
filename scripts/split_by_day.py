@@ -17,7 +17,8 @@
 $Id$ (???)
 """
 import sys, os, subprocess
-from moments.node import Image, make_node
+#from moments.node import Image, make_node
+from moments.path import Path
 
 def _move_files(source_dir, new_dir):
     """
@@ -66,7 +67,8 @@ def _move_file(source, new_dir):
     if not os.path.isdir(new_dir):
         os.mkdir(new_dir)
 
-    source = source.path.replace(' ', '\ ')
+    path_string = str(source.path)
+    source = path_string.replace(' ', '\ ')
 
     #instead, just issue system command
     #for moving files
@@ -97,8 +99,12 @@ def _move_image_and_thumbs(source, new_dir):
     if not os.path.isdir(new_dir):
         os.mkdir(new_dir)
 
-    source_path = source.path.replace(' ', '\ ')
-    source = make_node(source.path)
+    path_string = str(source.path)
+    source_path = path_string.replace(' ', '\ ')
+    #source_path = source.path.replace(' ', '\ ')
+    path = Path(source_path)
+    source = path.load()
+    #source = make_node(source.path)
 
     #instead, just issue system command
     #for moving files
@@ -115,7 +121,7 @@ def _move_image_and_thumbs(source, new_dir):
 
 
     #Try to move thumbnails if they exist
-    if source.find_type() == "Image" and os.path.exists(source.thumb_dir_path):
+    if path.type() == "Image" and os.path.exists(source.thumb_dir_path):
 
         destination = os.path.join(new_dir, source.name)
         #new_file = make_node(destination)
@@ -149,7 +155,9 @@ def process_batch(batch, dest):
 def split_by_day(path, dest_prefix=None):
     if dest_prefix is None:
         dest_prefix = path
-    d = make_node(path)
+    p = Path(path)
+    d = p.load()
+    #d = make_node(path)
     d.sort_by_date()
     
     dates = []

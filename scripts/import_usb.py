@@ -16,7 +16,8 @@ python /c/code/python/scripts/import_usb.py [source_dir] [destinatin_dir]
 """
 
 import sys, os, subprocess
-from moments.node import make_node
+#from moments.node import make_node
+from moments.path import Path
 from split_by_day import split_by_day
 
 from moments.timestamp import Timestamp
@@ -43,7 +44,9 @@ def main():
         for dest in destinations:
             #run rotate, thumbnail generation
             print dest
-            d = make_node(dest)
+            #d = make_node(dest)
+            path = Path(destination)
+            d = path.load()
             d.auto_rotate_images()
             #adjust times:
             #-2 hours
@@ -53,7 +56,8 @@ def main():
             d.make_thumbs()
             #something is causing old timestamps to show up in the journal
             #trying to recreate directory object to fix
-            d = make_node(dest)
+            d = path.load()
+            #d = make_node(dest)
             d.scan_filetypes()
             d.files_to_journal(filetype="Image")
             d.files_to_journal(filetype="Sound")
