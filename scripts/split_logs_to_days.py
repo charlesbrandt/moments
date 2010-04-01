@@ -29,10 +29,9 @@ $Id$ (???)
 import sys, os, subprocess, re
 from moments.journal import Journal
 from moments.association import check_ignore
-#from moments.tags import path_to_tags
 from moments.path import Path
 
-def split_log(path, add_tags, destination='/c/'):
+def split_log(path, add_tags, destination='/c/journal/'):
     print path
     j = Journal()
     j.from_file(path, add_tags=add_tags)
@@ -66,12 +65,14 @@ def split_log(path, add_tags, destination='/c/'):
 
         print path
         raw_input('Ok to remove?')
+        
         #get rid of the source to avoid confusion
+        os.remove(path)
         #rather than removing, remove from mercurial:
-        command = "hg rm %s" % path
-        process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        #os.remove(path)
+        #command = "hg rm %s" % path
+        #process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+        #                           stderr=subprocess.PIPE)
+
         raw_input('Press Enter to continue...')
 
         print ""
@@ -113,4 +114,5 @@ def walk_logs(path, add_tags=[], subtract_tags=[],
         print "pass in a directory"
 
 
-walk_logs('/path/to/logs', subtract_tags=['c'])
+#walk_logs('/path/to/logs', subtract_tags=['c'])
+walk_logs('/c/incoming', subtract_tags=['c', 'incoming'])
