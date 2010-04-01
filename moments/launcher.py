@@ -46,6 +46,7 @@ def launch(args, source='/c/instances.txt'):
             files = load_instance(source, arg)
             file_string = ' '.join(files)
             emacs(file_string)
+            #echo(file_string)
             print "Loading: %s" % arg                
         except:
             print "Could not load instance: %s" % arg                
@@ -87,6 +88,24 @@ def emacs(source=''):
         command = "emacs %s &" % source
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
+    #process.communicate()[0]
+    return command + "\n"
+
+def echo(source=''):
+    """
+    using this to attempt to find source of:
+    Exception exceptions.TypeError: TypeError("'NoneType' object is not callable",) in <bound method Popen.__del__ of <subprocess.Popen object at 0xffa5d0>> ignored
+    seems to only occur with shell=True
+    """
+    #print os.name
+    #print sys.platform
+    command = "echo %s" % source
+    #process = subprocess.Popen(command, shell=True)
+    #process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+    #                           stderr=subprocess.PIPE)
+    #process = subprocess.check_call([command], {'shell':True})
+    process = subprocess.check_call([command])
+    #process.communicate()[0]
     return command + "\n"
 
 def nautilus(source=''):

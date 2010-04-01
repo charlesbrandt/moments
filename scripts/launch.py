@@ -122,8 +122,10 @@ def main():
             #print args
 
         #launch the rest
+        #print args
         launch(args, instances)
 
+    print ""
     f = open(motd)
     print f.read()
     f.close()
