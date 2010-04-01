@@ -38,7 +38,30 @@ pass the launch to call via command line
 (maybe someday a running process like quicksilver/gnome-do)
 """
 import os, sys, subprocess
-from moments.helpers import load_instance
+#from moments.helpers import load_instance
+
+def load_instance(instances="/c/instances.txt", tag=None):
+    """
+    load instances.txt journal
+    look for the newest entry with tag 
+    return the data of the entry as a list of each file/line
+    """
+    j = load_journal(instances)
+    if tag is not None:
+        entries = j.tags[tag]
+    else:
+        entries = j
+        
+    #for sorting a list of entries:
+    j2 = Journal()
+    j2.from_entries(entries)
+    entries = j2.sort_entries(sort='reverse-chronological')
+
+    #should be the newest entry with tag "tag"
+    e = entries[0]
+    items = e.data.splitlines()
+    #print items
+    return items
 
 def launch(args, source='/c/instances.txt'):
     for arg in args:
