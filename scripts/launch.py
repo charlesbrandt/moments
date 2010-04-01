@@ -25,13 +25,75 @@ echo "python /c/moments/moments/extract.py /c/other/todo.txt"
 import sys, os
 from datetime import datetime
 
-from moments.launcher import launch, emacs, load_instance
+from moments.launcher import launch, emacs
 from moments.timestamp import Timestamp, Timerange
 from moments.journal import Journal
-from moments.path import load_journal
+from moments.path import load_journal, load_instance
 
 #http://docs.python.org/library/optparse.html?highlight=optparse#module-optparse
 from optparse import OptionParser
+
+def check_calendar(calendars, include_week=False):
+    """
+    check the files in calendars for entries that relate to today
+    or this week if include week is True
+    """
+    today_entries = []
+    if os.path.exists(calendars):
+        now = Timestamp()
+
+        #CALENDAR LOADING:
+        this_month_file = '%02d.txt' % now.month
+        this_month_path = os.path.join(calendars, this_month_file)
+        j = load_journal(this_month_path, add_tags=['calendar'])
+        #print len(j)
+        # go ahead an convert recurring annual entries to this year
+        # then if one is today, it should show up in the log
+        annual_month_file = '%02d-annual.txt' % now.month
+        annual_month_path = os.path.join(calendars, annual_month_file)
+        annual = Journal()
+        annual.from_file(annual_month_path, ['calendar', 'annual'])
+        #print len(annual)
+        #annual = load_journal(annual_month_path)
+        for e in annual:
+            #print "processing: %s" % e.render()
+            #year may be in the past... update it to this year:
+            try:
+                #could be the case that Februrary has leap year days
+                new_date = datetime(now.dt.year, e.created.month,
+                                    e.created.day, e.created.hour,
+                                    e.created.minute, e.created.second)
+            except:
+                new_date = None
+            if new_date:
+                new_stamp = Timestamp(new_date)
+                new_data = e.render_data() + 'original date: %s' % e.created
+                #j.make_entry(e.data, e.tags, new_stamp)
+                j.make_entry(new_data, e.tags, new_stamp)
+
+        flat = ''
+
+        if include_week:
+            #coming up this week (flatten them all, then the entry is ok to delete)
+            trange = now.future(days=1).compact(accuracy='day') + '-' + now.future(weeks=1).compact(accuracy='day')
+            #print trange
+            (start, end) = Timerange(trange).as_tuple()
+            upcoming_entries = j.limit(start, end)
+            #print upcoming_entries
+
+            #flatten upcoming:
+            for e in upcoming_entries:
+                flat += e.render_comment()
+                flat += e.render_data()
+
+        # todo TODAY
+        trange = now.compact(accuracy='day') + '-' + now.compact(accuracy='day') + '2359'
+        #print trange
+        (start, end) = Timerange(trange).as_tuple()
+        today_entries = j.limit(start, end)
+        #print today_entries
+
+    return today_entries
 
 def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False):
     """
@@ -54,58 +116,7 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     """
     now = Timestamp()
 
-    #CALENDAR LOADING:
-    this_month_file = '%02d.txt' % now.month
-    this_month_path = os.path.join(calendars, this_month_file)
-    j = load_journal(this_month_path, add_tags=['calendar'])
-    #print len(j)
-    # go ahead an convert recurring annual entries to this year
-    # then if one is today, it should show up in the log
-    annual_month_file = '%02d-annual.txt' % now.month
-    annual_month_path = os.path.join(calendars, annual_month_file)
-    annual = Journal()
-    annual.from_file(annual_month_path, ['calendar', 'annual'])
-    #print len(annual)
-    #annual = load_journal(annual_month_path)
-    for e in annual:
-        #print "processing: %s" % e.render()
-        #year may be in the past... update it to this year:
-        try:
-            #could be the case that Februrary has leap year days
-            new_date = datetime(now.dt.year, e.created.month,
-                                e.created.day, e.created.hour,
-                                e.created.minute, e.created.second)
-        except:
-            new_date = None
-        if new_date:
-            new_stamp = Timestamp(new_date)
-            new_data = e.render_data() + 'original date: %s' % e.created
-            #j.make_entry(e.data, e.tags, new_stamp)
-            j.make_entry(new_data, e.tags, new_stamp)
-
-    flat = ''
-
-    if include_week:
-        #coming up this week (flatten them all, then the entry is ok to delete)
-        trange = now.future(days=1).compact(accuracy='day') + '-' + now.future(weeks=1).compact(accuracy='day')
-        #print trange
-        (start, end) = Timerange(trange).as_tuple()
-        upcoming_entries = j.limit(start, end)
-        #print upcoming_entries
-
-        #flatten upcoming:
-        for e in upcoming_entries:
-            flat += e.render_comment()
-            flat += e.render_data()
-
-    # todo TODAY
-    trange = now.compact(accuracy='day') + '-' + now.compact(accuracy='day') + '2359'
-    #print trange
-    (start, end) = Timerange(trange).as_tuple()
-    today_entries = j.limit(start, end)
-    #print today_entries
-   
-
+    today_entries = check_calendar(calendars, include_week)
 
     #CREATE TODAY'S LOG:
     today = os.path.join(destination, now.filename())
@@ -113,8 +124,6 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     #print entries
     today_j = Journal()
     today_j.from_file(today)
-
-
 
     today_j.from_entries(today_entries)
     if include_week:
@@ -258,6 +267,7 @@ def main():
                 print "additional files will not be loaded with daily log"
                 print ""
                 files = []
+
             now(files, destination, priorities, calendars)
             #now(files)
             
@@ -270,15 +280,20 @@ def main():
         #print args
         launch(args, instances)
 
-    print ""
-    f = open(motd)
-    print f.read()
-    f.close()
+    if os.path.exists(motd):
+        f = open(motd)
+        message = f.read()
+        f.close()
+
+        if message:
+            print ""
+            print message
+
+        #with open(motd) as f:
+        #    print f.read()
+
         
 if __name__ == '__main__':
-    #TODO: incorporate updating permissions as needed with this script.
-    #print "sudo /c/update_permissions.sh"
-
     print "incase you need it: "
     print "/Applications/Emacs.app/Contents/MacOS/Emacs &"
     print ""
@@ -286,9 +301,12 @@ if __name__ == '__main__':
     # launch our instances
     main()
 
-    #with open("/c/motd.txt") as f:
-    #    print f.read()
-
     #reminder on how to extract finished, completed thoughts
     #(as long as they have been marked complete, M-x com)
     print "python /c/moments/moments/extract.py /c/todo.txt"
+
+    #TODO: incorporate updating permissions as needed with this script.
+    #print "sudo /c/update_permissions.sh"
+
+    print "sudo chmod -R 777 /c/outgoing"
+    print ""
