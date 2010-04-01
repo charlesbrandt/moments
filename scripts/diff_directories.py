@@ -33,8 +33,9 @@ from difflib import Differ
 from pprint import pprint
 
 #from osbrowser import make_node
+#from moments.node import make_node
+from moments.path import Path
 #from osbrowser.library import phraseUnicode2ASCII
-from moments.node import make_node
 from moments.ascii import unaccented_map
 
 VAR = None
@@ -62,8 +63,13 @@ def diff_files(fname, path1, path2, indent, diff_system=False):
 
     #until we prove otherwise, we'll assume they're different
     is_difference = True
-    n1 = make_node(path1)
-    n2 = make_node(path2)
+    p1 = Path(path1)
+    n1 = p1.load()
+    #n1 = make_node(path1)
+
+    p2 = Path(path2)
+    n2 = p2.load()
+    #n2 = make_node(path2)
 
     if n1.size == n2.size:
         #print " %s - BOTH, SAME SIZE" % phraseUnicode2ASCII(fname)
@@ -102,9 +108,14 @@ def diff_dirs(dpath1, dpath2, recurse=True, indent=0, show_both=False ):
     
     is_difference = False
 
-    d1 = make_node(dpath1, relative=False)
+    p1 = Path(dpath1)
+    d1 = p1.load()
+    #d1 = make_node(dpath1, relative=False)
     d1.scan_directory()
-    d2 = make_node(dpath2, relative=False)
+
+    p2 = Path(dpath2)
+    d2 = p2.load()
+    #d2 = make_node(dpath2, relative=False)
     d2.scan_directory()
     d2contents = d2.contents[:]
     
@@ -124,9 +135,13 @@ def diff_dirs(dpath1, dpath2, recurse=True, indent=0, show_both=False ):
                     #print "%s - BOTH" % phraseUnicode2ASCII(i)
                     print "%s - BOTH" % i.translate(unaccented_map())
                 
-                n1 = make_node(n1path)
-                n2 = make_node(n2path)
-                if n1.find_type() == "Directory":
+                p1 = Path(n1path)
+                n1 = p1.load()
+                #n1 = make_node(n1path)
+                p2 = Path(n2path)
+                n2 = p2.load()
+                #n2 = make_node(n2path)
+                if p1.type() == "Directory":
                     if recurse:
                         last_difference = diff_dirs(n1path, n2path, recurse, indent+1)
                         is_difference |= last_difference
