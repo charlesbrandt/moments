@@ -767,7 +767,7 @@ class File(object):
         but we might want to keep the original time
         this resets them to what they were when originally initialized
         """
-        os.utime(self.path, (self.atime, self.mtime))
+        os.utime(str(self.path), (self.atime, self.mtime))
 
     def change_stats(self, accessed=None, modified=None):
         """
@@ -1380,7 +1380,7 @@ class Directory(File):
                 elif (t == "Playlist"):
                     self.playlists.append(File(f.path))
                 elif (t == "Sound"):
-                    self.sounds.append(Sound(f.path))
+                    self.sounds.append(File(f.path))
                 elif (t == "Log"):
                     self.logs.append(File(f.path))
                 elif (t == "Document"):
@@ -1534,7 +1534,7 @@ class Directory(File):
         return new_name
 
     def files_to_journal(self, filetype="Image", journal_file="action.txt"):
-        jpath = os.path.join(self.path, journal_file)
+        jpath = os.path.join(str(self.path), journal_file)
         j = load_journal(jpath, create=True)
 
         files = []
@@ -1556,7 +1556,7 @@ class Directory(File):
             #e.tags = tags
             #e.data = i.path
             #j.update_entry(e)
-            j.make_entry(data=i.path, tags=tags, created=i.datetime())
+            j.make_entry(data=str(i.path), tags=tags, created=i.datetime())
 
         #print j
         #j.sort_entries("reverse-chronological")

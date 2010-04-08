@@ -31,21 +31,23 @@ def main():
 
         start = Timestamp()
 
+        destinations = []
+        
         destinations = split_by_day(src, dest_prefix)
 
         #if something goes wrong and you need to run this again:
-        #dirs = os.listdir(dest_prefix)
-        #if '.DS_Store' in dirs:
-        #    dirs.remove('.DS_Store')
-        #destinations = []
-        #for d in dirs:
-        #    destinations.append(os.path.join(dest_prefix, d))
+        ## dirs = os.listdir(dest_prefix)
+        ## if '.DS_Store' in dirs:
+        ##     dirs.remove('.DS_Store')
+        ## destinations = []
+        ## for d in dirs:
+        ##     destinations.append(os.path.join(dest_prefix, d))
         
         for dest in destinations:
             #run rotate, thumbnail generation
             print dest
             #d = make_node(dest)
-            path = Path(destination)
+            path = Path(dest)
             d = path.load()
             d.auto_rotate_images()
             #adjust times:

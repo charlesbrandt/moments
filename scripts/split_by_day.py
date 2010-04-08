@@ -141,7 +141,7 @@ def _move_image_and_thumbs(source, new_dir):
 
 
     #move any items in action.txt that are associated with the file
-    if os.path.exists(os.path.join(os.path.dirname(source.path), 'action.txt')):
+    if os.path.exists(os.path.join(os.path.dirname(str(source.path)), 'action.txt')):
         print "don't forget to move items in action.txt!! :)"
         
     return result
