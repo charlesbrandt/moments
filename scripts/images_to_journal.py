@@ -35,7 +35,8 @@ SEE ALSO:
 import sys#, os, subprocess
 import moments
 #from osbrowser.meta import make_node
-from moments.node import make_node
+#from moments.node import make_node
+from moments.path import Path
 
 def main():
     path = ''
@@ -48,7 +49,8 @@ def main():
         print "No path"
         exit()
         
-    node = make_node(path, relative=False)
+    #node = make_node(path, relative=False)
+    node = Path(path).load()
     #node.scan_directory()
     node.scan_filetypes()
     #print node.images
@@ -56,11 +58,12 @@ def main():
     j = moments.journal.Journal()
 
     for i in node.images:
-        e = moments.moment.Moment()
-        e.created = moments.timestamp.Timestamp(i.datetime())
-        e.tags = [ 'image', 'capture', 'camera' ]
-        e.data = i.path
-        j.update_entry(e)
+        #e = moments.moment.Moment()
+        created = moments.timestamp.Timestamp(i.datetime())
+        tags = [ 'image', 'capture', 'camera' ]
+        data = str(i.path)
+        #j.update_entry(e)
+        j.make_entry(data, tags, created)
 
     print j
     #j.sort_entries("reverse-chronological")
