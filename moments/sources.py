@@ -183,6 +183,11 @@ class Items(list):
             #if nothing was sent, be sure to initialize current later!
             self.current = None
 
+        #special case for get_next...
+        #if we're new, return 0
+        #otherwise... all other rules apply
+        self.new = True
+
     #wrap position object, so that we can assign a new position to the list
     #as though it were an attribute.
     #this simplifies the interface to the list of items.
@@ -216,7 +221,11 @@ class Items(list):
         return self.get(self._position.previous())
 
     def get_next(self):
-        return self.get(self._position.next())
+        if self.new:
+            self.new = False
+            return self.get()
+        else:
+            return self.get(self._position.next())
 
     def go(self, position=None):
         """
@@ -224,7 +233,7 @@ class Items(list):
         """
         item = self.get(position)
         if position is not None:
-            #whew!  that's a tricky line...
+            #whew!  this is a tricky line...
             #setting the position object's internal position:
             self._position.position = position
         self.current = item
@@ -388,7 +397,11 @@ class Source(object):
             key = ( self.path )
         return key
 
- 
+def sorter(source):
+    p = str(source.path)
+    #print p
+    return p
+
 class Sources(Items):
     """
     A collection of Source objects
@@ -402,6 +415,11 @@ class Sources(Items):
             self.log_path = '/c/logs/transfer'
         else:
             self.log_path = log_path
+
+
+    def sort_path(self):
+        #self.sort(key=lambda source: str(source.path))
+        self.sort(key=sorter)
         
     def log_current(self, add_tags=[]):
         """

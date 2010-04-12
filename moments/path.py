@@ -158,7 +158,7 @@ class Path(object):
         #these get set in parse_path and parse_name
         self.name = ''
         self.extension = ''
-        
+
         self.parse_path(path, parts, relative, local_path)
 
         #file (local), http, smb, etc
@@ -209,10 +209,15 @@ class Path(object):
 
     def parse_path(self, path=None, parts=None, relative=False, local_path=''):
         #print "parsing path: %s" % path
+        #print "->%s<-" % path
         if not path and not parts:
             raise AttributeError, "Need either path or parts"
 
         if path:
+            if path == ".":
+                #special case... this will not get parsed correctly without
+                #expanding it:
+                path = os.path.abspath(path)
             #self._dirname = path
             #could check if it is an actual path here
             self._dirname = unicode(path)
@@ -1216,6 +1221,46 @@ class Directory(File):
 
         return found
 
+    def create_journal(self, journal="action.txt", items="Images"):
+        """
+        if we don't have a journal
+        create one using the items of type items
+
+        adapted from moments/scripts/images_to_journal.py
+        """
+        j = self.load_journal(journal)
+        source = os.path.join(str(self.path), journal)
+        if not j:
+            self.scan_filetypes()
+
+            #this will not propigate to log
+            #creation times will take priority
+            #self.sort_by_paths("Image")
+            
+            #print self.images
+            #app.sources = self.images
+            j = Journal()
+
+            #TODO:
+            #if other item types are desired in the log
+            #items can be a list of types to check for
+            
+            for i in self.images:
+                #e = Moment()
+                created = Timestamp(i.datetime())
+                tags = [ 'image' ]
+                data = str(i.path)
+                #j.update_entry(e)
+                j.make_entry(data, tags, created)
+
+            j.to_file(source, sort="chronological")
+
+        else:
+            print "Journal: %s already exists" % (source)
+
+        return j
+
+
     def load_journal(self, journal="action.txt"):
         """
         node should not need a function for loading a journal
@@ -1224,7 +1269,7 @@ class Directory(File):
         but in the case of a directory, can be nice to have more direct
         access to the directory's journal.
         """
-        source = os.path.join(self.path, journal)
+        source = os.path.join(str(self.path), journal)
         if os.path.exists(source):
             j = Journal()
             j.from_file(source)
@@ -1580,7 +1625,7 @@ def nodes_to_paths(nodes):
     """
     new_list = []
     for n in nodes:
-        new_list.append(n.path)
+        new_list.append(str(n.path))
     return new_list
 
 def paths_to_nodes(paths):
@@ -1590,6 +1635,7 @@ def paths_to_nodes(paths):
     """
     new_list = []
     for p in paths:
-        new_list.append(make_node(p))
+        node = Path(p).load()
+        new_list.append(node)
     return new_list
 

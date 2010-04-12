@@ -51,24 +51,27 @@ def main():
         
     #node = make_node(path, relative=False)
     node = Path(path).load()
-    #node.scan_directory()
-    node.scan_filetypes()
-    #print node.images
-    #app.sources = node.images
-    j = moments.journal.Journal()
 
-    for i in node.images:
-        #e = moments.moment.Moment()
-        created = moments.timestamp.Timestamp(i.datetime())
-        tags = [ 'image', 'capture', 'camera' ]
-        data = str(i.path)
-        #j.update_entry(e)
-        j.make_entry(data, tags, created)
+    j = node.create_journal()
+    
+    ## #node.scan_directory()
+    ## node.scan_filetypes()
+    ## #print node.images
+    ## #app.sources = node.images
+    ## j = moments.journal.Journal()
 
-    print j
-    #j.sort_entries("reverse-chronological")
-    #l = Log(filename)
-    #j.to_file('temp.txt')
+    ## for i in node.images:
+    ##     #e = moments.moment.Moment()
+    ##     created = moments.timestamp.Timestamp(i.datetime())
+    ##     tags = [ 'image', 'capture', 'camera' ]
+    ##     data = str(i.path)
+    ##     #j.update_entry(e)
+    ##     j.make_entry(data, tags, created)
+
+    ## print j
+    ## #j.sort_entries("reverse-chronological")
+    ## #l = Log(filename)
+    ## #j.to_file('temp.txt')
     j.to_file('temp.txt', sort="reverse-chronological")
 
 if __name__ == '__main__':
