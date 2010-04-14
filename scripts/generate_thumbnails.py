@@ -17,25 +17,42 @@
 $Id$ (???)
 """
 import sys, codecs, os.path
-from moments.node import make_node
+#from moments.node import make_node
+from moments.path import Path
 
 def generate_thumbnails(src, rotate=False):
-    node = make_node(src)
-    node.scan_directory()
-    node.scan_filetypes()
-
-    dirs = node.directories
-    #print node.directories
-    for d in dirs:
-        if rotate:
-            d.auto_rotate_images(update_thumbs=False)        
-        print "generating thumbs for directory: %s" % d.path
-        d.make_thumbs()
+    path = Path(src)
+    #node = make_node(src)
+    if path.type() == "Directory":
+        node = path.load()
+        node.scan_directory()
+        node.scan_filetypes()
+        node.scan_subdirs()
         
-    if rotate:
-        node.auto_rotate_images(update_thumbs=False)        
-    node.make_thumbs()
-    print "All done!"
+        dirs = node.directories
+        #print node.directories
+        for d in dirs:
+            image = d.default_image()
+            if image:
+                size_path = image.size_path('tiny_o')
+            else:
+                size_path = None
+            if (size_path and not os.path.exists(size_path)) or not size_path:
+
+                d.create_journal()
+                if rotate:
+                    d.auto_rotate_images(update_thumbs=False)        
+                print "generating thumbs for directory: %s" % d.path
+                d.make_thumbs()
+            else:
+                print "skipping directory: %s" % d.path
+
+        if rotate:
+            node.auto_rotate_images(update_thumbs=False)        
+        node.make_thumbs()
+        print "All done!"
+    else:
+        print "Pass in a directory"
     
 def main():
     if len (sys.argv) > 1:

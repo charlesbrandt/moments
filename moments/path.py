@@ -32,7 +32,7 @@ Files, Directories, etc have a path associated with them
 circular dependency
 hence, one file
 """
-import os, re, random, subprocess
+import os, re, random, subprocess, cPickle
 import urllib
 from datetime import datetime
 
@@ -1069,34 +1069,37 @@ class Image(File):
         #    if os.path.isdir(self.size_path(s)):
         #        os.remove(self.size_path(s))
 
-        #try:
-        image = PILImage.open(str(self.path))
-        image.thumbnail((l,l), PILImage.ANTIALIAS)
-
-        medium = image.copy()
-        medium.thumbnail((m,m), PILImage.ANTIALIAS)
-        
-        small = medium.copy()
-        small = self._square_image(small)
-        small.thumbnail((s,s), PILImage.ANTIALIAS)
-
-        tiny = small.copy()
-        tiny.thumbnail((t,t), PILImage.ANTIALIAS)
-
-        #o for original dimensions
-        tiny_o = image.copy()
-        #we want to fix the width at t, not concerned about height
-        tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
-
         try:
-            image.save(self.size_path('large'), "JPEG")
-            medium.save(self.size_path('medium'), "JPEG")
-            small.save(self.size_path('small'), "JPEG")
-            tiny.save(self.size_path('tiny'), "JPEG")
-            tiny_o.save(self.size_path('tiny_o'), "JPEG")
+            image = PILImage.open(str(self.path))
         except:
-            print "error generating thumbs for: %s" % self.path.name
-            #pass
+            print "Error opening image: %s" % str(self.path)
+        else:
+            image.thumbnail((l,l), PILImage.ANTIALIAS)
+
+            medium = image.copy()
+            medium.thumbnail((m,m), PILImage.ANTIALIAS)
+
+            small = medium.copy()
+            small = self._square_image(small)
+            small.thumbnail((s,s), PILImage.ANTIALIAS)
+
+            tiny = small.copy()
+            tiny.thumbnail((t,t), PILImage.ANTIALIAS)
+
+            #o for original dimensions
+            tiny_o = image.copy()
+            #we want to fix the width at t, not concerned about height
+            tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
+
+            try:
+                image.save(self.size_path('large'), "JPEG")
+                medium.save(self.size_path('medium'), "JPEG")
+                small.save(self.size_path('small'), "JPEG")
+                tiny.save(self.size_path('tiny'), "JPEG")
+                tiny_o.save(self.size_path('tiny_o'), "JPEG")
+            except:
+                print "error generating thumbs for: %s" % self.path.name
+                #pass
 
     def rotate_pil(self, degrees=90):
         """
@@ -1147,7 +1150,7 @@ class Directory(File):
     directory itself)
 
     """
-    def __init__(self, path='', recurse=False, meta_enabled=True, **args):
+    def __init__(self, path='', recurse=False, use_index=False, **args):
         """
         check if there is already an index in the path
         if so load it
@@ -1157,8 +1160,13 @@ class Directory(File):
 
         #print "initializing directory: %s" % self.path
 
-        #*2010.03.01 19:15:33 TODO rename: count?
-        self.items = 0
+        #if we want to create and use an index
+        self.use_index = use_index
+
+        self.recurse = recurse
+
+        #how many items we have total
+        self.count = 0
 
         #names only!!
         #everything
@@ -1174,6 +1182,7 @@ class Directory(File):
         self.files = []
 
         self.filetypes_scanned = False
+
         #*2009.06.10 07:22:54 
         #safe to just call these directories?
         #*2009.10.21 16:14:24
@@ -1194,8 +1203,13 @@ class Directory(File):
         #self.default_image = ""
         self.default_node = ""
 
-        if not self.find_and_load_index():
-            self.scan_directory(recurse)
+        if self.use_index:
+            found = self.find_and_load_index()
+            if not found:
+                self.scan_directory(self.recurse)
+        else:
+            self.scan_directory(self.recurse)
+            
 
     def find_and_load_index(self):
         """
@@ -1208,19 +1222,160 @@ class Directory(File):
         found = False
 
         #try to load:
-        #index = "index.xml"
-        options = []
+        #options = []
+        options = [ "index.pkl" ]
         for o in options:
-            filename = os.path.join(self.path, o)
-            self.filename = filename
+            filename = os.path.join(str(self.path), o)
+            #self.filename = filename
 
             if os.path.isfile(filename):
-                found = True
-                self.tree = ElementTree.ElementTree(file=filename)
-                self.root = self.tree.getroot()
+                #found = True
+                #self.tree = ElementTree.ElementTree(file=filename)
+                #self.root = self.tree.getroot()
+                f = open(filename, "r")
+                self = cPickle.load(f)
 
+            real_contents = os.listdir(unicode(self.path))
+            if real_contents != self.contents:
+                print "Looks like content is out of date:"
+                print self.contents
+                print real_contents
+                self.scan_directory(self.recurse)
+                
         return found
 
+    def scan_directory(self, recurse=False):
+        """
+        only create the meta data in a python object in memory
+        """
+        self.count = 0
+        
+        self.contents = os.listdir(unicode(self.path))
+        for item in self.contents:
+            if item not in self.ignores:
+                self.count += 1
+                
+                #print "SUPPORTS UNICODE: %s" % os.path.supports_unicode_filenames
+                if os.path.supports_unicode_filenames:
+                    item_path = os.path.normpath(os.path.join(unicode(self.path), item))
+                else:
+                    #item_path = unicode(self.path) + u'/' + unicode(item)
+                    try:
+                        item_path = os.path.normpath(os.path.join(str(self.path), item))
+                    except:
+                        item_path = ''
+                        print "could not open: %s" % item
+
+                item_path = unicode(item_path)
+                
+                if (os.path.isfile(item_path)):
+                    node = File(item_path)
+                    node.check_size()
+                    if not self.size:
+                        self.size = node.size
+                    else:
+                        self.size += node.size
+                    self.files.append(node)
+                    
+                elif (os.path.isdir(item_path)):
+                    #this will recurse:
+                    #self.directories.append(Directory(item_path))
+                    self.sub_paths.append(item_path)
+                    if recurse:
+                        sub_d = Directory(item_path, recurse)
+                        self.size += sub_d.size
+                    else:
+                        #print "Not recursing; no size found for sub-directory"
+                        #print item_path
+                        pass
+                else:
+                    print "ERROR: unknown item found; not a file or directory:"
+                    print item_path
+
+        #if we don't sort now, it will be more work to sort later
+        self.sub_paths.sort()
+        self.last_scan = Timestamp()
+
+        if self.use_index:
+            filename = os.path.join(str(self.path), "index.pkl")
+            print "Storing index: %s" % filename
+            f = open(filename, "w")
+            cPickle.dump(self, f)
+        
+    def scan_filetypes(self):
+        """
+        look in the directory's list of files for different types of files
+        put them in the right list type in the directory
+
+        should have already scanned the directory for files
+
+        we will look through the list of files
+        for files that are likely images
+        then populate that list
+
+        not sure if this should always happen at scan time
+        what if we don't need to use images, sounds, movies?  extra step
+        maybe only create special node types if they're needed. 
+        
+        depending on the file extension, should create an object
+        with the appropriate type
+        and add it to the correct list in the Directory
+        
+        """        
+        # we should only need to scan the filetypes once per instance:
+        if not self.filetypes_scanned:
+            for f in self.files:
+                t = f.path.type()
+                #multiple ifs are desired behavior here
+                # (as opposed to one if with and)
+                # otherwise multiple calls with same files
+                # pass everything into else clause
+                if (t == "Image"):
+                    #this will never match since contents are now Image objects
+                    #not paths
+                    #if (f.path not in self.images):
+                    #self.images.append(f.path)
+                    self.images.append(Image(f.path))
+                elif (t == "Movie"):
+                    self.movies.append(File(f.path))
+                elif (t == "Playlist"):
+                    self.playlists.append(File(f.path))
+                elif (t == "Sound"):
+                    self.sounds.append(File(f.path))
+                elif (t == "Log"):
+                    self.logs.append(File(f.path))
+                elif (t == "Document"):
+                    self.documents.append(File(f.path))
+                else:
+                    #must be something else:
+
+                    #if scan_files is called more than once,
+                    #and checks above are performed at the same time,
+                    #then "already in" checks makes it skip to here
+                    #
+                    #fixed by moving in check below
+                    #if (f.path not in self.other):
+                    #self.other.append(f.path)
+                    self.other.append(File(f.path))
+
+            self.filetypes_scanned = True
+
+    def scan_subdirs(self):
+        """
+        this operation can take a long time if there are many subdirectories
+        might just want to work with self.sub_paths in that case...
+        find the subdirs you want, then load only those.
+        """
+        added_paths = []
+        for d in self.sub_paths:
+            #this will not catch dupes, since they will be different objects:
+            #if dd not in self.directories:
+            if d not in added_paths:
+                #print "ADDING: %s" % d
+                dd = Directory(d)
+                self.directories.append(dd)
+                added_paths.append(d)
+                    
     def create_journal(self, journal="action.txt", items="Images"):
         """
         if we don't have a journal
@@ -1281,57 +1436,9 @@ class Directory(File):
             #if load_journal behavior is wanted, just call it directly
             #this is for looking for the default action logs of a directory
             return None
+
+
         
-    def scan_directory(self, recurse=False):
-        """
-        only create the meta data in a python object in memory
-        """
-        self.items = 0
-        
-        self.contents = os.listdir(unicode(self.path))
-        for item in self.contents:
-            if item not in self.ignores:
-                self.items += 1
-                
-                #print "SUPPORTS UNICODE: %s" % os.path.supports_unicode_filenames
-                if os.path.supports_unicode_filenames:
-                    item_path = os.path.normpath(os.path.join(unicode(self.path), item))
-                else:
-                    #item_path = unicode(self.path) + u'/' + unicode(item)
-                    try:
-                        item_path = os.path.normpath(os.path.join(str(self.path), item))
-                    except:
-                        item_path = ''
-                        print "could not open: %s" % item
-
-                item_path = unicode(item_path)
-                
-                if (os.path.isfile(item_path)):
-                    node = File(item_path)
-                    node.check_size()
-                    if not self.size:
-                        self.size = node.size
-                    else:
-                        self.size += node.size
-                    self.files.append(node)
-                    
-                elif (os.path.isdir(item_path)):
-                    #this will recurse:
-                    #self.directories.append(Directory(item_path))
-                    self.sub_paths.append(item_path)
-                    if recurse:
-                        sub_d = Directory(item_path, recurse)
-                        self.size += sub_d.size
-                    else:
-                        #print "Not recursing; no size found for sub-directory"
-                        #print item_path
-                        pass
-                else:
-                    print "ERROR: unknown item found; not a file or directory:"
-                    print item_path
-
-        self.last_scan = datetime.now()
-
     def sort_by_date(self):
         dates = []
         for f in self.files:
@@ -1385,76 +1492,6 @@ class Directory(File):
             paths.sort()
             self.files = paths_to_nodes(paths)                
             
-            
-    def scan_filetypes(self):
-        """
-        look in the directory's list of files for different types of files
-        put them in the right list type in the directory
-
-        should have already scanned the directory for files
-
-        we will look through the list of files
-        for files that are likely images
-        then populate that list
-
-        not sure if this should always happen at scan time
-        what if we don't need to use images, sounds, movies?  extra step
-        maybe only create special node types if they're needed. 
-        
-        depending on the file extension, should create an object
-        with the appropriate type
-        and add it to the correct list in the Directory
-        
-        """        
-        # we should only need to scan the filetypes once per instance:
-        if not self.filetypes_scanned:
-            for f in self.files:
-                t = f.path.type()
-                #multiple ifs are desired behavior here
-                # (as opposed to one if with and)
-                # otherwise multiple calls with same files
-                # pass everything into else clause
-                if (t == "Image"):
-                    #this will never match since contents are now Image objects
-                    #not paths
-                    #if (f.path not in self.images):
-                    #self.images.append(f.path)
-                    self.images.append(Image(f.path))
-                elif (t == "Movie"):
-                    self.movies.append(File(f.path))
-                elif (t == "Playlist"):
-                    self.playlists.append(File(f.path))
-                elif (t == "Sound"):
-                    self.sounds.append(File(f.path))
-                elif (t == "Log"):
-                    self.logs.append(File(f.path))
-                elif (t == "Document"):
-                    self.documents.append(File(f.path))
-                else:
-                    #must be something else:
-
-                    #if scan_files is called more than once,
-                    #and checks above are performed at the same time,
-                    #then "already in" checks makes it skip to here
-                    #
-                    #fixed by moving in check below
-                    #if (f.path not in self.other):
-                    #self.other.append(f.path)
-                    self.other.append(File(f.path))
-
-            #if we don't sort now, it will be more work to sort later
-            self.sub_paths.sort()
-            added_paths = []
-            for d in self.sub_paths:
-                #this will not catch dupes, since they will be different objects:
-                #if dd not in self.directories:
-                if d not in added_paths:
-                    #print "ADDING: %s" % d
-                    dd = Directory(d)
-                    self.directories.append(dd)
-                    added_paths.append(d)
-
-            self.filetypes_scanned = True
 
     #rename to generate_thumbnails?        
     def make_thumbs(self):
@@ -1469,8 +1506,10 @@ class Directory(File):
 
     def default_image(self, pick_by="random"):
         self.scan_filetypes()
-            
+        #print "%s has %s images" % (self.path.name, len(self.images))
+        choice = None           
         if len(self.images):
+                                    
             j = self.load_journal("action.txt")
             if j:
                 #2009.12.19 13:19:27 
@@ -1483,7 +1522,7 @@ class Directory(File):
                 maxkey = j.datas.max_key()
                 if maxkey:
                     maxkey = maxkey.strip()
-                    altkey = os.path.join(self.path, os.path.basename(maxkey))
+                    altkey = os.path.join(str(self.path), os.path.basename(maxkey))
                 else:
                     altkey = ''
 
@@ -1491,28 +1530,37 @@ class Directory(File):
                 ak = Path(altkey)
                 if mk.exists():
                     if mk.type() == "Image":
-                        return Image(maxkey)
+                        choice = mk.load()
+                    #elif ak.exists and ak.type() == "Image":
+                    #    return ak.load()
                     else:
-                        return self.images[0]
+                        choice = self.images[0]
                     
                 #maybe the path has changed in the log:
                 elif ak.exists():
                     if ak.type() == "Image":
-                        return Image(altkey)
+                        choice = Image(altkey)
                     else:
-                        return self.images[0]
+                        choice = self.images[0]
 
             elif pick_by == "random":
                 random.seed()
                 r = random.randint(0, len(self.images)-1)
-                return self.images[r]
+                choice = self.images[r]
 
-            #must not have found anything statistical if we make it here
-            #just return the first one in the list
-            return self.images[0]
+            else:
+                choice = self.images[0]
+                #must not have found anything statistical if we make it here
+                #just return the first one in the list
+
         else:
-            #no images to get
-            return None
+            print "No images available"
+        #FOR DEBUG:
+        ## if choice:
+        ##     print "default image: %s" % choice.path
+        ## else:
+        ##     print "NO IMAGE FOUND!"
+        return choice
 
     def auto_rotate_images(self, update_thumbs=True):
         """

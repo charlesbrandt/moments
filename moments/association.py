@@ -134,7 +134,7 @@ class Association(dict):
         return dlist
     
     def max_key(self, ignores=[]):
-        print ignores
+        #print ignores
         maxcount = 1
         maxkey = ''
         for key in self.keys():
