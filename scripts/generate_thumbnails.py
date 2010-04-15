@@ -37,15 +37,16 @@ def generate_thumbnails(src, rotate=False):
                 size_path = image.size_path('tiny_o')
             else:
                 size_path = None
-            if (size_path and not os.path.exists(size_path)) or not size_path:
+            #if (size_path and not os.path.exists(size_path)) or not size_path:
 
-                d.create_journal()
-                if rotate:
-                    d.auto_rotate_images(update_thumbs=False)        
-                print "generating thumbs for directory: %s" % d.path
-                d.make_thumbs()
-            else:
-                print "skipping directory: %s" % d.path
+            d.create_journal()
+            if rotate:
+                d.auto_rotate_images(update_thumbs=False)        
+            print "generating thumbs for directory: %s" % d.path
+            d.make_thumbs()
+
+            #else:
+            #    print "skipping directory: %s" % d.path
 
         if rotate:
             node.auto_rotate_images(update_thumbs=False)        
