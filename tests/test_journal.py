@@ -18,6 +18,21 @@ class TestJournal:
         j.from_file("sample_log.txt")
         assert j
 
+    def test_reverse(self):
+        #manually sorted in reverse:
+        reversed = journal.Journal("sample_reverse.txt")
+        #print dir(reversed)
+
+        self.j.sort_entries("reverse")
+        print "Pre: %s" % self.j
+        #self.j.reverse()
+        print "Post: %s" % self.j
+
+        count = 0
+        for e in self.j:
+            assert e.is_equal(reversed[count]), "%s \n--\n%s\n\n%s" % (e.render(), reversed[count].render(), self.j.as_text())
+            count += 1
+
     def test_from_file(self):
         j = journal.Journal()
         j.from_file("sample_log.txt")

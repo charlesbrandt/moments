@@ -11,7 +11,8 @@ class TestStorage:
         self.node = moments.path.File(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
 
     def test_name(self):
-        assert str(self.node) == os.path.join(os.getcwd(), "IMG_6166_l.JPG")
+        assert str(self.node.path) == os.path.join(os.getcwd(), "IMG_6166_l.JPG")
+        assert str(self.node) == "IMG_6166_l.JPG"
 
     def test_change(self):
         print "THIS WILL FAIL ON MAC OSX.  NO SUPPORT FOR os.utime"
@@ -54,8 +55,8 @@ def test_osbrowser_get_images():
     #special case for local path
     cmd = os.popen('ls *.JPG')
     #cmd = os.popen('ls %s/*.JPG' % path)
-    res = cmd.read()
-    images2 = res.split('\n')
+    result = cmd.read()
+    images2 = result.split('\n')
     #last new line in ls output adds an empty item to list
     images2 = images2[:-1]
 
@@ -74,7 +75,7 @@ def test_image_get_size():
 
     path = i.get_size('small')
     #print path
-    assert_equal(path, './sized/small/IMG_6166_l_s.JPG')
+    assert_equal(path, os.path.abspath('./sized/small/IMG_6166_l_s.JPG'))
 
 from moments.path import Directory
 class TestDirectory:

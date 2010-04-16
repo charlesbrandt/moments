@@ -1,0 +1,29 @@
+*2010.03.13 15:15:08 
+another entry just to make sure extra new lines on last entry aren't causing the two similar entries in this log (sample_log3.txt) and the other log being merged (sample_log.txt) isn't causing the two entries to be marked as different.
+
+if you want to test that, copy this moment to sample_log.txt and make sure each has a different number of newlines following it. 
+
+(a good test, just not what was being tested by the previous (by textual position in this file) [2008.02.25 00:35] entry)
+
+extra new lines should not be added / removed at the end of a file
+but shouldn't truncate automatically... can test that by placing the duplicate entry in the other file not at the end of the log.
+
+one blank line after this one.
+
+*2008.02.25 00:35 foo bar
+
+dummy log file for testing Log module (and eventually others)
+
+2009.03.03 14:41:56 
+the previous timestamp should not trigger a new entry
+it does not begin with a "*", which is no longer valid for a moment log entry
+should be part of [2008.02.25 00:35]
+
+be sure that this file ends in a blank line:
+
+*2008.10.22 11:15:42 foo
+another test entry, this one has seconds
+
+*2008.12.18 21:00:57 foo bar
+another test, need more for limiting
+

@@ -89,7 +89,7 @@ class Journal(list):
 
     Based on a standard python list
     """
-    def __init__(self, path=None, title='', items=[]):
+    def __init__(self, path=None, items=[], title=''):
         list.__init__(self)
         #actual entries will be stored in self
 
@@ -116,12 +116,19 @@ class Journal(list):
         #could generate a title based on path basename if path exists:
 
         
-    def __repr__(self, entries=False):
+##     def __repr__(self, entries=False):
+##         j = ''
+##         j += "Journal with %s entries.\n" % (len(self))
+##         if entries:
+##             for e in self:
+##                 j += e.render()
+##         return j
+
+    def as_text(self):
         j = ''
         j += "Journal with %s entries.\n" % (len(self))
-        if entries:
-            for e in self:
-                j += e.render()
+        for e in self:
+            j += e.render()
         return j
         
     def show_entries(self):
@@ -177,6 +184,8 @@ class Journal(list):
             return self
         
         elif sort == "reverse":
+            #*2010.04.16 12:49:15 
+            #this 
             self.reverse()
             #could copy for pure list object:
             #return self[:]

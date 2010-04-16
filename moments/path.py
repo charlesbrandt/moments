@@ -742,10 +742,10 @@ class File(object):
 
     def __str__(self):
         #this will fail if path has unicode characters it doesn't know 
-        return str(self.path)
+        return str(self.path.filename)
     
     def __unicode__(self):
-        return unicode(self.path)
+        return unicode(self.path.filename)
 
     def check_stats(self):
         """
