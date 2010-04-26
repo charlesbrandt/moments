@@ -911,7 +911,11 @@ class File(object):
 ##         File.__init__(self, path)
 
 #from image import Image
-import Image as PILImage
+try:
+    import Image as PILImage
+except:
+    print "WARNING: Python Image Library not intalled."
+    print "Image manipulation will not work"
 
 class Image(File):
     """
