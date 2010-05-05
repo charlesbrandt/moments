@@ -567,7 +567,7 @@ class Converter(object):
                 ##     print "Non Source: %s" % source_file
 
                 source = Source()
-                source.path = source_file
+                source.path = Path(source_file)
                 source.entry = entry
                 #print "adding source: %s" % source
                 sources.append( source )
@@ -818,20 +818,25 @@ class Converter(object):
             links += "\r\n"
         return links
 
-    def to_m3u(self, remote=False):
+    def to_m3u(self, sources, flat=False, remote=False):
         m3u = "#EXTM3U\r\n"
-        for i in self:
-            obj = self.get_object(i)
-            length = 0
-            artist = ""
-            title = os.path.basename(i)
-            m3u += "#EXTINF:%s,%s - %s\r\n" % (length, artist, title)
-            if remote:
-                m3u += url_for(obj.custom_relative_path(prefix="/sound"), qualified=True)
-            else:
-                m3u += i
-                
-            m3u += "\r\n"
+        for s in sources:
+            if s.path.exists():
+                #obj = self.get_object(i)
+                i = str(s.path)
+                #could use an ID3 library to load this information here:
+                length = 0
+                artist = ""
+                title = os.path.basename(i)
+                m3u += "#EXTINF:%s,%s - %s\r\n" % (length, artist, title)
+                if remote:
+                    m3u += url_for(obj.custom_relative_path(prefix="/sound"), qualified=True)
+                elif flat:
+                    m3u += s.path.filename
+                else:
+                    m3u += i
+
+                m3u += "\r\n"
         return m3u
 
     def to_xspf(self, filename=None):        

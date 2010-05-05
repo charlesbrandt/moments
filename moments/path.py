@@ -32,7 +32,7 @@ Files, Directories, etc have a path associated with them
 circular dependency
 hence, one file
 """
-import os, re, random, subprocess, cPickle
+import os, re, random, subprocess, cPickle, shutil
 import urllib
 from datetime import datetime
 
@@ -463,6 +463,14 @@ class Path(object):
     def move(self, destination):
         self.rename(destination)
 
+    def copy(self, destination):
+        """
+        wrapping os call
+        seems like there was trouble doing this if it crossed devices
+        needed a system call in that case
+        http://docs.python.org/library/shutil.html
+        """
+        shutil.copy(str(self), destination)
         
     #???
     def make_tree(self):
