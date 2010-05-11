@@ -381,7 +381,7 @@ class Source(object):
         if self.jumps:
             moment.data = "# -sl %s %s" % (self.jumps.to_comma(), self.path)
         else:
-            moment.data = self.path
+            moment.data = str(self.path)
 
         return moment
 
@@ -444,7 +444,7 @@ class Sources(Items):
 
         # log in action.txt for current media's directory
         cur_item = self.get()
-        parent_path = os.path.dirname(cur_item.path)
+        parent_path = os.path.dirname(str(cur_item.path))
         action = os.path.join(parent_path, 'action.txt')
         j2 = Journal()
         j2.from_file(action)
@@ -511,8 +511,11 @@ class Converter(object):
         and look for Sources items within it
         """
         sources = Sources()
-        
+
+        #print "ENTRY: %s" % entry.render()
         for line in entry.data.splitlines():
+            source = Source()
+            #print "Pre Source: %s, entry: %s" % (source, source.entry.render())
             if re.search("\ -sl\ ", line):
                 #this requires the first 3 items to be:
                 # # -sl [nums] [file]
@@ -538,7 +541,6 @@ class Converter(object):
                 #get rid of surrounding quotes here
                 source_file = source_file.replace('"', '')
                 
-                source = Source()
                 source.path = source_file
                 source.jumps = jumps
                 source.entry = entry
@@ -566,11 +568,15 @@ class Converter(object):
                 ## else:
                 ##     print "Non Source: %s" % source_file
 
-                source = Source()
                 source.path = Path(source_file)
                 source.entry = entry
+                #print "entry: %s" % entry.render()
                 #print "adding source: %s" % source
                 sources.append( source )
+
+            #if source.entry:
+            #    print "Source: %s, entry: %s" % (source, source.entry.render())
+
                 
         return sources
 
@@ -584,6 +590,7 @@ class Converter(object):
         sources = Sources()
         for e in entries:
             sources.extend(self.from_entry(e))
+            
         sources.update()
         return sources
 

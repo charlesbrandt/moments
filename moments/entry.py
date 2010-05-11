@@ -119,6 +119,7 @@ class Entry(object):
         return a textual representation of the entry data only
         """
         if self.data:
+            #print "ENTRY DATA: %s" % type(self.data)
             #make sure that data is buffered with a blank line at the end
             #makes the resulting log easier to read.
             #if there are more than one blanklines, can leave them
