@@ -258,7 +258,7 @@ class Path(object):
         """
         #PCD image format seems to cause a lot of trouble
         image_extensions = [ '.jpg', '.png', '.gif', '.jpeg', '.JPG', '.tif' ]
-        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.AVI', '.iso', '.asf' ]
+        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.AVI', '.iso', '.asf', '.mp4' ]
 
         #, 'm4p' are not playable by flash, should convert to use
         sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg' ]
