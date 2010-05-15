@@ -569,6 +569,40 @@ class Timerange:
     def as_tuple(self):
         return (self.start, self.end)
 
+    def biggest_cycle(self):
+        """
+        determine what the biggest cycle is in our range...
+        i.e. year, month, day
+        """
+        #can't do anything if there is no end in the range
+        if not self.end:
+            return None
+        else:
+            diff = self.end.datetime - self.start.datetime
+            if diff.days >= 365:
+                print "YEAR"
+                return "year"
+            elif diff.days >= 31:
+                print "MONTH"
+                return "month"
+            elif diff.days >= 28:
+                print "MONTH (maybe)"
+                diff_m = self.end.month - self.start.month
+                #should check here if the month and days increment accordingly
+                if (diff_m == 1) and (self.end.day >= self.start.day):
+                    return "month"
+                elif (diff_m > 1):
+                    return "month"
+            elif diff.days >= 7:
+                print "WEEK"
+                return "week"
+            elif diff.days >= 1:
+                print "DAY"
+                return "day"
+            else:
+                return "hours"
+                
+
     def from_trange(self, trange, end_is_now=False):
         """
         will work with either a simple timestamp string
