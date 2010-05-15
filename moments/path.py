@@ -1184,9 +1184,6 @@ class Directory(File):
         #everything
         self.contents = []
 
-        #this will be a list of paths to prevent recursion
-        self.sub_paths = []
-        
         #self.ignores = []
         self.ignores = [ '.hg', '.svn', 'index.xml', 'index.txt', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
 
@@ -1195,6 +1192,9 @@ class Directory(File):
 
         self.filetypes_scanned = False
 
+        #this will be a list of paths to prevent recursion
+        self.sub_paths = []
+        
         #*2009.06.10 07:22:54 
         #safe to just call these directories?
         #*2009.10.21 16:14:24
