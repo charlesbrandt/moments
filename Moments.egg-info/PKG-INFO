@@ -6,15 +6,15 @@ Home-page: http://www.contextiskey.com
 Author: Charles Brandt
 Author-email: code@contextiskey.com
 License: MIT
-Description: Moment log files are simple text documents with the         format:
-        *YYYY.MM.DD hh:mm [tags]
-        [entry]
+Description: Moment log files are simple text documents with the         format: 
+                *YYYY.MM.DD hh:mm [tags]
+                [entry]
+                
         
         
-        
-        This simple format allows your notes to:
-        -stay accessible (no proprietary formats)
-        -be sorted by time or tag
-        -easily synchronize across many machines using a distributed version control system
-        
+                This simple format allows your notes to:
+        	  -stay accessible (no proprietary formats)
+        	  -be sorted by time or tag
+        	  -easily synchronize across many machines using a distributed version control system
+            
 Platform: UNKNOWN
