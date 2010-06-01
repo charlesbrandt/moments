@@ -435,17 +435,29 @@ class Journal(list):
         """
         take a start and end time
         return all entries in the journal that fall in that range
+
+        
         """
+        now = datetime.now()
         if not end:
-            end = datetime.now()
+            end = now
+
+        #checking for datetime passed in... convert to Timestamp
+        if type(start) == type(now):
+            start = Timestamp(start)
+        if type(end) == type(now):
+            end = Timestamp(end)
             
         times = self.dates.keys()
         times.sort()
 
         matches = []
         for t in times:
-            pytime = Timestamp(t).time
-            if (pytime >= start) and (pytime <= end):
+            #not sure why we're using just time here
+            #seems like we would want to use the date too?
+            #pytime = Timestamp(t).time
+            pytime = Timestamp(t).datetime
+            if (pytime >= start.datetime) and (pytime <= end.datetime):
                 matches.extend(self.dates[t])
         return matches
 

@@ -153,9 +153,13 @@ class Timestamp(object):
             now = datetime.now()
             if type(time) == type(now):
                 self.dt = time
-            else:
+            elif type(time) == type(self):
+                self = time
+            elif (type(time) == type('')) or (type(time) == type(u'')):
                 #print "Got: %s type: %s" % (time, type(time))
                 self.from_text(time)
+            else:
+                print "Unknown time item: %s (type: %s)" % (time, type(time))
         elif tstamp:
             self.from_text(tstamp)
         elif cstamp:
@@ -500,6 +504,37 @@ class Timestamp(object):
 
         return Timestamp(past)
 
+    def future_month(self, months=1):
+        """
+        because future and past does not handle months,
+        handle this separately
+        """
+        next_month = self.month + months
+        if next_month >= 13:
+            years = next_month / 12
+            next_month = next_month % 12
+            #next_month = 1
+            year = self.year + years
+        else:
+            year = self.year
+            
+        next_compact = "%s%02d" % (year, next_month)
+        next_month_stamp = Timestamp(compact=next_compact)
+        return next_month_stamp
+
+    def past_month(self, months=1):
+        prior_month = self.month - months
+        if prior_month <= 0:
+            years = 1 + (abs(prior_month) / 12)
+            year = self.year - years
+            prior_month = 12 - (abs(prior_month) % 12)
+        else:
+            year = self.year
+
+        prior_compact = "%s%02d" % (year, prior_month)
+        prior_month_stamp = Timestamp(compact=prior_compact)
+        return prior_month_stamp
+
     # the following are picked up by __getattr__()
     # which pulls them from the self.dt (datetime)
 
@@ -539,7 +574,7 @@ class Timestamp(object):
     ##     """
     ##     return self.dt.strftime("%S")
 
-class Timerange:
+class Timerange(object):
     """
     Timerange holds a start and end python datetime
 
@@ -555,53 +590,37 @@ class Timerange:
     """
     def __init__(self, trange=None, start=None, end=None):
         if trange:
+            print "trange: %s" % trange
             self.from_trange(trange)
         else:
-            self.start = start
-            self.end = end
+            now = datetime.now()
+            #check for datetime passed in:
+            if type(start) == type(now):
+                self.start = Timestamp(start)
+            else:
+                self.start = start
+
+            if type(end) == type(now):
+                self.end = Timestamp(end)
+            else:
+                self.end = end
 
     def __str__(self):
         if self.start == self.end:
             return str(Timestamp(time=self.start))
+        #not sure if this is ever the case?
+        #elif not self.end:
+        #    return str(Timestamp(time=self.start))            
         else:
-            return '-'.join( [Timestamp(time=self.start).compact(), Timestamp(time=self.end).compact()] )
+            print "start: %s (type: %s)" % (self.start, type(self.start))
+            print self.end
+            #return '-'.join( [Timestamp(time=self.start).compact(), Timestamp(time=self.end).compact()] )
+            #assuming that timestamp is used internally in Timerange now:
+            return '-'.join( [self.start.compact(), self.end.compact()] )
 
     def as_tuple(self):
         return (self.start, self.end)
 
-    def biggest_cycle(self):
-        """
-        determine what the biggest cycle is in our range...
-        i.e. year, month, day
-        """
-        #can't do anything if there is no end in the range
-        if not self.end:
-            return None
-        else:
-            diff = self.end.datetime - self.start.datetime
-            if diff.days >= 365:
-                print "YEAR"
-                return "year"
-            elif diff.days >= 31:
-                print "MONTH"
-                return "month"
-            elif diff.days >= 28:
-                print "MONTH (maybe)"
-                diff_m = self.end.month - self.start.month
-                #should check here if the month and days increment accordingly
-                if (diff_m == 1) and (self.end.day >= self.start.day):
-                    return "month"
-                elif (diff_m > 1):
-                    return "month"
-            elif diff.days >= 7:
-                print "WEEK"
-                return "week"
-            elif diff.days >= 1:
-                print "DAY"
-                return "day"
-            else:
-                return "hours"
-                
 
     def from_trange(self, trange, end_is_now=False):
         """
@@ -627,11 +646,13 @@ class Timerange:
 
         #if we found an explicit end in the string, use it
         if end:
-            end = Timestamp().from_compact(end)
+            #end = Timestamp().from_compact(end)
+            end = Timestamp(compact=end)
             #end = ts.time
             #end = tstamp_to_time(end)
         elif end_is_now:
-            end = datetime.now()
+            #end = datetime.now()
+            end = Timestamp()
         else:
             end = default_end
 
@@ -693,31 +714,148 @@ class Timerange:
             #end = None
             raise AttributeError, "Unknown timerange format: %s"  % text_time
         
-        self.start = start
-        self.end = end
-        return (start, end)
+        self.start = Timestamp(start)
+        self.end = Timestamp(end)
+        return (self.start, self.end)
 
-#should see future and past operations on Timestamp now
-#def this_week_last_year(today=date.today()):
-def this_week_last_year(today=None):
-    if not today:
-        today = datetime.combine(date.today(), dttime(0))
-    #today = datetime.datetime.now()
+    def biggest_cycle(self):
+        """
+        determine what the biggest cycle is in our range...
+        i.e. year, month, day
+        """
+        #can't do anything if there is no end in the range
+        if not self.end:
+            return None
+        else:
+            diff = self.end.datetime - self.start.datetime
+            if diff.days >= 365:
+                print "YEAR"
+                return "year"
+            elif diff.days >= 31:
+                print "MONTH"
+                return "month"
+            elif diff.days >= 28:
+                print "MONTH (maybe)"
+                diff_m = self.end.month - self.start.month
+                #should check here if the month and days increment accordingly
+                if (diff_m == 1) and (self.end.day >= self.start.day):
+                    return "month"
+                elif (diff_m > 1):
+                    return "month"
+            elif diff.days >= 7:
+                print "WEEK"
+                return "week"
+            elif diff.days >= 1:
+                print "DAY"
+                return "day"
+            else:
+                return "hours"
 
-    #could use date to same effect,
-    #but that would require exceptions/checks in timestamp for type
-    #today.hour = 0
-    #today.minute = 0
-    #today.second = 0
-    #these are read-only attributes
+
+#class RelativeRange(Timerange):
+class RelativeRange(object):
+    """
+    class to quickly get ranges relative to 'now'
+    sometimes these are more complex than just 'future' and 'past' on Timestamp
+
+    return timeranges from specific functions
+    """
+    def __init__(self, timestamp=None, name=''):
+        #Timerange.__init__(self)
+        #name should be a string indicating the type of relation
+        #e.g.
+        #last month, this month, next_month
+        self.name = name
+        if not timestamp:
+            self.now = Timestamp()
+        else:
+            self.now = timestamp
+            
+            
+    def year(self, timestamp=None):
+        """
+        return a range for the month that timestamp falls in
+        """
+        if not timestamp:
+            timestamp = self.now
+        start_compact = "%s" % (timestamp.year)
+        end_compact = "%s1231235959" % (timestamp.year)
+        return Timerange("%s-%s" % (start_compact, end_compact))
+
+    def month(self, timestamp=None):
+        """
+        return a range for the month that timestamp falls in
+        """
+        if not timestamp:
+            timestamp = self.now
+        start_compact = "%s%02d" % (timestamp.year, timestamp.month)
+
+        next_month_stamp = timestamp.future_month()
+
+        #print "Next month: %s" % next_month
+        #print "Next month stamp: %s" % next_month_stamp
+        sec = timedelta(seconds=1)
+        month_end = next_month_stamp.datetime - sec
+        #print month_end
+        month_end_stamp = Timestamp(month_end)
+        month_start_stamp = Timestamp(compact=start_compact)
+        return Timerange(start=month_start_stamp, end=month_end_stamp)
+
+    def this_month(self):
+        return self.month(self.now)
+
+    def last_month(self):
+        #last_compact = "%s%02d" % (self.now.
+        last_month_ts = self.now.past_month()
+        return self.month(last_month_ts)
+
+    def next_month(self):
+        #last_compact = "%s%02d" % (self.now.
+        next_month_ts = self.now.future_month()
+        return self.month(next_month_ts)
+
+    def week(self, timestamp=None, week_start=0):
+        """
+        uses date.weekday() to determine position in the week
+        Monday is 0, (default week_start)
+        if another day should be used, specify in week_start
+        """
+        if not timestamp:
+            timestamp = self.now
+
+        date = timestamp.datetime.date()
+        weekday = date.weekday()
+        if weekday >= week_start:
+            go_back = weekday - week_start
+            go_forward = 6 - weekday
+        else:
+            go_back = weekday - week_start + 6
+            go_forward = week_start - weekday
+
+        print "back: %s, forward: %s" % (go_back, go_forward)
+        
     
-    year = timedelta(365)
-    last_year = today - year
-    start = last_year - timedelta(4)
-    end = last_year + timedelta(4)
-    #stamp = start.strftime("%Y%m%d") + '-' + end.strftime("%Y%m%d")
-    
-    tr = Timerange(start=start, end=end)
-    stamp = str(tr)
-    return stamp
+    #should see future and past operations on Timestamp now
+    #def this_week_last_year(today=date.today()):
+    def this_week_last_year(today=None):
+        if not today:
+            today = datetime.combine(date.today(), dttime(0))
+        #today = datetime.datetime.now()
+
+        #could use date to same effect,
+        #but that would require exceptions/checks in timestamp for type
+        #today.hour = 0
+        #today.minute = 0
+        #today.second = 0
+        #these are read-only attributes
+
+        year = timedelta(365)
+        last_year = today - year
+        start = last_year - timedelta(4)
+        end = last_year + timedelta(4)
+        #stamp = start.strftime("%Y%m%d") + '-' + end.strftime("%Y%m%d")
+
+        tr = Timerange(start=start, end=end)
+        stamp = str(tr)
+        return stamp
 
