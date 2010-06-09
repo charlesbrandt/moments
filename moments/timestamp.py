@@ -200,6 +200,13 @@ class Timestamp(object):
             text_time = self.dt.strftime("%Y.%m.%d")
         return text_time
 
+    def round(self, accuracy=None):
+        """
+        return a new timestamp object with the desired accuracy
+        """
+        c = self.compact(accuracy)
+        return Timestamp(compact=c)
+
     def text(self, accuracy=None):
         """
         return a string representation of our internal datetime object
@@ -590,7 +597,7 @@ class Timerange(object):
     """
     def __init__(self, trange=None, start=None, end=None):
         if trange:
-            print "trange: %s" % trange
+            #print "trange: %s" % trange
             self.from_trange(trange)
         else:
             now = datetime.now()
@@ -612,8 +619,8 @@ class Timerange(object):
         #elif not self.end:
         #    return str(Timestamp(time=self.start))            
         else:
-            print "start: %s (type: %s)" % (self.start, type(self.start))
-            print self.end
+            #print "start: %s (type: %s)" % (self.start, type(self.start))
+            #print self.end
             #return '-'.join( [Timestamp(time=self.start).compact(), Timestamp(time=self.end).compact()] )
             #assuming that timestamp is used internally in Timerange now:
             return '-'.join( [self.start.compact(), self.end.compact()] )
@@ -751,6 +758,17 @@ class Timerange(object):
             else:
                 return "hours"
 
+    def days(self, overlap_edges=True):
+        """
+        return a list of all days contained in self
+        (this could also be an iterator)
+
+        if overlap_edges is set, may extend beyond the current range
+        rounding to the nearest full day on each end
+        """
+        pass
+
+
 
 #class RelativeRange(Timerange):
 class RelativeRange(object):
@@ -788,17 +806,19 @@ class RelativeRange(object):
         """
         if not timestamp:
             timestamp = self.now
-        start_compact = "%s%02d" % (timestamp.year, timestamp.month)
 
+        #start_compact = "%s%02d" % (timestamp.year, timestamp.month)
+        #month_start_stamp = Timestamp(compact=start_compact)
+
+        month_start_stamp = timestamp.round(accuracy="month")
+        
         next_month_stamp = timestamp.future_month()
-
         #print "Next month: %s" % next_month
         #print "Next month stamp: %s" % next_month_stamp
         sec = timedelta(seconds=1)
         month_end = next_month_stamp.datetime - sec
         #print month_end
         month_end_stamp = Timestamp(month_end)
-        month_start_stamp = Timestamp(compact=start_compact)
         return Timerange(start=month_start_stamp, end=month_end_stamp)
 
     def this_month(self):
@@ -823,18 +843,31 @@ class RelativeRange(object):
         if not timestamp:
             timestamp = self.now
 
+        #round timestamp to the beginning of the day:
+        day = timestamp.round(accuracy='day')
+        timestamp = day
+
         date = timestamp.datetime.date()
         weekday = date.weekday()
         if weekday >= week_start:
             go_back = weekday - week_start
             go_forward = 6 - weekday
         else:
-            go_back = weekday - week_start + 6
-            go_forward = week_start - weekday
+            go_back = weekday - week_start + 6 + 1
+            go_forward = week_start - weekday - 1
 
-        print "back: %s, forward: %s" % (go_back, go_forward)
+        go_forward += 1
+        #print "back: %s, forward: %s" % (go_back, go_forward)
+        week_start_stamp = timestamp.past(days=go_back)
+        week_end_plus = timestamp.future(days=go_forward)
+        sec = timedelta(seconds=1)
+        week_end = week_end_plus.datetime - sec
+        #print month_end
+        week_end_stamp = Timestamp(week_end)
+
+        return Timerange(start=week_start_stamp, end=week_end_stamp)
         
-    
+        
     #should see future and past operations on Timestamp now
     #def this_week_last_year(today=date.today()):
     def this_week_last_year(today=None):
@@ -858,4 +891,22 @@ class RelativeRange(object):
         tr = Timerange(start=start, end=end)
         stamp = str(tr)
         return stamp
+
+
+    def day(self, timestamp=None):
+        """
+        return a range for the month that timestamp falls in
+        """
+        if not timestamp:
+            timestamp = self.now
+
+        today_start_stamp = timestamp.round(accuracy="day")
+        
+        tomorrow_stamp = timestamp.future(days=1)
+        sec = timedelta(seconds=1)
+        today_end = tomorrow_stamp.datetime - sec
+        today_end_stamp = Timestamp(today_end)
+
+        return Timerange(start=today_start_stamp, end=today_end_stamp)
+
 

@@ -63,7 +63,11 @@ class TestRelativeRange:
 
         self.timerange = Timerange('20100428-20100528')
 
-        self.rr = RelativeRange()
+        #june 2, 2010 is a Wednesday:
+        tstamp = Timestamp(compact="20100602")
+        self.rr = RelativeRange(tstamp)
+
+        #december 1, 2010 is a Wednesday:
         self.dec = Timestamp(compact='201012')
         self.rr_dec = RelativeRange(self.dec)
         
@@ -89,7 +93,22 @@ class TestRelativeRange:
 
     def test_week(self):
         week = self.rr.week()
-        assert False
+        print week
+
+        #dec 1, 2010 is wednesday, starting week on friday
+        #to test opposite direction
+        week = self.rr_dec.week(week_start=4)
+        print week
+        assert str(week) == "20101126-20101202235959"
+
+        week = self.rr.week()
+        assert str(week) == "20100531-20100606235959"
+        #assert False
+
+    def test_day(self):
+        day = self.rr.day()
+        print day
+        assert str(day) == "20100602-20100602235959"
 
 
     ## def test_this_week_last_year():

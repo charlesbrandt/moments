@@ -238,6 +238,13 @@ class Journal(list):
         f.write(flat)
         f.close()
 
+    def flat_first_lines(self, separator=' '):
+        flat = ''
+        for e in self:
+            flat += e.data.splitlines()[0] + separator
+
+        return flat
+
     #formerly: add_log_to_journal, add_file
     def from_file(self, log_name=None, add_tags=[]):
         """

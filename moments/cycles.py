@@ -134,14 +134,16 @@ def main():
     from timestamp import Timerange, RelativeRange, Timestamp
 
     timerange = Timerange('20100428-20100528')
-    dec = Timestamp(compact='201012')
-    feb = Timestamp(compact='201002')
+    #dec = Timestamp(compact='201012')
+    #feb = Timestamp(compact='201002')
+    #dec_r = rr.month(dec)
+    #feb_r = rr.month(feb)
+
     rr = RelativeRange()
     this_month_r = rr.this_month()
-    dec_r = rr.month(dec)
-    feb_r = rr.month(feb)
+    last_month_r = rr.last_month()
 
-    print this_month_r
+    print last_month_r
     rr.week()
 
 if __name__ == '__main__':
