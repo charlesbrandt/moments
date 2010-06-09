@@ -432,6 +432,16 @@ class Path(object):
         """
         return os.path.exists(self.path)
 
+    def created(self):
+        """
+        wrapper shortcut for getting the modified timestamp of the path
+        """
+        if self.exists():
+            f = self.load()
+            return f.timestamp()
+        else:
+            return None
+
     def create(self, mode=None):
         """
         see if we have an extension

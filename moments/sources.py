@@ -364,24 +364,38 @@ class Source(object):
     entry:  the original entry that the source was created from
     """
     def __init__(self, path=None):
-        self.path = path
+        p = Path('./')
+        if type(path) == type(p):
+            self.path = path
+        elif path:
+            self.path = Path(path)
+        else:
+            #print "no object in source!"
+            self.path = None
         self.jumps = Jumps()
         self.entry = None
 
     def __str__(self):
         return self.as_moment().render()
 
-    def as_moment(self):
+    def as_moment(self, use_file_created=True):
         moment = Moment()
         if self.entry:
             moment.tags = self.entry.tags
+            moment.created = self.entry.created
         else:
             moment.tags = Tags()
+            
+            created = self.path.created()
+            if created and use_file_created:
+                moment.created = created
+                #otherwise we just want to stick with 'now' default of init
 
         if self.jumps:
             moment.data = "# -sl %s %s" % (self.jumps.to_comma(), self.path)
         else:
             moment.data = str(self.path)
+
 
         return moment
 
@@ -467,7 +481,7 @@ class Converter(object):
     approaches Sources generation from many different levels
 
     rather than bog down and clutter the Sources object directly
-    can just generate it here
+    can just generate or convert it here
     """
     
     def __init__(self, path=None, sources=None):
@@ -766,9 +780,6 @@ class Converter(object):
         destination.update()
         return destination
     
-    def save(self):
-        pass
-
     def from_m3u(self, filename=None):
         if not filename:
             filename = self.path
@@ -816,6 +827,32 @@ class Converter(object):
             return new_sources
         else:
             return sources
+
+    def save(self):
+        pass
+
+    def to_journal(self, destination, sources, tags=[], skip_dupes=False):
+        """
+        use from_entries, and condense_and_sort()
+        """
+        j = load_journal(destination)
+        print len(j)
+        print j
+
+        if skip_dupes:
+            j.associate_data()
+            for source in sources:
+                if not j.datas.has_key(str(source.path)+'\n\n'):
+                    moment = source.as_moment()
+                    moment.tags.union(tags)
+                    j.update_entry(moment)
+        else:
+            for source in sources:
+                moment = source.as_moment()
+                moment.tags.union(tags)
+                j.update_entry(moment)
+                
+        j.to_file(destination)
 
     def to_links(self, prefix='/dir'):
         links = ''
