@@ -594,14 +594,15 @@ class Converter(object):
                 
         return sources
 
-    def from_entries(self, entries):
+    def from_entries(self, entries, sources=None):
         """
         take a list of moments/entries
         for each line in the entry
         see if it will work as a playlist item
         add if so
         """
-        sources = Sources()
+        if not sources:
+            sources = Sources()
         for e in entries:
             sources.extend(self.from_entry(e))
             
@@ -809,7 +810,7 @@ class Converter(object):
             if line.startswith('http://') or line.startswith('/'):
                 self.append(line.strip())
 
-    def from_journal(self, path, sort=False):
+    def from_journal(self, path, sources=None, sort=False):
         """
         use from_entries, and condense_and_sort()
         """
@@ -818,8 +819,9 @@ class Converter(object):
         print j
         for i in j:
             print i.render()
-        
-        sources = self.from_entries(j)
+
+        sources = self.from_entries(j, sources)
+            
         print len(sources)
         if sort:
             #condense and sort will change the order of an entry list
