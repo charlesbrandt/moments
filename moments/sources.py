@@ -378,11 +378,15 @@ class Source(object):
     def __str__(self):
         return self.as_moment().render()
 
-    def as_moment(self, use_file_created=True):
+    def as_moment(self, use_file_created=True, new_entry=False):
         moment = Moment()
-        if self.entry:
+        if self.entry and not new_entry:
             moment.tags = self.entry.tags
             moment.created = self.entry.created
+        elif new_entry:
+            #want to keep the file the same, but nothing else
+            moment.tags = Tags()
+            
         else:
             moment.tags = Tags()
             
@@ -470,7 +474,7 @@ class Sources(Items):
         return an entry for what is playing
         """
         cur_item = self.get()
-        return cur_item.as_moment()
+        return cur_item.as_moment(new_entry=True)
     
 class Converter(object):
     """

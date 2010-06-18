@@ -150,7 +150,7 @@ class Path(object):
     in some cases wrapping the standard library os.path module
     """
     
-    def __init__(self, path=None, parts=None, relative=False, local_path=''):
+    def __init__(self, path=None, parts=None, relative=False, relative_prefix=''):
         """
         take either a relative or absolute path
         """
@@ -159,7 +159,9 @@ class Path(object):
         self.name = ''
         self.extension = ''
 
-        self.parse_path(path, parts, relative, local_path)
+        self.relative_prefix = relative_prefix
+        
+        self.parse_path(path, parts, relative, self.relative_prefix)
 
         #file (local), http, smb, etc
         self.protocol = ''
@@ -346,13 +348,13 @@ class Path(object):
         ##     #new_node already defined:
         ##     pass
         if node_type == "Directory":
-            new_node = Directory(self.path)
+            new_node = Directory(self)
         elif node_type == "Image":
-            new_node = Image(self.path)
+            new_node = Image(self)
         #elif node_type == "Sound":
         #    new_node = Sound(self.path)
         else: # node_type == "File":
-            new_node = File(self.path)
+            new_node = File(self)
 
         return new_node
 
@@ -621,7 +623,7 @@ class Path(object):
         pass
 
     #def local_to_relative(path=None, add_prefix=False):
-    def to_relative(self, path):
+    def to_relative(self, path='', leading_slash=False, extension=None):
         """
         accept a path (either Path or path... will get resolved down to str)
         return the relative part
@@ -631,23 +633,33 @@ class Path(object):
 
         convert a local file path into one acceptable for use as a relative path in a URL
 
-        if node is a file, this will include the filename at the end!!!
+        if node is a file, this will include the filename at the end
         """
+        if not path:
+            path = self.relative_prefix
         #want to make sure that the path we're looking at contains local_path
-        prefix = os.path.commonprefix([local_path, path])
-        if prefix == local_path:
-            #take everything after prefix as relative
+        prefix = os.path.commonprefix([self.path, path])
+        if prefix == self.path:
+            #see if there is anything extra in the path part sent
             temp_path = path[len(prefix)+1:]
         else:
-            #not sure what was sent, might as well just give it back
-            temp_path = path
-
+            if leading_slash:
+                temp_path = self.path[len(prefix):]
+            else:
+                temp_path = self.path[len(prefix)+1:]
+                
         #if re.search(r'\\', temp_path):
         #temp_path = re.subn(r'\\', '/', temp_path)
         temp_path = temp_path.replace(r'\\', '/')
 
-        if add_prefix:
-            temp_path = os.path.join(config['relative_prefix'], temp_path)
+        #if add_prefix:
+        #    temp_path = os.path.join(config['relative_prefix'], temp_path)
+
+        if extension:
+            temp = Path(temp_path)
+            temp.extension = extension
+            temp_path = str(temp)
+        
         return temp_path
 
 
@@ -744,7 +756,11 @@ class File(object):
         #Node.__init__(self, **kwargs)
         #LocalNode.__init__(self, path)
 
-        self.path = Path(path)
+        test = Path('.')
+        if type(path) == type(test):
+            self.path = path
+        else:
+            self.path = Path(path)
 
         #we don't initialize this since it could be a directory and
         #we don't want to recurse unless needed
@@ -990,16 +1006,21 @@ class Image(File):
     ##         return os.path.join(relative_prefix, os.path.dirname(local_to_relative(self.path)), self.thumb_dir_name, size, self.size_name(size))
         
 
-    def get_size(self, size):
+    def get_size(self, size, relative=False):
         """
         tiny, small, medium, large
         """
         thumb_path = self.size_path(size)
         if not os.path.isfile(thumb_path):
             self.make_thumbs()
+
+        if relative:
+            #print self.path.relative_prefix
+            thmb = Path(thumb_path, relative_prefix=self.path.relative_prefix)
+            thumb_path = thmb.to_relative()
         return thumb_path
 
-    def move(self, destination, relative=True):
+    def move(self, destination, relative=False):
         """
         this utilizes the os.rename function
         but should also move thumbnails
@@ -1007,10 +1028,7 @@ class Image(File):
         if relative is true, will expect a relative path that is
         joined with the local path
         otherwise destination is assumed to be full local path
-        """
-        if relative:
-            destination = os.path.join(local_path, destination)
-        
+        """        
         #new_dir = os.path.join(image_dir, data)
         (new_dir, new_name) = os.path.split(destination)
 
@@ -1026,6 +1044,12 @@ class Image(File):
 
         for k in self.sizes.keys():
             os.rename(self.size_path(k), new_image.size_path(k))
+
+    def copy(self, destination, relative=True):
+        """
+        copy the original image, along with all thumbs
+        """
+        pass
             
     def make_thumb_dirs(self, base=None):
         """
