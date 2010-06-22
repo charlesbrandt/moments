@@ -542,6 +542,21 @@ class Timestamp(object):
         prior_month_stamp = Timestamp(compact=prior_compact)
         return prior_month_stamp
 
+    def is_in(self, timerange):
+        """
+        check if we are contained in the given timerange
+
+        this should be equivalent to:
+        timerange.has(timestamp)
+        """
+
+        if ( (self.datetime > timerange.start.datetime) and
+             (self.datetime < timerange.end.datetime) ):
+            return True
+        else:
+            return False
+        
+
     # the following are picked up by __getattr__()
     # which pulls them from the self.dt (datetime)
 

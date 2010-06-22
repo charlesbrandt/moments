@@ -16,6 +16,8 @@ each level of the structure has it's own type of object
 that understands how to summarize lower level objects it contains.
 """
 import os, sys
+from moments.path import Path
+from moments.timestamp import Timestamp
 
 #relative cycles
 class Measure(object):
@@ -96,10 +98,58 @@ class Cycle(object):
 
         #start with one of the 3
         #and try loading brute force (everything)
-        audio_root = "/c/binaries/audio"
+        found = []
+        audio_root = "/c/binaries/audio/incoming"
+        found.extend(self.look_in(audio_root))
+
+        powershot_root = "/c/binaries/graphics/incoming/daily"
+        found.extend(self.look_in(powershot_root))
+        slr_root = "/c/binaries/graphics/incoming/slr"
+        found.extend(self.look_in(slr_root))
+
+        for p in found:
+            print p
+        #once this is working, should be easier to extract things like
+        #cwt, bundles, dwt, etc
+        #can then leave everything in tact as timeline.
+        
+        #if directory sorted by [ days, months, years ], only load relevant
 
         #ideally:
         #look.in(path).for([files, entries]).ordered_by(time, tag, unknown)
+
+        #or maybe just:
+        #look_in(path, for="files", order_by="time")
+
+    def look_in(self, path, look_for="files", grouped_by="day",
+                order_by="time"):
+        """
+        grouped_by describes how the (sub) files are stored in the path
+        sometimes items are collected by day
+        other times they are collected by year/month/day
+        """
+        found = []
+        p = Path(path)
+        if p.type() == "Directory":
+            d = p.load()
+            for sub_path in d.sub_paths:
+                sp = Path(sub_path)
+                parts = sp.name.split('-')
+                #print parts[0]
+                try:
+                    start = Timestamp(compact=parts[0])
+                    print start
+                except:
+                    print "could not parse %s" % parts[0]
+                    start = None
+
+                if start and start.is_in(self.timerange):
+                    found.append(sp)
+                    #print "%s in %s" % (start, self.timerange)
+                else:
+                    #print "%s NOT in %s" % (start, self.timerange)
+                    pass
+        return found
         
     def check(self):
         this_month = ''
@@ -107,7 +157,6 @@ class Cycle(object):
             print "Warning: may not be able to find all entries until month is consolidated"
 
         
-
     def overlaps(other):
         """
         check to see if any of our parts overlap with the other cycle's parts
@@ -140,11 +189,14 @@ def main():
     #feb_r = rr.month(feb)
 
     rr = RelativeRange()
+    rr.week()
+
     this_month_r = rr.this_month()
     last_month_r = rr.last_month()
 
     print last_month_r
-    rr.week()
+    c = Cycle(last_month_r)
+
 
 if __name__ == '__main__':
     main()

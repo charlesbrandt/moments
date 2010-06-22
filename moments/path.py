@@ -1226,7 +1226,7 @@ class Directory(File):
 
         self.filetypes_scanned = False
 
-        #this will be a list of paths to prevent recursion
+        #this will be a list of path strings to prevent recursion
         self.sub_paths = []
         
         #*2009.06.10 07:22:54 
