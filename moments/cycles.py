@@ -76,7 +76,8 @@ class Cycle(object):
         self.parts = []
         #the bounds of the cycle
         self.timerange = timerange
-    
+
+        #print self.timerange
         #load sources of information for this cycle:
         #this is related to search... how it looks in different sources
         #also similar to player or thumbnails...
@@ -107,6 +108,9 @@ class Cycle(object):
         slr_root = "/c/binaries/graphics/incoming/slr"
         found.extend(self.look_in(slr_root))
 
+        journal_root = "/c/journal"
+        found.extend(self.look_in(journal_root, grouped_by="year-month"))
+
         for p in found:
             print p
         #once this is working, should be easier to extract things like
@@ -121,6 +125,23 @@ class Cycle(object):
         #or maybe just:
         #look_in(path, for="files", order_by="time")
 
+    def load_year(self, year, paths):
+        """
+        helper function for look_in
+        when dealing with year directories to recurse into
+        """
+        start = self.timerange.start
+        end = self.timerange.end
+        if year == start.year:
+            start_month = start.month
+        else:
+            start_month = 1
+
+        if year == end.year:
+            end_month = end.month
+        else:
+            end_month = 12
+            
     def look_in(self, path, look_for="files", grouped_by="day",
                 order_by="time"):
         """
@@ -132,23 +153,37 @@ class Cycle(object):
         p = Path(path)
         if p.type() == "Directory":
             d = p.load()
-            for sub_path in d.sub_paths:
-                sp = Path(sub_path)
-                parts = sp.name.split('-')
-                #print parts[0]
-                try:
-                    start = Timestamp(compact=parts[0])
-                    print start
-                except:
-                    print "could not parse %s" % parts[0]
-                    start = None
+            if grouped_by == "day":
+                for sub_path in d.sub_paths:
+                    sp = Path(sub_path)
+                    parts = sp.name.split('-')
+                    #print parts[0]
+                    try:
+                        start = Timestamp(compact=parts[0])
+                        #print start
+                    except:
+                        print "could not parse %s" % parts[0]
+                        start = None
 
-                if start and start.is_in(self.timerange):
-                    found.append(sp)
-                    #print "%s in %s" % (start, self.timerange)
+                    if start is not None:
+                        #print start
+                        if start.is_in(self.timerange):
+                            found.append(sp)
+                        #print "%s in %s" % (start, self.timerange)
+                    else:
+                        #print "%s NOT in %s" % (start, self.timerange)
+                        pass
+            elif grouped_by == "year-month":
+                start_year = self.timerange.start.year
+                end_year = self.timerange.end.year
+                #end_month = self.timerange.end.month
+                #start_month = self.timerange.start.month
+                if start_year != end_year:
+                    for year in range(start_year, end_year+1):
+                        found.extend(self.load_year(year, d.sub_paths))
                 else:
-                    #print "%s NOT in %s" % (start, self.timerange)
-                    pass
+                    found.extend(self.load_year(start_year, d.sub_paths))
+                        
         return found
         
     def check(self):

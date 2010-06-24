@@ -305,7 +305,8 @@ class Timestamp(object):
             self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
         else:
             #some other format
-            self.dt = None
+            #self.dt = None
+            raise AttributeError, "Unknown compact time format: %s" % text_time
         return self.dt
 
     #was log.text_to_time
@@ -549,6 +550,9 @@ class Timestamp(object):
         this should be equivalent to:
         timerange.has(timestamp)
         """
+        #print "Datetime: %s" % self.datetime
+        #print "Start Datetime: %s" % timerange.start.datetime
+        #print "End Datetime: %s" % timerange.end.datetime
 
         if ( (self.datetime > timerange.start.datetime) and
              (self.datetime < timerange.end.datetime) ):
