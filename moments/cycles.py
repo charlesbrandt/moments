@@ -71,6 +71,19 @@ class Cycle(object):
 
     Cycles differ from Timeranges in that they tie a period of time together
     with some files and data associated with that time
+
+        #once this is working, should be easier to extract things like
+        #cwt, bundles, dwt, etc
+        #can then leave everything in tact as timeline.
+        
+        #if directory sorted by [ days, months, years ], only load relevant
+
+        #ideally:
+        #look.in(path).for([files, entries]).ordered_by(time, tag, unknown)
+
+        #or maybe just:
+        #look_in(path, for="files", order_by="time")
+
     """
     def __init__(self, timerange):
         self.parts = []
@@ -111,19 +124,22 @@ class Cycle(object):
         journal_root = "/c/journal"
         found.extend(self.look_in(journal_root, grouped_by="year-month"))
 
+        print "FOUND:"
         for p in found:
             print p
-        #once this is working, should be easier to extract things like
-        #cwt, bundles, dwt, etc
-        #can then leave everything in tact as timeline.
+
+        #found should now hold a list of directories
+        #that should hold content relevant to the range initialized
         
-        #if directory sorted by [ days, months, years ], only load relevant
+        #still need to go through those files and do the right thing
 
-        #ideally:
-        #look.in(path).for([files, entries]).ordered_by(time, tag, unknown)
+        #if they're text files, load as a journal
+        #if they're binary files, make a new journal entry based on timestamp
+        #could also look for any entries associated with binary files
+        #in order to get tags associated with those files.
 
-        #or maybe just:
-        #look_in(path, for="files", order_by="time")
+
+        
 
     def load_year(self, year, paths):
         """
@@ -132,16 +148,37 @@ class Cycle(object):
         """
         start = self.timerange.start
         end = self.timerange.end
-        if year == start.year:
-            start_month = start.month
-        else:
-            start_month = 1
+        matches = []
 
-        if year == end.year:
-            end_month = end.month
-        else:
-            end_month = 12
+        year_path = ""
+        for p in paths:
+            path = Path(p)
+            if path.name == str(year):
+                year_path = path
+
+        if year_path:
+            if year == start.year:
+                start_month = start.month
+            else:
+                start_month = 1
+
+            if year == end.year:
+                end_month = end.month
+            else:
+                end_month = 12
+
+            year_dir = year_path.load()
+            for m in range(start_month, end_month+1):
+                #matches.extend(load_month(m,
+                month = "%02d" % m
+                month_path = os.path.join(str(year_path), month)
+                if os.path.exists(month_path):
+                    matches.append(month_path)
+                else:
+                    print "not found: %s" % month_path
             
+        return matches
+    
     def look_in(self, path, look_for="files", grouped_by="day",
                 order_by="time"):
         """
@@ -182,6 +219,8 @@ class Cycle(object):
                     for year in range(start_year, end_year+1):
                         found.extend(self.load_year(year, d.sub_paths))
                 else:
+                    print "Start: %s" % start_year
+                    print "Paths: %s" % d.sub_paths
                     found.extend(self.load_year(start_year, d.sub_paths))
                         
         return found
