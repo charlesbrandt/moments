@@ -305,7 +305,8 @@ class Timestamp(object):
             self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
         else:
             #some other format
-            self.dt = None
+            #self.dt = None
+            raise AttributeError, "Unknown compact time format: %s" % text_time
         return self.dt
 
     #was log.text_to_time
@@ -541,6 +542,24 @@ class Timestamp(object):
         prior_compact = "%s%02d" % (year, prior_month)
         prior_month_stamp = Timestamp(compact=prior_compact)
         return prior_month_stamp
+
+    def is_in(self, timerange):
+        """
+        check if we are contained in the given timerange
+
+        this should be equivalent to:
+        timerange.has(timestamp)
+        """
+        #print "Datetime: %s" % self.datetime
+        #print "Start Datetime: %s" % timerange.start.datetime
+        #print "End Datetime: %s" % timerange.end.datetime
+
+        if ( (self.datetime > timerange.start.datetime) and
+             (self.datetime < timerange.end.datetime) ):
+            return True
+        else:
+            return False
+        
 
     # the following are picked up by __getattr__()
     # which pulls them from the self.dt (datetime)
