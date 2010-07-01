@@ -1,13 +1,3 @@
-;(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
-; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 89 :width normal :foundry "unknown" :family "DejaVu Sans")))))
-
-;uncomment the following on windows:
-;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
-
 ;THINGS THAT ONLY NEED TO BE RUN ONCE (AT STARTUP) GO HERE
 
 ; customizations [custom lisp code snippets to modify editor behavior]
@@ -20,8 +10,6 @@
 ; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
 (setq load-path (cons "~/.emacs.d/" load-path))
 
-; (setq mac-option-modifier 'meta)
-; (setq mac-pass-option-to-system nil)
 (tool-bar-mode)
 
 ;; Prevent accidentally killing emacs.
@@ -31,18 +19,36 @@
                    (if (y-or-n-p-with-timeout "Do you really want to exit Emacs ? " 4 nil)
                        (save-buffers-kill-emacs))))
 
-
 ;;(autoload 'context)
 (load-file "~/.emacs.d/context.el")
 
-(load-file "~/.emacs.d/theme.el")
-
 (add-hook 'text-mode-hook 'flyspell-mode) 
 
+;http://www.emacswiki.org/cgi-bin/wiki/RecentFiles
+(require 'recentf)
+(recentf-mode 1)
+;http://www.emacswiki.org/cgi-bin/wiki/Icicles
+;need to investigate icicles
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(global-font-lock-mode t)
+ '(inhibit-startup-screen t))
+
+(load-file "~/.emacs.d/theme.el")
+
 ;keeping this around to undo the bad settings done elsewhere
+(my-color-theme-light)
+
+(frame-setup
+ '(("drishti"  29 98) ;; my netbook
+   ))
+
 ;(color-theme-calm-forest)
 ;;set default color theme
-(my-color-theme-light)
 ;
 ;(color-theme-gray30)
 ;(color-theme-calm-forest)
@@ -64,17 +70,16 @@
 ;(desktop-load-default)
 ;(desktop-read)
 
-;http://www.emacswiki.org/cgi-bin/wiki/RecentFiles
-(require 'recentf)
-(recentf-mode 1)
-;http://www.emacswiki.org/cgi-bin/wiki/Icicles
-;need to investigate icicles
+; (setq mac-option-modifier 'meta)
+; (setq mac-pass-option-to-system nil)
 
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
+;(custom-set-faces
+  ;; custom-set-faces was added by Custom.
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(global-font-lock-mode t)
- '(inhibit-startup-screen t))
+; '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 89 :width normal :foundry "unknown" :family "DejaVu Sans")))))
+
+;uncomment the following on windows:
+;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
 
