@@ -209,6 +209,22 @@ class Path(object):
         self.extension = extension(name)
         self._full_name = name
 
+    def expand(self):
+        """
+        check if we start with a '.' something
+        expand and reparse
+        """
+        if re.match('^\.', self.path):
+            path = os.path.abspath(self.path)
+            print path
+            self.parse_path(path)
+        elif not (re.match('^/', self.path)):
+            path = os.path.join('./', self.path)
+            print "Assuming relative, adding './' prefix: %s" % path
+            path = os.path.abspath(self.path)
+            self.parse_path(path)
+        #otherwise must already be expanded... do nothing
+        
     def parse_path(self, path=None, parts=None, relative=False, local_path=''):
         #print "parsing path: %s" % path
         #print "->%s<-" % path
@@ -502,6 +518,9 @@ class Path(object):
         Similar in concept to:
         os.path.dirname(self.path)
         """
+        #make sure we have all the parts we can get:
+        self.expand()
+        
         if (self.path != os.path.dirname(self.path) and
             os.path.dirname(self.path)):
             

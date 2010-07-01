@@ -4,6 +4,23 @@
 
 (require 'color-theme)
 
+;; frame setup for different computers
+(defun setup-frame-for (name height width font)
+  (if (equal system-name name)
+      (progn
+        (set-frame-height (selected-frame) height)
+        (set-frame-width (selected-frame) width)
+	(custom-set-faces font)
+	)
+    )
+  )
+
+(defun frame-setup (list)
+  (when window-system
+    (dolist (conf list)
+      ;(setup-frame-for (car conf) (cadr conf) (caddr conf)))))
+      (setup-frame-for (car conf) (cadr conf) (caddr conf) (cadddr conf) ))))
+
 (defun my-color-theme-light ()
   (interactive)
   ;; main theme
@@ -193,16 +210,4 @@
      (erc-prompt-face ((t (:bold t :foreground "GoldenRod3" :weight bold))))
      (trailing-whitespace ((t (:background "red")))))))
 
-
-;; the frame setup for all my computers
-(defun setup-frame-for (name height width)
-  (if (equal system-name name)
-      (progn
-        (set-frame-height (selected-frame) height)
-        (set-frame-width (selected-frame) width))))
-
-(defun frame-setup (list)
-  (when window-system
-    (dolist (conf list)
-      (setup-frame-for (car conf) (cadr conf) (caddr conf)))))
 

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 """
-#
 # Description:
 
 # By: Charles Brandt [code at contextiskey dot com]
@@ -17,7 +16,9 @@ this should make it easy to remove blocks that are clearly not related to the pr
 should then be able to take that edited out put and compress it further into blocks... could group by day, by week, etc. (depending on reporting requirements)
 
 """
-from moments.path import load_journal
+import sys, os
+
+from moments.path import load_journal, Path
 from moments.journal import Journal
 from moments.timestamp import Timestamp
 
@@ -70,14 +71,47 @@ def format_minutes(j, skip=8):
     hours = total_minutes / 60.0
     print "Total: %s minutes (%s hours)" % (total_minutes, hours)
 
-    
-j1 = load_journal('/c/clients/estella_vieira/journal.txt')
-#j = j1.sort_entries('reverse-chronological')
-j = j1.sort_entries('chronological')
-#j = j1.sort_entries('reverse')
 
-dest = '/c/clients/estella_vieira/summary.txt'
-#log_minutes(j, dest)
-j2 = load_journal(dest)
-j2 = j2.sort_entries('chronological')
-format_minutes(j2)
+def create_summary(source, destination):
+
+    #j1 = load_journal('/c/clients/estella_vieira/journal.txt')
+    j1 = load_journal(source)
+    #j = j1.sort_entries('reverse-chronological')
+    j = j1.sort_entries('chronological')
+    #j = j1.sort_entries('reverse')
+
+    #destination = '/c/clients/estella_vieira/summary.txt'
+
+    #can comment out this to reformat summary:
+    log_minutes(j, destination)
+    j2 = load_journal(destination)
+    j2 = j2.sort_entries('chronological')
+    format_minutes(j2)
+    
+def main():
+    if len(sys.argv) > 1:
+        helps = ['--help', 'help', '-h']
+        for i in helps:
+            if i in sys.argv:
+                usage()
+                exit()
+
+        f1 = sys.argv[1]
+        if len(sys.argv) > 2:
+            f2 = sys.argv[2]
+        else:
+            f1_path = Path(f1)
+            f1_dir = f1_path.parent()
+            
+            f2 = os.path.join(str(f1_dir), "summary.txt")
+            f2_path = Path(f2)
+            if not f2_path.exists():
+                print "Saving output to: %s" % f2
+            else:
+                print "Warning: %s exists!" % f2
+                exit()
+
+        create_summary(f1, f2)
+        
+if __name__ == '__main__':
+    main()
