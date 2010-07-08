@@ -65,7 +65,9 @@ def format_minutes(j, skip=8):
             if not minutes > skip*60:
                 total_minutes += minutes
                 print "%s minutes (%s - %s)" % (minutes, last_stamp, e.created)
-
+            else:
+                print "skipping: %s" % (minutes)
+                
         last_stamp = e.created
 
     hours = total_minutes / 60.0

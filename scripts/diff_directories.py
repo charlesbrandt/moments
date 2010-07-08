@@ -29,11 +29,10 @@ import re
 import subprocess
 from datetime import datetime
 
-from difflib import Differ
+#http://docs.python.org/release/2.5.2/lib/module-difflib.html
+from difflib import Differ, unified_diff
 from pprint import pprint
 
-#from osbrowser import make_node
-#from moments.node import make_node
 from moments.path import Path
 #from osbrowser.library import phraseUnicode2ASCII
 from moments.ascii import unaccented_map
@@ -72,19 +71,29 @@ def diff_files(fname, path1, path2, indent, diff_system=False):
     #n2 = make_node(path2)
 
     if n1.size == n2.size:
+        #probably pretty safe to assume that they are equal
         #print " %s - BOTH, SAME SIZE" % phraseUnicode2ASCII(fname)
+        #print "EQUAL sizes: %s %s" % (n1.size, n2.size)
         is_difference = False
 
-        #probably pretty safe to assume that they are equal
-        #print "EQUAL sizes: %s %s" % (n1.size, n2.size)
-
         #could do additional checks if desired
+        #enabling another diff level will take longer, but will be more accurate:
+        f_a = file(path1)
+        f_b = file(path2)
+        a = f_a.readlines()
+        b = f_b.readlines()
+        diff = unified_diff(a, b)
+        for d in diff:
+            is_difference = True
+            #print d
 
+        #this will signal which files have differences:
+        if is_difference:
+            print " %s - BOTH, DIFFERENT CONTENT" % fname.translate(unaccented_map())
+            
         #could move it somewhere else:
         #os.rename(path1, os.path.join(d1, "dupes", fname))
         #os.rename(path2, os.path.join(d2, "merged", fname))
-
-        pass
 
     else:
         #print " %s - BOTH, DIFFERENT SIZE" % phraseUnicode2ASCII(fname)
