@@ -236,6 +236,8 @@ class Path(object):
                 #special case... this will not get parsed correctly without
                 #expanding it:
                 path = os.path.abspath(path)
+                #print path
+                #path = os.path.abspath()
             #self._dirname = path
             #could check if it is an actual path here
             self._dirname = unicode(path)

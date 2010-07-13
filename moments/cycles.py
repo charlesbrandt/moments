@@ -113,6 +113,20 @@ class Cycle(object):
         #start with one of the 3
         #and try loading brute force (everything)
         found = []
+
+        #*2010.07.13 11:18:27
+        #add some concept of priority here
+        #as far as where to look first (if the locations are available)
+
+        outgoing_root = "/c/outgoing"
+        exported_root = "/media/CHARLES/outgoing"
+        
+        journal_root = "/c/journal"
+        found.extend(self.look_in(journal_root, grouped_by="year-month"))
+
+        personal_root = "/c/charles"
+
+
         audio_root = "/c/binaries/audio/incoming"
         found.extend(self.look_in(audio_root))
 
@@ -120,9 +134,6 @@ class Cycle(object):
         found.extend(self.look_in(powershot_root))
         slr_root = "/c/binaries/graphics/incoming/slr"
         found.extend(self.look_in(slr_root))
-
-        journal_root = "/c/journal"
-        found.extend(self.look_in(journal_root, grouped_by="year-month"))
 
         print "FOUND:"
         for p in found:
