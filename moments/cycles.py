@@ -103,16 +103,10 @@ class Cycle(object):
         #(rather than loading everything brute force
         # and limiting the journal later)
 
-        #3 main distinctions to make: (thinking threes)
-        #audio / movie
-
-        #photos
-
-        #text
-
-        #start with one of the 3
-        #and try loading brute force (everything)
         found = []
+
+        #3 main distinctions to make: (thinking threes)
+        #text
 
         #*2010.07.13 11:18:27
         #add some concept of priority here
@@ -125,15 +119,18 @@ class Cycle(object):
         found.extend(self.look_in(journal_root, grouped_by="year-month"))
 
         personal_root = "/c/charles"
+        #can optionally add and load other sources of journals here
+        #other repositories.
 
-
-        audio_root = "/c/binaries/audio/incoming"
-        found.extend(self.look_in(audio_root))
-
+        #photos
         powershot_root = "/c/binaries/graphics/incoming/daily"
         found.extend(self.look_in(powershot_root))
         slr_root = "/c/binaries/graphics/incoming/slr"
         found.extend(self.look_in(slr_root))
+
+        #audio / movie
+        audio_root = "/c/binaries/audio/incoming"
+        found.extend(self.look_in(audio_root))
 
         print "FOUND:"
         for p in found:
