@@ -49,7 +49,7 @@ def _move_files(source_dir, new_dir):
     mv.wait()
 
     #for copying files
-    command = 'cp %s/* %s' % (source_dir, new_dir)
+    #command = 'cp %s/* %s' % (source_dir, new_dir)
     #mv = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
 
     result = "All finished with moving files.  Any output included below:<br>\n"
@@ -153,6 +153,9 @@ def process_batch(batch, dest):
         #print item.date()
 
 def split_by_day(path, dest_prefix=None):
+    """
+    look at a directory, and group all files by the day they were created
+    """
     if dest_prefix is None:
         dest_prefix = path
     p = Path(path)

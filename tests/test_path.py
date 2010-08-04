@@ -11,11 +11,19 @@ class TestPath:
     see also test node
     """
     def setUp(self):
-        self.path = Path("a/b/c/d.txt")
+        self.path = Path("/a/b/c/d.txt")
         
     def test_init(self):
         #make sure it loads
         assert self.path
+
+    def test_periods(self):
+        name = ".emacs.desktop"
+        p = Path(name)
+        print name_only(name)
+        print str(p)
+        assert name == str(p)
+        
 
     def test_path_to_tag(self):
         #s = path_to_tags("a/b/c/d.txt")
@@ -31,6 +39,16 @@ class TestPath:
         s = Path("/h/i/j/k/").to_tags()
         assert_equal (s, ["h", "i", "j", "k"])
 
+    def test_hidden(self):
+        path_s = "/c/scripts/system/archive/configs/.gconfd"
+        hidden = Path(path_s)
+        print str(hidden)
+        print "Filename: %s (name: %s, extension: %s)" % (hidden.filename, hidden.name, hidden.extension)
+        assert hidden._full_name == ".gconfd"
+        #assert name_only(path_s)
+        assert hidden.filename == ".gconfd"
+        assert str(hidden) == path_s
+        
     def test_create(self):
         p = "create_me.txt"
         path = Path(p)

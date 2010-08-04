@@ -20,6 +20,11 @@ otherwise default to chronological (oldest first)
 import sys, os
 from moments.journal import Journal
 from moments.log import Log
+
+def usage():
+    print "python /c/moments/scripts/sort_log.py [source_log]"
+    print "if destination supplied, will output there instead of temp.txt"
+    print "python /c/moments/scripts/sort_log.py [source_log] [destination_log]"
     
 def sort_log(f1, output="temp.txt", sort="chronological"):
     """
@@ -55,6 +60,9 @@ def main():
         else:
             output = "temp.txt"
         sort_log(f1, output, sort='reverse-chronological')
+
+    else:
+        usage()
         
 if __name__ == '__main__':
     main()

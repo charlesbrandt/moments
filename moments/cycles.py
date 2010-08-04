@@ -14,6 +14,9 @@ this is a collection of information over a range of time
 consider this making a directory structure for time
 each level of the structure has it's own type of object
 that understands how to summarize lower level objects it contains.
+
+see also
+*2007.12.11 10:24 c journal 2007 12 20071211 private meta original
 """
 import os, sys
 from moments.path import Path

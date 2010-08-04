@@ -78,15 +78,20 @@ def name_only(name):
     return the filename without any extension
     """
     #make sure there is an extension
-    new_name = ''
-    if re.search('\.', name):
-        parts = name.split('.')
-        only = parts[:-1]
-        temp = '.'.join(only)
-        new_name = temp
-    else:
-        new_name = name
-    #print new_name
+    ## new_name = ''
+    ## #if name starts with a period, this will recurse infinitely:
+    ## #if re.search('\.', name) and not re.match('\.', name):
+    ## if re.search('\.', name):
+    ##     parts = name.split('.')
+    ##     only = parts[:-1]
+    ##     temp = '.'.join(only)
+    ##     new_name = temp
+    ## else:
+    ##     new_name = name
+    ## #print new_name
+    parts = os.path.splitext(name)
+    new_name = parts[0]
+    
     return new_name
 
 def extension(name):
