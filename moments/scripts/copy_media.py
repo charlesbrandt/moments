@@ -62,6 +62,7 @@ def make_destination(source, translate):
         (pre, post) = ('/c/media', '')
 
     #print "source: %s" % source
+    source = str(source)
     destination = source.replace(pre, post)
     #print "destination: %s" % destination
     
@@ -105,25 +106,27 @@ def copy_files(journal, translate=None):
     #sources = Sources()
     converter = Converter()
     sources = converter.from_journal(journal)
+    counter = 0
     for i in sources:
         #print i
-        if re.search('\.mp3', i.path):
-            if os.path.exists(i.path):
-                destination = make_destination(i.path, translate)
-                #print "SOURCE: %s" % i
-                #print "DEST: %s" % destination
+        #if re.search('\.mp3', i.path):
+        if os.path.exists(str(i.path)):
+            destination = make_destination(i.path, translate)
+            #print "SOURCE: %s" % i
+            #print "DEST: %s" % destination
 
-                if os.path.exists(destination):
-                    print "skipping: %s" % destination
-                    pass
-                else:
-                    dest_path = os.path.dirname(destination)
-                    if not os.path.exists(dest_path):
-                        os.makedirs(dest_path)
-                        
-                    copy_file(i.path, destination)
+            if os.path.exists(destination):
+                print "skipping: %s" % destination
+                pass
             else:
-                print "COULD NOT FIND FILE: %s" % i.path
+                dest_path = os.path.dirname(destination)
+                if not os.path.exists(dest_path):
+                    os.makedirs(dest_path)
+                print "Copy %03d: %s" % (counter, i.path)
+                copy_file(i.path, destination)
+        else:
+            print "COULD NOT FIND FILE: %s" % i.path
+        counter += 1
     
 def main():
     if len (sys.argv) > 1:

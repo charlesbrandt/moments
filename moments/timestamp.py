@@ -356,6 +356,24 @@ class Timestamp(object):
         self.dt = time
         return time
 
+    def from_gps(self, text_time, offset=-4):
+        """
+        take a string of the gps format:
+        apply a delta for local time zone
+        return a python datetime object
+        """
+        if len(text_time) == 20:
+            self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%SZ")[0:6]))
+        else:
+            #some other format
+            self.dt = None
+            print "Unknown gps date format: %s" % text_time
+            exit()
+
+        off = timedelta(hours=offset)
+        self.dt += off
+        return self.dt
+
     #was tstamp_to_time
     def from_apple_compact(self, text_time):
         """
@@ -785,8 +803,33 @@ class Timerange(object):
         if overlap_edges is set, may extend beyond the current range
         rounding to the nearest full day on each end
         """
-        pass
+        rr = RelativeRange()
+        current = self.start.round("day")
+        end = self.end.round("day")
+        days = []
+        while str(current) != str(end):
+            day = rr.day(current)
+            days.append(day)
+            current = current.future(days=1)
+        return days
 
+    def months(self, overlap_edges=True):
+        """
+        return a list of all months contained in self
+        (this could also be an iterator)
+
+        if overlap_edges is set, may extend beyond the current range
+        rounding to the nearest full month on each end
+        """
+        rr = RelativeRange()
+        current = self.start.round("month")
+        end = self.end.round("month")
+        months = []
+        while str(current) != str(end):
+            month = rr.month(current)
+            months.append(month)
+            current = current.future_month(months=1)
+        return months
 
 
 #class RelativeRange(Timerange):
@@ -808,15 +851,23 @@ class RelativeRange(object):
         else:
             self.now = timestamp
             
-            
     def year(self, timestamp=None):
         """
-        return a range for the month that timestamp falls in
+        return a range for the year that timestamp falls in
         """
         if not timestamp:
             timestamp = self.now
         start_compact = "%s" % (timestamp.year)
         end_compact = "%s1231235959" % (timestamp.year)
+        return Timerange("%s-%s" % (start_compact, end_compact))
+
+    def year_past(self, timestamp=None):
+        """the last 12 months"""
+        if not timestamp:
+            timestamp = self.now
+        end_compact = timestamp.compact()
+        last_year = timestamp.past(years=1)
+        start_compact = last_year.compact()
         return Timerange("%s-%s" % (start_compact, end_compact))
 
     def month(self, timestamp=None):
@@ -914,7 +965,7 @@ class RelativeRange(object):
 
     def day(self, timestamp=None):
         """
-        return a range for the month that timestamp falls in
+        return a range for the day that timestamp falls in
         """
         if not timestamp:
             timestamp = self.now
