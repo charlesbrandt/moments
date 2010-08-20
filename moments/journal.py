@@ -524,7 +524,7 @@ class Journal(list):
         """
         take another journal,
         return a new journal
-        with only the entries that are only in the other journal
+        with the entries that are only in the other journal
         not in ourself
 
         NOTE:
