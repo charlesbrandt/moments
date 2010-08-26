@@ -11,7 +11,6 @@
 # Requires: moments
 
 For development, see also:
-/c/moments/moments/helpers.py
 /c/moments/moments/launcher.py
 /c/moments/instances.txt
 
@@ -187,7 +186,11 @@ def now(files=[], destination="/c/outgoing", priorities="/c/priorities.txt", cal
     emacs(file_string)
 
 def main():
-    destination = "/c/outgoing"
+    if os.name == "nt":
+        destination = r"C:\c\outgoing"
+    else:
+        destination = "/c/outgoing"
+        
     instances = "./instances.txt"
     calendars = "/c/calendars/"
     priorities = "/c/scripts/priorities.txt"

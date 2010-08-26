@@ -94,10 +94,14 @@ def export_logs(source, destination, add_tags=[], recurse=True):
                 j.from_file(n1path, add_tags)
                 j.to_file(n1path)
 
-                #move might not work as in the case of pictures
-                #os.rename(n1path, n2path)
-                mv = subprocess.Popen("mv %s %s" % (n1path, n2path), shell=True, stdout=subprocess.PIPE)
-                mv.wait()
+                if os.name == "nt":
+                    #move might not work as in the case of pictures
+                    os.rename(str(n1path), str(n2path))
+                else:
+                    #on posix type systems this is more likely to work
+                    #between different devices
+                    mv = subprocess.Popen("mv %s %s" % (n1path, n2path), shell=True, stdout=subprocess.PIPE)
+                    mv.wait()
 
     #if anything is left in dstcontents, it must not have been in src
     #in the case of an export, it's already on the destination... fin
