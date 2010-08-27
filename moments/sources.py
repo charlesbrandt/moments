@@ -20,7 +20,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
-import os, re
+
+import os, re, codecs
+
 from moments.journal import Journal
 from moments.timestamp import Timestamp
 from moments.moment import Moment
@@ -434,6 +436,19 @@ class Sources(Items):
         else:
             self.log_path = log_path
 
+    def has_path(self, path):
+        """
+        go through all of our items and see if we have the path
+        """
+        found = False
+        for i in self:
+            #print "m3u path: %s" % i.path
+            #print "chk path: %s" % path
+            if str(i.path) == str(path):
+                found = True
+                break
+
+        return found
 
     def sort_path(self):
         #self.sort(key=lambda source: str(source.path))
@@ -785,23 +800,25 @@ class Converter(object):
         destination.update()
         return destination
     
-    def from_m3u(self, filename=None):
+    def from_m3u(self, filename=None, sources=None):
         if not filename:
             filename = self.path
-        #try:
         f = codecs.open(filename, encoding='latin_1')
-        #f = open(filename)
 
+        if not sources:
+            sources = Sources()
+                        
         for line in f.readlines():
             line = unicode(line)
             if line.startswith('#') or len(line.strip()) == 0:
                 pass
             else:
-                self.append(line.strip())
+                sources.append(Source(path=line.strip()))
+                #self.append(line.strip())
+
         f.close
-        ## except:
-        ##     self = []
-        ##     raise "trouble loading m3u: %s" % filename
+        sources.update()
+        return sources
 
     def from_copy_all_urls(self, data):
         """
@@ -868,10 +885,10 @@ class Converter(object):
             links += "\r\n"
         return links
 
-    def to_m3u(self, sources, flat=False, remote=False):
+    def to_m3u(self, sources, verify=True, flat=False, remote=False):
         m3u = "#EXTM3U\r\n"
         for s in sources:
-            if s.path.exists():
+            if (verify and s.path.exists()) or (not verify):
                 #obj = self.get_object(i)
                 i = str(s.path)
                 #could use an ID3 library to load this information here:
@@ -887,6 +904,8 @@ class Converter(object):
                     m3u += i
 
                 m3u += "\r\n"
+            else:
+                print "Ignoring. Item not found: %s" % s.path
         return m3u
 
     def to_xspf(self, filename=None):        
