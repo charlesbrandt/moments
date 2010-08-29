@@ -29,7 +29,7 @@ from moments.journal import Journal
 from moments.path import load_journal
 from moments.association import check_ignore
 #from medialist.medialist import MediaList
-from moments.sources import Converter, Sources
+from moments.sources import Converter, Sources, Source
 
 def flatten_structure(source):
     destination = '/binaries/music/vinyl/flat/'
@@ -81,18 +81,26 @@ def copy_file(source, destination, verbose=False):
     """
     copy a single file 
     """
-    #cp = subprocess.Popen("cp %s %s" % (source, destination), shell=True, stdout=subprocess.PIPE)
-    #cp.wait()
-    command = 'rsync -av "%s" "%s"' % (source, destination)
-    rsync = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if verbose:
-        print command
-        print rsync.communicate()[0]
+    if os.path.exists(destination):
+        print "skipping: %s" % destination
+        pass
     else:
-        rsync.communicate()[0]
+        dest_path = os.path.dirname(destination)
+        if not os.path.exists(dest_path):
+            os.makedirs(dest_path)
+
+        #cp = subprocess.Popen("cp %s %s" % (source, destination), shell=True, stdout=subprocess.PIPE)
+        #cp.wait()
+        command = 'rsync -av "%s" "%s"' % (source, destination)
+        rsync = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if verbose:
+            print command
+            print rsync.communicate()[0]
+        else:
+            rsync.communicate()[0]
 
 
-def copy_files(journal, translate=None):
+def process_files(journal, translate=None, action="copy"):
     """
     copy *only* the files referenced in a journal to a new loacation
     """
@@ -106,6 +114,7 @@ def copy_files(journal, translate=None):
     #sources = Sources()
     converter = Converter()
     sources = converter.from_journal(journal)
+    new_sources = Sources()
     counter = 0
     for i in sources:
         #print i
@@ -113,20 +122,21 @@ def copy_files(journal, translate=None):
         if os.path.exists(str(i.path)):
             destination = make_destination(i.path, translate)
             #print "SOURCE: %s" % i
-            #print "DEST: %s" % destination
+            print "DEST: %s" % destination
 
-            if os.path.exists(destination):
-                print "skipping: %s" % destination
-                pass
-            else:
-                dest_path = os.path.dirname(destination)
-                if not os.path.exists(dest_path):
-                    os.makedirs(dest_path)
+            if action == "copy":
                 print "Copy %03d: %s" % (counter, i.path)
                 copy_file(i.path, destination)
+            if action == "m3u":
+                new_sources.append(Source(destination))
         else:
             print "COULD NOT FIND FILE: %s" % i.path
         counter += 1
+
+    if action == "m3u":
+        print len(new_sources)
+        m3u = converter.to_m3u(new_sources)
+        print m3u
     
 def main():
     if len (sys.argv) > 1:
@@ -136,7 +146,9 @@ def main():
         translate = None
         if len(sys.argv) > 2:
             translate = sys.argv[2]
-        copy_files(f1, translate)
+        #for just a copy:
+        #process_files(f1, translate)
+        process_files(f1, translate, action="m3u")
 
 def flatten():
     source = sys.argv[1]
