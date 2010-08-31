@@ -134,9 +134,13 @@ def process_files(journal, translate=None, action="copy"):
         counter += 1
 
     if action == "m3u":
-        print len(new_sources)
-        m3u = converter.to_m3u(new_sources)
-        print m3u
+        #print len(new_sources)
+        m3u = converter.to_m3u(new_sources, verify=False)
+        #print m3u
+        f = open('temp.txt', 'w')
+        f.write(m3u)
+        f.close()
+        
     
 def main():
     if len (sys.argv) > 1:
