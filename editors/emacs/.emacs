@@ -17,7 +17,8 @@
                 '(lambda ()
                    (interactive)
                    (if (y-or-n-p-with-timeout "Do you really want to exit Emacs ? " 4 nil)
-                       (save-buffers-kill-emacs))))
+                   
+    (save-buffers-kill-emacs))))
 
 ;;(autoload 'context)
 (load-file "~/.emacs.d/context.el")
@@ -43,9 +44,13 @@
 ;keeping this around to undo the bad settings done elsewhere
 (my-color-theme-light)
 
+;(name height width font)
+;where height and width are for the frame
 (frame-setup
  '(("blank" 29 98 '() ) ;; example
    ("drishti" 34 125 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 97 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; my netbook
+   ("context" 30 98 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; my laptop
+
    )
 )
 
@@ -56,7 +61,7 @@
 ;(color-theme-calm-forest)
 ;(color-theme-euphoria)
 
-;;black bagkgrounds:
+;;black bagkgrounds:netbook
 ;(color-theme-oswald)
 ;(color-theme-lawrence)
 ;(color-theme-hober)
@@ -77,4 +82,3 @@
 
 ;uncomment the following on windows:
 ;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
-
