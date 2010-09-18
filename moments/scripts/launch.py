@@ -32,6 +32,39 @@ from moments.path import load_journal, load_instance
 #http://docs.python.org/library/optparse.html?highlight=optparse#module-optparse
 from optparse import OptionParser
 
+def check_quotes(quotes_file):
+    """
+    similar to check_calendar, but looks in one file for the quote of the day
+    """
+    today_entries = []
+    if os.path.exists(quotes_file):
+        now = Timestamp()
+        j = load_journal(quotes_file, add_tags=['quotes'])
+        for e in j:
+            #print "processing: %s" % e.render()
+            #year may be in the past... update it to this year:
+            try:
+                #could be the case that Februrary has leap year days
+                new_date = datetime(now.dt.year, e.created.month,
+                                    e.created.day, e.created.hour,
+                                    e.created.minute, e.created.second)
+            except:
+                new_date = None
+            if new_date:
+                new_stamp = Timestamp(new_date)
+                new_data = e.render_data() + 'original date: %s' % e.created
+                #j.make_entry(e.data, e.tags, new_stamp)
+                j.make_entry(new_data, e.tags, new_stamp)
+
+        # todo TODAY
+        trange = now.compact(accuracy='day') + '-' + now.compact(accuracy='day') + '2359'
+        #print trange
+        (start, end) = Timerange(trange).as_tuple()
+        today_entries = j.limit(start, end)
+        #print today_entries
+
+    return today_entries
+
 def check_calendar(calendars, include_week=False):
     """
     check the files in calendars for entries that relate to today
@@ -94,8 +127,8 @@ def check_calendar(calendars, include_week=False):
 
     return today_entries
 
-def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False):
-    """
+def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False, quotes="/c/charles/yoga/golden_present.txt"):
+    """ 
     look through all calendar items for events coming up
     today (at minumum) and
     this week (optionally)
@@ -116,6 +149,7 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     now = Timestamp()
 
     today_entries = check_calendar(calendars, include_week)
+    today_entries.extend(check_quotes(quotes))
 
     #CREATE TODAY'S LOG:
     today = os.path.join(destination, now.filename())
