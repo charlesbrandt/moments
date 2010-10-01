@@ -13,7 +13,7 @@
 
 import sys, os
 from moments.journal import Journal
-from moments.path import load_journal
+from moments.path import load_journal, Path
 from moments.timestamp import Timestamp
 
 def merge_many(source, destination, add_tags=[]):
@@ -55,10 +55,11 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     
     result += "merge resulted in %s entries from %s and %s\n" % (len3, len1, len2)
 
+    f2_obj = Path(f2)
     if not ofile:
         now = Timestamp(now=True)
-        temp_name = "merge-%s-%s.txt" % (now.compact(), f2.name)
-        ofile = os.path.join(str(f2.parent()), temp_name)
+        temp_name = "merge-%s-%s.txt" % (now.compact(), f2_obj.name)
+        ofile = os.path.join(str(f2_obj.parent()), temp_name)
     result += "SAVING as: %s\n" % ofile
     j.to_file(ofile)
 
