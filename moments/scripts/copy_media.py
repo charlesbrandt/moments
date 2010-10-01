@@ -26,13 +26,19 @@ and the local destination is the second option
 import sys, os, re
 import subprocess
 from moments.journal import Journal
-from moments.path import load_journal
+from moments.path import load_journal, Path
 from moments.association import check_ignore
 #from medialist.medialist import MediaList
 from moments.sources import Converter, Sources, Source
 
-def flatten_structure(source):
-    destination = '/binaries/music/vinyl/flat/'
+def flatten_structure(source, destination):
+    """
+    copy all files that match check (e.g. mp3 files)
+    to a single directory
+    removing all other directory structures
+    does not need a playlist
+    only a source directory
+    """
     ignore_dirs = [ 'downloads' ]
     all_audio = []
     mp3_check = re.compile('.*\.mp3$')
@@ -40,9 +46,12 @@ def flatten_structure(source):
         for root,dirs,files in os.walk(source):
             for f in files:
                 if not mp3_check.search(f):
+                    #didn't match our criteria... moving on
                     continue
 
                 if not check_ignore(os.path.join(root, f), ignore_dirs):
+                    #if we get here, it must match the check,
+                    #and is not in the ignore
                     all_audio.append(os.path.join(root, f))
 
     elif os.path.isfile(source) and mp3_check.search(source):
@@ -51,10 +60,17 @@ def flatten_structure(source):
     print "found the following audio files in path: %s" % source
     print all_audio
     for f in all_audio:
-        print "copying: %s" % f
-        copy_file(f, destination)
+        f_path = Path(f)
+        f_name = f_path.filename
+        f_dest = os.path.join(destination, f_name)
+        print "copying: %s to %s" % (f, f_dest)
+        copy_file(f, f_dest)
     
-
+def flatten():
+    source = sys.argv[1]
+    #destination = '/binaries/music/vinyl/flat/'
+    destination = './flat'
+    
 def make_destination(source, translate):
     if translate is not None:
         (pre, post) = translate.split(':')
@@ -69,8 +85,12 @@ def make_destination(source, translate):
     #change the path used in logs to your local path
     #in this case, just remove the prefix /c/media
     #destination = source.replace('/c/media', '')
+
+    
     #or can hard code it here (would flatten out everything sent)
     #destination = '/c/media/binaries/graphics/dwt/20090405-telepaths_show/shared/'
+    source = Path(source)
+    destination = source.filename
 
     #filename = os.path.basename(source)
     #destination = '/c/trial/off/' + filename
@@ -98,8 +118,7 @@ def copy_file(source, destination, verbose=False):
             print rsync.communicate()[0]
         else:
             rsync.communicate()[0]
-
-
+            
 def process_files(journal, translate=None, action="copy"):
     """
     copy *only* the files referenced in a journal to a new loacation
@@ -144,20 +163,22 @@ def process_files(journal, translate=None, action="copy"):
     
 def main():
     if len (sys.argv) > 1:
-        if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
+        if sys.argv[1] in ['--help','help', '-h', '--h', '-help']:
             usage()
         f1 = sys.argv[1]
         translate = None
         if len(sys.argv) > 2:
             translate = sys.argv[2]
+
+
         #for just a copy:
         #process_files(f1, translate)
         process_files(f1, translate, action="m3u")
 
-def flatten():
-    source = sys.argv[1]
-    flatten_structure(source)
-    
 if __name__ == '__main__':
+    #TODO:
+    #Improve command line interface
+    #should this really be 2 different scripts? some overlap with copy_file
+
     main()
-    #flatten()
+    #flatten_structure(sys.argv[1], './flat2/')
