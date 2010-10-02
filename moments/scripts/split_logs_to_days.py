@@ -39,7 +39,11 @@ def split_log(path, add_tags, destination='/c/journal/'):
         for e in j:
             #make sure they're all moments, otherwise we might want to look
             #at what is going on.
-            assert e.created
+            try:
+                assert e.created
+            except:
+                print e.render()
+                exit()
             
         for e in j:
             month = "%02d" % e.created.month
