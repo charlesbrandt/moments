@@ -19,6 +19,7 @@ $Id$ (???)
 import sys, os, subprocess
 #from moments.node import Image, make_node
 from moments.path import Path
+from moments.tags import Tags
 
 def _move_files(source_dir, new_dir):
     """
@@ -61,8 +62,9 @@ def _move_files(source_dir, new_dir):
 
 def _move_file(source, new_dir):
     """
-    move all files on camera / usb media
-    to local image directory
+    wrap the system subprocess move command
+    include other tasks that need to be performed
+    
     """
     if not os.path.isdir(new_dir):
         os.mkdir(new_dir)
@@ -152,7 +154,7 @@ def process_batch(batch, dest):
         print _move_image_and_thumbs(item, dest)
         #print item.date()
 
-def split_by_day(path, dest_prefix=None):
+def split_by_day(path, dest_prefix=None, tags=[]):
     """
     look at a directory, and group all files by the day they were created
     """
@@ -174,7 +176,10 @@ def split_by_day(path, dest_prefix=None):
         if f.date() != last_date:
             #check if we need to move the previous day's files:
             if cur_batch:
-                dest = os.path.join(dest_prefix, last_date)
+                tags.insert(0, last_date)
+                t = Tags(tags)
+                dest_dir = t.to_tag_string()
+                dest = os.path.join(dest_prefix, dest_dir)
                 #print dest
                 process_batch(cur_batch, dest)
                 destinations.append(dest)
