@@ -406,6 +406,42 @@ class Timestamp(object):
         """
         return self.dt.strftime("%Y%m%dT%H%M%S")
 
+    def from_google_calendar(self, text_time):
+        """
+        take a string of the format:
+        YYYY-MM-DDTHH:MM:SS.000-04:00  (where T is the character 'T')
+        return a python datetime object
+
+        Note that timezone feature is not yet working
+        """
+        if len(text_time) == 29:
+            #TODO: incorporate time zone when available
+            self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S.000-04:00")[0:6]))
+        elif len(text_time) == 19:
+            self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S")[0:6]))
+        elif len(text_time) == 13:
+            self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H%M")[0:6]))
+        elif len(text_time) == 11:
+            self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H")[0:6]))
+        elif len(text_time) == 8:
+            self.dt = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+        elif len(text_time) == 6:
+            self.dt = datetime(*(strptime(text_time, "%Y%m")[0:6]))
+        elif len(text_time) == 4:
+            self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
+        else:
+            #some other format
+            self.dt = None
+        return self.dt
+
+    def google_calendar(self, accuracy=None):
+        """
+        take a python datetime object
+        return a string representation of that time
+        YYYYMMDDTHHMMSS
+        """
+        return self.dt.strftime("%Y-%m-%dT%H:%M:%S")
+
     def from_blog(self, text):
         """
         the following format is often used in blogs
@@ -731,6 +767,8 @@ class Timerange(object):
 
         elif len(text_time) == 8:
             start = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+
+            #this differs from RelativeRange that uses same date, 23:59:59 instead
             delta = timedelta(days=1)
             end = start+delta
 

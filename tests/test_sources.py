@@ -23,7 +23,11 @@ class TestSources:
         f = open("temp.m3u", 'w')
         f.write(m3u)
         f.close()
-        assert True == False
+        s2 = self.c.from_m3u("temp.m3u")
+        
+        assert len(s) == 21
+        assert len(s2) == 21
+        
         
         
         
