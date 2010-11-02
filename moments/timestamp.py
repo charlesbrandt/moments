@@ -21,6 +21,12 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
+*2010.10.24 11:49:23
+much of this functionality exists in the dateutil included with python
+http://labix.org/python-dateutil
+I didn't know about that module at the time
+Its parse function is really nice.
+
 *2010.03.16 10:56:36 todo
 would be nice if format was more generalized
 it is difficult when there are different versions of a string
@@ -416,7 +422,9 @@ class Timestamp(object):
         """
         if len(text_time) == 29:
             #TODO: incorporate time zone when available
-            self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S.000-04:00")[0:6]))
+            #self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S.000-0.:00")[0:6]))
+            from dateutil.parser import parse
+            self.dt = parse(text_time)
         elif len(text_time) == 19:
             self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S")[0:6]))
         elif len(text_time) == 13:
