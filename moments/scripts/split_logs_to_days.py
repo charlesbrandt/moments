@@ -36,21 +36,24 @@ def split_log(path, add_tags, destination='/c/journal/'):
     j = Journal()
     j.from_file(path, add_tags=add_tags)
     if len(j):
-        for e in j:
-            #make sure they're all moments, otherwise we might want to look
-            #at what is going on.
-            try:
-                assert e.created
-            except:
-                print e.render()
-                exit()
+        ## for e in j:
+        ##     #make sure they're all moments, otherwise we might want to look
+        ##     #at what is going on.
+        ##     try:
+        ##         assert e.created
+        ##     except:
+        ##         print e.render()
+        ##         exit()
             
         for e in j:
-            month = "%02d" % e.created.month
-            dest_path = os.path.join(destination, str(e.created.year), month)
-            dest = os.path.join(dest_path, e.created.filename())
+            if hasattr(e, "created"):
+                month = "%02d" % e.created.month
+                dest_path = os.path.join(destination, str(e.created.year), month)
+                dest = os.path.join(dest_path, e.created.filename())
+                #print e.render()
+            else:
+                dest = os.path.join(destination, "no_date.txt")
             print dest
-            #print e.render()
 
             existing = Journal()
             if not os.path.exists(dest):
@@ -63,6 +66,7 @@ def split_log(path, add_tags, destination='/c/journal/'):
             existing.from_file(dest)
             print "entries before: %s" % len(existing)
             existing.update_entry(e)
+            print "entries after update_entry: %s" % len(existing)
             e2 = existing.sort_entries('chronological')
             e2.to_file(dest)
             print "entries after: %s" % len(e2)

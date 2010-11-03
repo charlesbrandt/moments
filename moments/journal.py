@@ -319,6 +319,8 @@ class Journal(list):
         if hasattr(entry, "created"):
             entry_time = str(entry.created)
             self.dates.associate(entry, entry_time)
+        else:
+            self.dates.associate(entry, None)
 
         for t in entry.tags:
             self.tags.associate(entry, t)
