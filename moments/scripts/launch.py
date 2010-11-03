@@ -127,7 +127,7 @@ def check_calendar(calendars, include_week=False):
 
     return today_entries
 
-def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False, quotes="/c/charles/yoga/golden_present.txt"):
+def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False, quotes="/c/charles/golden_present.txt"):
     """ 
     look through all calendar items for events coming up
     today (at minumum) and

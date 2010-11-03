@@ -13,7 +13,7 @@ report on the amount of time transpired between each entry
 
 this should make it easy to remove blocks that are clearly not related to the project
 
-should then be able to take that edited out put and compress it further into blocks... could group by day, by week, etc. (depending on reporting requirements)
+should then be able to take that edited output and compress it further into blocks... could group by day, by week, etc. (depending on reporting requirements)
 
 """
 import sys, os
@@ -90,6 +90,9 @@ def create_summary(source, destination):
     j2 = j2.sort_entries('chronological')
     format_minutes(j2)
     
+def usage():
+    print __doc__
+    
 def main():
     if len(sys.argv) > 1:
         helps = ['--help', 'help', '-h']
@@ -114,6 +117,9 @@ def main():
                 exit()
 
         create_summary(f1, f2)
+    else:
+        usage()
+        exit()
         
 if __name__ == '__main__':
     main()
