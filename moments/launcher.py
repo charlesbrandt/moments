@@ -39,33 +39,73 @@ pass the launch to call via command line
 """
 import os, sys, subprocess
 #from moments.helpers import load_instance
-from path import load_instance
+from path import load_instance, Path
 
-def launch(args, source='/c/instances.txt'):
+############################################################
+# generic launchers
+############################################################
+
+#will accept more than one instance
+def edit_instance(args, instance='/c/instances.txt', editor="emacs"):
     for arg in args:
-        try:
-            files = load_instance(source, arg)
-            file_string = ' '.join(files)
-            emacs(file_string)
-            #echo(file_string)
-            print "Loading: %s" % arg                
-        except:
-            print "Could not load instance: %s" % arg                
+        #try:
+        files = load_instance(instance, arg)
+        file_string = ' '.join(files)
+        edit(file_string, editor=editor)
+        #echo(file_string)
+        print "Loading: %s" % arg                
+        #except:
+        #    print "Could not load instance: %s" % arg                
 
-def import_pictures():
-    #could just as easily import the library and call the function directly here
-    command = 'python import_usb.py /media/CHARLES/DCIM/101CANON/ /media/data/graphics/incoming/'
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    return command + "\n"
+#feel free to set the editor to any preferred default here
+#this should be the call to make any time an editor is needed
+def edit(source='', editor="emacs"):
+    if editor == "emacs":
+        emacs(source)
+    else:
+        print "Unknown editor: %s" % editor    
 
-## def breath():
-##     command = "python /c/python/pyglet/breathe.py"
-##     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-##                                stderr=subprocess.PIPE)
-##     return command + "\n"
+def browse(urls=[], browser="firefox"):
+    if browser == "firefox":
+        firefox(urls)
+    else:
+        print "Unknown broswer: %s" % browser
+
+def play(source='', start=0):
+    """
+    source should be either a path or a string
+    if it's just a string, then should try to identify the correct path to the media
+    (search a library of local data?)
+    """
+    process = None
+    p = Path(source)
+    if not p.exists():
+        #TODO
+        #could search here
+        #but for now...
+        print "Could not find: %s" % source
+    else:
+        process = vlc(source, start)
+    return process
+
+def watch(source=''):
+    pass
+
+def movie(source=''):
+    pass
+
+def picture(source=''):
+    pass
+
+#system_explorer, computer, etc
+def file_browse(source=''):
+    pass
 
 def terminal(working_dirs=[], tabs=0):
+    """
+    todo:
+    this should be more operating system agnostic
+    """
     args = ''
     for wd in working_dirs:
         args += ' --tab --working-directory=%s' % wd
@@ -80,6 +120,11 @@ def terminal(working_dirs=[], tabs=0):
     #process.communicate()[0]
     return command + "\n"
 
+############################################################
+#application specific launchers
+############################################################
+
+
 def emacs(source=''):
     #print os.name
     #print sys.platform
@@ -91,6 +136,7 @@ def emacs(source=''):
                                stderr=subprocess.PIPE)
     #process.communicate()[0]
     return command + "\n"
+
 
 def echo(source=''):
     """
@@ -114,6 +160,14 @@ def nautilus(source=''):
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     return command + "\n"
+
+def vlc(source='', start=0):
+    #command = "vlc --play-and-exit --start-time %s %s &" % (start, source)
+    command = "vlc --start-time %s %s" % (start, source)
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    #return command + "\n"
+    return process
 
 def totem(movie):
     command = "totem --fullscreen %s" % (movie)

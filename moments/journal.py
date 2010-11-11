@@ -268,7 +268,7 @@ class Journal(list):
             #if something is passed in, that will override the original path
             self.path = str(log_name)
         elif not self.path:
-            #if our path wasn't originally initialized, go ahead and set it:
+            #if our path wasn't originally initialized, go ahead and set it to today:
             self.path = Timestamp().filename()
         else:
             #no log_name sent, but self.path was set
@@ -358,6 +358,16 @@ class Journal(list):
         entry = Moment(data, tags, created)
         self.update_entry(entry, position=position)
         return entry
+
+    def now(self, data, tags=[]):
+        """
+        shortcut for making a new entry with make_entry() and automatically saving the journal
+        will not work if self.path is not set
+        """
+        #read from file first to make sure we don't clobber anything saved there outside
+        self.from_file()
+        self.make_entry(data, tags)
+        self.to_file()
         
     def update_entry(self, entry, position=None):
         """
