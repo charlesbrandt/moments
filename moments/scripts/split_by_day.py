@@ -176,8 +176,10 @@ def split_by_day(path, dest_prefix=None, tags=[]):
         if f.date() != last_date:
             #check if we need to move the previous day's files:
             if cur_batch:
-                tags.insert(0, last_date)
-                t = Tags(tags)
+                #don't want to accumulate tags:
+                tags_copy = tags[:]
+                tags_copy.insert(0, last_date)
+                t = Tags(tags_copy)
                 dest_dir = t.to_tag_string()
                 dest = os.path.join(dest_prefix, dest_dir)
                 #print dest
