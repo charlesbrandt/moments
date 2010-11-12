@@ -25,7 +25,6 @@ def import_usb(src, dest_prefix, tags=[]):
     start = Timestamp()
 
     destinations = []
-
     destinations = split_by_day(src, dest_prefix, tags)
 
     #if something goes wrong and you need to run this again:
