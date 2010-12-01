@@ -50,7 +50,7 @@ class Entry(object):
         self.path = path
 
 
-    def is_equal(self, other):
+    def is_equal(self, other, debug=False):
         """
         take another entry/moment
         see if our contents are equal
@@ -58,8 +58,13 @@ class Entry(object):
         equal = True
         if not self.tags.is_equal(other.tags):
             equal = False
-        elif self.data != other.data:
+            if debug: print "Tags: %s (self) != %s (other)" % (str(self.tags), str(other.tags))
+            
+        #elif self.data != other.data:
+        elif self.render_data() != other.render_data():
             equal = False
+            if debug: print "Data: %s (self) != %s (other)" % (self.data, other.data)
+
         return equal
 
     def tag_links(self):

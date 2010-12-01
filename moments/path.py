@@ -57,21 +57,28 @@ def load_instance(instances="/c/instances.txt", tag=None):
     """
     j = load_journal(instances)
     if tag is not None:
-        entries = j.tags[tag]
+        if j.tags.has_key(tag):
+            entries = j.tags[tag]
+        else:
+            entries = []
     else:
         entries = j
         
-    #for sorting a list of entries:
-    j2 = Journal()
-    j2.from_entries(entries)
-    entries = j2.sort_entries(sort='reverse-chronological')
+    if len(entries):
+        #for sorting a list of entries:
+        j2 = Journal()
+        j2.from_entries(entries)
+        entries = j2.sort_entries(sort='reverse-chronological')
 
-    #should be the newest entry with tag "tag"
-    e = entries[0]
-    items = e.data.splitlines()
-    #print items
-    return items
-
+        #should be the newest entry with tag "tag"
+        e = entries[0]
+        items = e.data.splitlines()
+        #print items
+        return items
+    else:
+        print "No instance entry found in journal: %s for tag: %s " % (instances, tag)
+        return []
+        
 def name_only(name):
     """
     opposite of extension()
@@ -140,6 +147,58 @@ try:
 except:
     config = {}
 
+
+class Context(object):
+    """
+    A context is essentially just a collection of files with some standard attributes
+    a place to collect files for a certain task, project, etc
+    the main requirement is an instances file (typically instances.txt)
+    
+    see scripts/new_context.py
+
+    todo:
+    integrate new_context
+    move this to moments (context.py)
+    """
+    def __init__(self, context):
+        string = ''
+        if type(context) == type(string):
+            #context is just the parent directory
+            self.context = context
+
+            self.instances = os.path.join(context, "instances.txt")
+            self.calendars = os.path.join(context, "calendars")
+            self.priorities = os.path.join(context, "priorities.txt")
+            self.motd = os.path.join(context, "motd.txt")
+
+        else:
+            #going to assume that if it's not a string, it's already one of us:
+            self = context
+
+            
+        #return [ self.instances, self.calendars, self.priorities, self.motd ]
+
+## def check_context(context):
+##     instances = "./instances.txt"
+##     calendars = "/c/calendars/"
+##     priorities = "/c/scripts/priorities.txt"
+##     motd = "/c/scripts/motd.txt"
+
+##     i = os.path.join(context, "instances.txt")
+##     if os.path.exists(i):
+##         instances = i
+##     c = os.path.join(context, "calendars")
+##     if os.path.exists(c):
+##         calendars = c
+##     p = os.path.join(context, "priorities.txt")
+##     if os.path.exists(p):
+##         priorities = p
+##     m = os.path.join(context, "motd.txt")
+##     if os.path.exists(m):
+##         motd = m
+##     #destination = os.path.join(context, "outgoing")
+
+##     return [ instances, calendars, priorities, motd ]
 
 class Path(object):
     """

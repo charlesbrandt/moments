@@ -369,7 +369,7 @@ class Journal(list):
         self.make_entry(data, tags)
         self.to_file()
         
-    def update_entry(self, entry, position=None):
+    def update_entry(self, entry, position=None, debug=False):
         """
         checks if an entry already exists in the journal
         if other entries in with that time stamp are similar, 
@@ -384,26 +384,29 @@ class Journal(list):
         if entry not in self:
             if not hasattr(entry, "created"):
                 self._add_entry(entry, position)
+                if debug: print "Entry has no time associated, and no other entry found. added"
                 
             else:
                 entry_time = str(entry.created)
-
-                #print "Adding Entry: %s" % entry_time
+                
                 if not self.dates.has_key(entry_time):
                     self._add_entry(entry, position)
-
+                    if debug: print "No other entry found with time: %s. added" % entry_time
+                
                 elif self.dates.has_key(entry_time):
                     #it must have *something* in that time slot
                     #check for duplicates
+                    if debug: print "Other entries found with time: %s. checking all.." % entry_time
+
                     options = self.dates[entry_time]
                     found_match = False
                     for existing in options:
-                        #if ( (existing.data == entry.data) and
-                        #       (existing.tags == entry.tags) ):
-                        if existing.is_equal(entry):
+
+                        if existing.is_equal(entry, debug=debug):
                             #print "DUPE, but tags and data are same... skipping"
-                            
                             found_match = True
+                            if debug: print "Equal entry found. Skipping"
+
                         elif existing.data == entry.data:
                             #tags must differ... those are easy to merge:
                             print "only TAGS differ"
@@ -412,16 +415,20 @@ class Journal(list):
                             existing.tags.union(entry.tags)
                             print "merged: %s" % existing.tags
                             found_match = True
+
                         else:
                             #this one didn't match
                             #but we won't add the entry until we've checked them all
                             pass
+
                     if not found_match:
                         #2009.12.04 16:03:15 
                         #this information doesn't help much anymore:
                         #print "MULTIPLE ENTRIES EXISTS AT: %s" % (entry_time)
                         #print "but none matched this one.  Adding now"
                         self._add_entry(entry, position)
+
+                        if debug: print "No equivalent entries found. adding"
         else:
             print "Entry (%s) already exists in journal" % entry_time
 

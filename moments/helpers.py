@@ -22,30 +22,26 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-# Description:
-# take a list of tags,
-# and the directory or file that you want to use as the source of the tags
-# go through all files, and remove those tags
-# saving them in a new separate file (or specified existing file)
-
-# adapted from pose.controllers.tags.extract
-
 # By: Charles Brandt [code at contextiskey dot com]
-# On: *2009.07.10 10:09:38 
+# On: *2010.12.01 11:08:25 
 # License:  MIT
 
-*2009.08.29 13:20:46
-now part of the moments module itself
+# Description:
+originally part of scripts/launch.py
 
-not to be confused with the Journal.extract method
-these functions are higher level operations that utilize Journal.extract
+these functions help work with common higher level journal concepts
+
+they should also be applicable to more than one script
+
+for one off higher level functions, see the moments/scripts directory itself
+
 """
 
-import sys, os, re
+import re, os
 from datetime import datetime
+
 from journal import Journal
-from timestamp import Timestamp
-from tags import Tags
+from timestamp import Timestamp, Timerange
 from association import check_ignore, filter_list
 from ascii import unaccented_map
 from path import Path, load_journal
@@ -208,6 +204,21 @@ def extract_tags(path, extractions=[], ignores=[], save=False,
     
     this duplicates the logic for scanning all files from extract_tag
     it feels more readable to separate the two
+
+    *2009.08.29 13:20:46
+    now part of the moments module itself
+
+    not to be confused with the Journal.extract method
+    these functions are higher level operations that utilize Journal.extract
+
+    also:
+    # take a list of tags,
+    # and the directory or file that you want to use as the source of the tags
+    # go through all files, and remove those tags
+    # saving them in a new separate file (or specified existing file)
+
+    # adapted from pose.controllers.tags.extract
+    
     """
     
     add_tags = []
@@ -232,95 +243,190 @@ def extract_tags(path, extractions=[], ignores=[], save=False,
 
     #print "finished extracting multiple tags to multiple destinations"
 
-def main():
+
+
+def check_quotes(quotes_file):
     """
-    it is probably easier to call extract_tags in a separate script
-    where all of the configuration options are defined
-    there are too many to make it easy to pass on a command line
+    similar to check_calendar, but looks in one file for the quote of the day
     """
-    source = None
-    if len (sys.argv) > 1:
-        if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
-            usage()
-        source = sys.argv[1]
+    today_entries = []
+    if os.path.exists(quotes_file):
+        now = Timestamp()
+        j = load_journal(quotes_file, add_tags=['quotes'])
+        for e in j:
+            #print "processing: %s" % e.render()
+            #year may be in the past... update it to this year:
+            try:
+                #could be the case that Februrary has leap year days
+                new_date = datetime(now.dt.year, e.created.month,
+                                    e.created.day, e.created.hour,
+                                    e.created.minute, e.created.second)
+            except:
+                new_date = None
+            if new_date:
+                new_stamp = Timestamp(new_date)
+                new_data = e.render_data() + 'original date: %s' % e.created
+                #j.make_entry(e.data, e.tags, new_stamp)
+                j.make_entry(new_data, e.tags, new_stamp)
+
+        # todo TODAY
+        trange = now.compact(accuracy='day') + '-' + now.compact(accuracy='day') + '2359'
+        #print trange
+        (start, end) = Timerange(trange).as_tuple()
+        today_entries = j.limit(start, end)
+        #print today_entries
+
+    return today_entries
+
+def check_calendar(calendars, include_week=False):
+    """
+    check the files in calendars for entries that relate to today
+    or this week if include week is True
+    """
+    today_entries = []
+    if os.path.exists(calendars):
+        now = Timestamp()
+
+        #CALENDAR LOADING:
+        this_month_file = '%02d.txt' % now.month
+        this_month_path = os.path.join(calendars, this_month_file)
+        j = load_journal(this_month_path, add_tags=['calendar'])
+        #print len(j)
+        # go ahead an convert recurring annual entries to this year
+        # then if one is today, it should show up in the log
+        annual_month_file = '%02d-annual.txt' % now.month
+        annual_month_path = os.path.join(calendars, annual_month_file)
+        annual = Journal()
+        annual.from_file(annual_month_path, ['calendar', 'annual'])
+        #print len(annual)
+        #annual = load_journal(annual_month_path)
+        for e in annual:
+            #print "processing: %s" % e.render()
+            #year may be in the past... update it to this year:
+            try:
+                #could be the case that Februrary has leap year days
+                new_date = datetime(now.dt.year, e.created.month,
+                                    e.created.day, e.created.hour,
+                                    e.created.minute, e.created.second)
+            except:
+                new_date = None
+            if new_date:
+                new_stamp = Timestamp(new_date)
+                new_data = e.render_data() + 'original date: %s' % e.created
+                #j.make_entry(e.data, e.tags, new_stamp)
+                j.make_entry(new_data, e.tags, new_stamp)
+
+        flat = ''
+
+        if include_week:
+            #coming up this week (flatten them all, then the entry is ok to delete)
+            trange = now.future(days=1).compact(accuracy='day') + '-' + now.future(weeks=1).compact(accuracy='day')
+            #print trange
+            (start, end) = Timerange(trange).as_tuple()
+            upcoming_entries = j.limit(start, end)
+            #print upcoming_entries
+
+            #flatten upcoming:
+            for e in upcoming_entries:
+                flat += e.render_comment()
+                flat += e.render_data()
+
+        # todo TODAY
+        trange = now.compact(accuracy='day') + '-' + now.compact(accuracy='day') + '2359'
+        #print trange
+        (start, end) = Timerange(trange).as_tuple()
+        today_entries = j.limit(start, end)
+        #print today_entries
+
+    return today_entries
+
+def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False, quotes="/c/charles/golden_present.txt"):
+    """ 
+    look through all calendar items for events coming up
+    today (at minumum) and
+    this week (optionally)
+
+    create a new log file for today and place any relevant events there
+    return the name of the new file
+
+    SUMMARY:
+    helper function to assemble today's journal file from calendar items
+
+    relies on filesystem structure for calendar
+    expects calendar files to be in "calendars"
+    and named either DD.txt or DD-annual.txt
+    where DD is the two digit number representing the month (01-12)
+
+    creates the new journal file in destination (default = /c/outgoing)
+    """
+    now = Timestamp()
+
+    today_entries = check_calendar(calendars, include_week)
+    today_entries.extend(check_quotes(quotes))
+
+    #print today_entries
+
+    #CREATE TODAY'S LOG:
+    today = os.path.join(destination, now.filename())
+    #print today
+    #print entries
+    today_j = Journal()
+    today_j.from_file(today)
+
+    #print "Today journal length (pre): %s" % len(today_j)
+
+    today_j.from_entries(today_entries)
+    #for e in today_entries:
+    #    today_j.update_entry(e, debug=True)
         
-    #see:
-    #/c/code/python/scripts/tests/test_extract.py
-    #for usage examples
+    if include_week:
+        today_j.make_entry(flat, ['upcoming', 'this_week', 'delete'])
 
-    #extract_tags may be difficult to call directly 
-    #from the command-line without using a second file
-    #to store the extractions mappings we want to use
+    print "Today journal length (post): %s" % len(today_j)
 
-    ignores = []
+    today_j.to_file(today)
 
-    extractions = [
-        #(["tag"], "/path/to/destination.txt"),
-        #([""], ),
-        #([""], ),
-        #([""], ),
-        ]
-    
-    sys.path.append(os.getcwd())
-    if not extractions:
-        #can put the above list in a separate file
-        from extract_config import extractions
+    #we only need to add the priority entry to today if this is the first time
+    #other wise it may have changed, and we don't want to re-add the prior one
+    if not today_j.tags.has_key('priority'):
+        #add in priorities to today:
+        priorities = load_journal(priority)
+        entries = priorities.sort_entries(sort='reverse-chronological')
+        if len(entries):
+            #should be the newest entry
+            e = entries[0]
 
-    if not ignores:
-        #can put the above list in a separate file
-        from extract_config import ignores
+            #check to see if yesterday's priority is the same as the most recent
+            #entry in priorities.
+            yesterday_stamp = now.past(days=1)
+            yesterday = os.path.join(destination, yesterday_stamp.filename())
+            yesterday_j = load_journal(yesterday)
+            if yesterday_j.tags.has_key('priority'):
+                yps = yesterday_j.tags['priority']
+                print len(yps)
+                #get the first one:
+                p = yps[0]
 
-    if source is None:
-        from extract_config import source
+                if p.data != e.data:
+                    print "adding yesterday's priority to: %s" % priority
+                    #think that putting this at the end is actually better...
+                    #that way it's always there
+                    #priorities.update_entry(p, position=0)
+                    priorities.update_entry(p)
+                    priorities.to_file(priority)
+                    e = p
 
-    #print extractions
-    #print source
-    extract_tags(source, extractions, ignores, save=True)
+            j = load_journal(today)
+            #should always have the same timestamp (in a given day)
+            #so multiple calls don't create
+            #mulitple entries with the same data
+            #now = Timestamp()
+            today_ts = Timestamp(compact=now.compact(accuracy="day"))
+            j.make_entry(e.data, ['priority'], today_ts, position=None)
+            j.to_file(today)
+        else:
+            print "No priorities found"
+        print ""
+        
+    return today
 
-def extract_completes():
-    """
-    Completed items in a todo list are a good example
-    (and a special case)
-    where many of the parameters are known,
-    or can be algorithmically determined.
-
-    """
-    source = None
-    if len (sys.argv) > 1:
-        if sys.argv[1] in ['--help','help'] or len(sys.argv) < 2:
-            usage()
-        source = sys.argv[1]
-
-    ignores = []
-    #consider adding filename path tags to ignores
-    #we don't really want to add or remove tags at this stage.
-    ignores = Path(source).to_tags()
-
-    #look at the source,
-    #the prefix path should be the same (dirname)
-    path_prefix = os.path.dirname(source)
-    filename = os.path.basename(source)
-    if filename == "todo.txt":
-        dfilename = "journal.txt"
-    elif re.search('todo', filename):
-        parts = filename.split('-todo')
-        prefix = parts[0]
-        dfilename = prefix + '.txt'
-    else:
-        print "unknown todo file: %s" % source
-        #could manually set it here
-        #or set up script to handle passing something in
-        dfilename = None
-        exit()
-    
-    destination = os.path.join(path_prefix, dfilename)
-    extractions = [
-        (["complete"], destination),
-        (["completed"], destination),
-        ]
-    extract_tags(source, extractions, ignores, save=True)
-    
-
-if __name__ == '__main__':
-    #main()
-    extract_completes()
