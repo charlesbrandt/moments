@@ -30,6 +30,7 @@ import sys, os, subprocess, re
 from moments.journal import Journal
 from moments.association import check_ignore
 from moments.path import Path
+from moments.timestamp import Timestamp
 
 def split_log(path, add_tags, destination='/c/journal/'):
     print path
@@ -90,27 +91,46 @@ def walk_logs(path, add_tags=[], subtract_tags=[],
     """
     walk the given path and
     create a journal object for each log encountered in the path
+    then split it up using split_logs function
+
+    not recursive; only works on main directory
 
     based on moments.journal.load_journal
     """
-    #ignore_dirs = [ 'downloads', 'binaries' ]
 
-    #this would be the place to add .hgignore items to the ignore_items list
     ignore_items = [ 'downloads', 'index.txt' ]
     log_check = re.compile('.*\.txt$')
     if os.path.isdir(path):
         for root,dirs,files in os.walk(path):
             for f in files:
-                #make sure it at least is a log file (.txt):
+                #make sure it is a log file (.txt):
                 if not log_check.search(f):
                     continue
 
                 if not check_ignore(os.path.join(root, f), ignore_items):
                     these_tags = add_tags[:]
                     if include_path_tags:
-                        filename_tags = Path(os.path.join(root, f)).to_tags()
+                        #*2010.12.01 22:26:16
+                        #rather than include all tags from path
+                        #check filename only
+                        #if it is not a date tag, (e.g. boingboing.txt)
+                        #then we can include those tags
+                        #otherwise ok to skip
                         #filename_tags = path_to_tags(os.path.join(root, f))
-                        these_tags.extend(filename_tags)
+                        #filename_tags = Path(os.path.join(root, f)).to_tags()
+                        filename_tags = Path(os.path.join('/', f)).to_tags()
+                        for t in filename_tags:
+                            try:
+                                ts = Timestamp(compact=t)
+                            except:
+                                #if it's *not* a valid timestamp,
+                                #then we want to keep it as a tag
+                                these_tags.append(t)
+
+                        print "found tags: %s" % these_tags
+                        #these_tags.extend(filename_tags)
+
+
                     #subtract tags last:
                     for tag in subtract_tags:
                         if tag in these_tags:
@@ -123,4 +143,5 @@ def walk_logs(path, add_tags=[], subtract_tags=[],
 
 
 #walk_logs('/path/to/logs', subtract_tags=['c'])
-walk_logs('/c/incoming', subtract_tags=['c', 'incoming'])
+#walk_logs('/c/incoming', subtract_tags=['c', 'incoming'])
+walk_logs('/c/journal/incoming')
