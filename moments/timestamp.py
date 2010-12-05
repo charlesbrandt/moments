@@ -685,10 +685,14 @@ class Timerange(object):
             #check for datetime passed in:
             if type(start) == type(now):
                 self.start = Timestamp(start)
+            elif type(start) == type(""):
+                self.start = Timestamp(start)                
             else:
                 self.start = start
 
             if type(end) == type(now):
+                self.end = Timestamp(end)
+            elif type(end) == type(""):
                 self.end = Timestamp(end)
             else:
                 self.end = end

@@ -409,6 +409,8 @@ class Journal(list):
 
                         elif existing.data == entry.data:
                             #tags must differ... those are easy to merge:
+                            print "from: %s, %s" % (existing.path, existing.created)
+                            print "and: %s, %s" % (entry.path, entry.created)
                             print "only TAGS differ"
                             print "original: %s" % existing.tags
                             print "new: %s" % entry.tags

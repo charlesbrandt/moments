@@ -134,6 +134,9 @@ class Association(dict):
         return dlist
     
     def max_key(self, ignores=[]):
+        """
+        find the key with the largest number of values
+        """
         #print ignores
         maxcount = 1
         maxkey = ''
@@ -147,6 +150,9 @@ class Association(dict):
         return maxkey
 
     def min_key(self):
+        """
+        find the key with the smallest number of values
+        """
         ## mincount = maxcount
         ## for key in self.keys():
         ##     count = len(self[key])

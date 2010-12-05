@@ -491,8 +491,45 @@ class Path(object):
                         these_tags = add_tags[:]
                         #will need to abstract context_tags() too... move to Tags
                         if include_path_tags:
-                            filename_tags = Path(os.path.join(root, f)).to_tags()
-                            these_tags.extend(filename_tags)
+
+                            #by default, we usually do not want to include
+                            #the tags for self.path
+                            #
+                            #only subsequent path tags
+                            #
+                            #and only non-compact date tags
+
+                            #find suffix:
+                            cur_path = Path(os.path.join(root, f))
+
+                            relative_path = cur_path.to_relative(str(self.path))
+                            #print relative_path
+                            relative_path = Path(os.path.join('/', relative_path))
+
+                            filename_tags = relative_path.to_tags()
+                            for t in filename_tags:
+                                try:
+                                    ts = Timestamp(compact=t)
+                                except:
+                                    #if it's *not* a valid timestamp,
+                                    #then we want to keep it as a tag
+                                    if (t != '01' or
+                                        t != '02' or
+                                        t != '03' or
+                                        t != '04' or
+                                        t != '05' or
+                                        t != '06' or
+                                        t != '07' or
+                                        t != '08' or
+                                        t != '09' or
+                                        t != '10' or
+                                        t != '11' or
+                                        t != '12'):
+                                        these_tags.append(t)
+                                    #print "adding: %s" % t
+                            
+                            
+
                         #subtract tags last:
                         for tag in subtract_tags:
                             if tag in these_tags:
@@ -508,6 +545,7 @@ class Path(object):
         else:
             #no journal to create
             pass
+
         return j
 
     def exists(self):
