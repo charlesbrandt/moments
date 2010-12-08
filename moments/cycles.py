@@ -97,6 +97,7 @@ class Month(Timerange):
     def _get_name(self):
         #months = [ "January"
         return self.start.strftime("%B")
+    
     name = property(_get_name)
         
         
@@ -134,8 +135,6 @@ class Day(Timerange):
         self.items = []
 
 #seems that Cycles and TimeRanges are really equivalent
-
-
 class TimeCollection(object):
     """
     generic object to define common characteristics of cycles
