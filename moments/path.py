@@ -513,18 +513,18 @@ class Path(object):
                                 except:
                                     #if it's *not* a valid timestamp,
                                     #then we want to keep it as a tag
-                                    if (t != '01' or
-                                        t != '02' or
-                                        t != '03' or
-                                        t != '04' or
-                                        t != '05' or
-                                        t != '06' or
-                                        t != '07' or
-                                        t != '08' or
-                                        t != '09' or
-                                        t != '10' or
-                                        t != '11' or
-                                        t != '12'):
+                                    if (str(t) != '01' or
+                                        str(t) != '02' or
+                                        str(t) != '03' or
+                                        str(t) != '04' or
+                                        str(t) != '05' or
+                                        str(t) != '06' or
+                                        str(t) != '07' or
+                                        str(t) != '08' or
+                                        str(t) != '09' or
+                                        str(t) != '10' or
+                                        str(t) != '11' or
+                                        str(t) != '12'):
                                         these_tags.append(t)
                                     #print "adding: %s" % t
                             

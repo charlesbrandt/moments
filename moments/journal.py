@@ -161,7 +161,7 @@ class Journal(list):
 
     def sort_entries(self, sort='original'):
         """
-        rearrange the order of the entries in the journal
+        *returns* the rearranged order of the entries in the journal
 
         can specify order:
 
