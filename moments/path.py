@@ -919,6 +919,10 @@ class File(object):
         #st_ctime (platform dependent; time of most recent metadata change on Unix, or the time of creation on Windows)
         self.ctime = stat.st_ctime        
 
+    #*2010.12.21 09:23:04
+    #TODO:
+    #consider making size a property
+    #Directory uses this too
     def check_size(self):
         self.size = os.path.getsize(str(self.path))        
         return self.size
@@ -1310,6 +1314,483 @@ class Image(File):
 
 class Directory(File):
     """
+    object to hold a summary of a single directory
+    (no recursion.  one level only)
+
+    Directory should just be a collection of Path objects
+    they can be sortable based on types, dates, etc
+    but other than that, shouldn't need anything else in it
+    path can handle loading and types
+    """
+    def __init__(self, path='', **kwargs):
+        File.__init__(self, path, **kwargs)
+
+        #print "initializing directory: %s" % self.path
+
+        self.recurse = recurse
+
+        #how many items we have total
+        self.count = 0
+
+        #self.ignores = []
+        self.ignores = [ '.hg', '.svn', 'index.xml', 'index.txt', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
+
+        #everything
+        self.contents = []
+
+        self.files = []
+        self.directories = []
+
+        self.playlists = []
+        self.libraries = []
+        self.images = []
+        self.sounds = []
+        self.movies = []
+        self.logs = []
+        self.documents = []
+        self.other = []
+
+        self.last_scan = None
+        self.filetypes_scanned = False
+
+        self.scan_directory()
+        
+    def scan_directory(self, recurse=False):
+        """
+        only load paths
+        """
+        self.count = 0
+        
+        self.contents = os.listdir(unicode(self.path))
+        for item in self.contents:
+            if item not in self.ignores:
+                self.count += 1
+                
+                #print "SUPPORTS UNICODE: %s" % os.path.supports_unicode_filenames
+                if os.path.supports_unicode_filenames:
+                    item_path = os.path.normpath(os.path.join(unicode(self.path), item))
+                else:
+                    #item_path = unicode(self.path) + u'/' + unicode(item)
+                    try:
+                        item_path = os.path.normpath(os.path.join(str(self.path), item))
+                    except:
+                        item_path = ''
+                        print "could not open: %s" % item
+
+                item_path = unicode(item_path)
+                node = Path(item_path)
+                
+                if (os.path.isfile(item_path)):
+                    self.files.append(node)
+                    
+                elif (os.path.isdir(item_path)):
+                    self.directories.append(node)
+
+                else:
+                    print "ERROR: unknown item found; not a file or directory:"
+                    print item_path
+
+        self.last_scan = Timestamp()
+
+        #if we don't sort now, it will be more work to sort later
+        #self.directories.sort()
+        
+    def scan_filetypes(self):
+        """
+        look in the directory's list of files for different types of files
+        put them in the right list type in the directory
+
+        should have already scanned the directory for files
+
+        we will look through the list of files
+        for files that are likely images
+        then populate that list
+
+        not sure if this should always happen at scan time
+        what if we don't need to use images, sounds, movies?  extra step
+        maybe only create special node types if they're needed. 
+        
+        depending on the file extension, should create an object
+        with the appropriate type
+        and add it to the correct list in the Directory
+        
+        """        
+        # we should only need to scan the filetypes once per instance:
+        if not self.filetypes_scanned:
+            for f in self.files:
+                t = f.type()
+                #multiple ifs are desired behavior here
+                # (as opposed to one if with and)
+                # otherwise multiple calls with same files
+                # pass everything into else clause
+                if (t == "Image"):
+                    #this will never match since contents are now Image objects
+                    #not paths
+                    #if (f.path not in self.images):
+                    #self.images.append(f.path)
+                    self.images.append(Image(f))
+                elif (t == "Movie"):
+                    self.movies.append(File(f))
+                elif (t == "Playlist"):
+                    self.playlists.append(File(f))
+                elif (t == "Sound"):
+                    self.sounds.append(File(f))
+                elif (t == "Log"):
+                    self.logs.append(File(f))
+                elif (t == "Document"):
+                    self.documents.append(File(f))
+                else:
+                    #must be something else:
+
+                    #if scan_files is called more than once,
+                    #and checks above are performed at the same time,
+                    #then "already in" checks makes it skip to here
+                    #
+                    #fixed by moving in check below
+                    #if (f.path not in self.other):
+                    #self.other.append(f.path)
+                    self.other.append(File(f))
+
+            self.filetypes_scanned = True
+                    
+    def sort_by_date(self):
+        dates = []
+        for f in self.files:
+            dates.append( (f.load().date(), f) )
+        dates.sort()
+        self.files = []
+        for d in dates:
+            #print d[0]
+            self.files.append(d[1])
+
+    def sort_by_paths(self, filetype=None):
+        if filetype is not None:
+            if (filetype == "File"):
+                self.files = self.sort_helper(self.files)
+            elif (filetype == "Directory"):
+                self.directories = self.sort_helper(self.directories)
+            elif (filetype == "Image"):
+                self.images = self.sort_helper(self.images)
+            elif (filetype == "Movie"):
+                self.movies = self.sort_helper(self.movies)
+            elif (filetype == "Playlist"):
+                self.playlists = self.sort_helper(self.playlists)
+            elif (filetype == "Sound"):
+                self.sounds = self.sort_helper(self.sounds)
+            elif (filetype == "Log"):
+                self.logs = self.sort_helper(self.logs)
+            elif (filetype == "Document"):
+                self.documents = self.sort_helper(self.documents)
+
+        else:
+            #recursively call self for all filetypes
+            all_types = [ "Image", "Movie", "Playlist", "Sound", "Log",
+                          "Document", "File", "Directory" ]
+            for t in all_types:
+                self.sort_by_paths(filetype=t)
+
+    def sort_helper(self, collection):
+        strings = self.paths_to_strings(self.files)
+        strings = []
+        for item in collection:
+            strings.append(str(item))
+        strings.sort()
+        paths = []
+        for s in strings:
+            paths.append(Path(s))
+        return paths                
+
+    #*2010.12.21 09:15:28 
+    # these are not backed up in OldDirectory, hence comment
+    # functionality moved to self.sort_helper
+    ## #formerly nodes_to_paths and paths_to_nodes
+    ## def paths_to_strings(self, nodes):
+    ##     """
+    ##     take a list of nodes and
+    ##     return a list of only the local paths to those nodes
+    ##     """
+    ##     new_list = []
+    ##     for n in nodes:
+    ##         new_list.append(str(n.path))
+    ##     return new_list
+
+    ## def paths_to_nodes(self, paths):
+    ##     """
+    ##     take a list of local paths
+    ##     return a list of nodes for each path
+    ##     """
+    ##     new_list = []
+    ##     for p in paths:
+    ##         node = Path(p).load()
+    ##         new_list.append(node)
+    ##     return new_list
+
+    def directory_size(self, recurse=False):
+        """
+        go through all files and find size
+
+        might want a recursive option here
+        will be resource intensive though
+        """
+        if not self.size:
+            for item_path in self.files:
+                node = File(item_path)
+                node.check_size()
+                if not self.size:
+                    self.size = node.size
+                else:
+                    self.size += node.size
+            if recurse:
+                for d in self.directories:
+                    sub_d = d.load()
+                    self.size += subd.directory_size(recurse)
+            else:
+                #print "Not recursing; no size found for sub-directories"
+                #print item_path
+                pass
+
+    def file_date_range(self):
+        """
+        generate a name based on the range of dates for files in this directory
+        """
+        self.sort_by_date()
+
+        new_name = ''
+        start = self.files[0].date()
+        end = self.files[-1].date()
+        if start != end:
+            new_name = start + '-' + end
+        else:
+            new_name = start
+
+        return new_name
+
+    def adjust_time(self, hours=0):
+        """
+        adjust the modified time of all files in the directory by the number
+        of hours specified.
+        """
+        for f in self.files:
+            f.adjust_time(hours)
+
+        
+    def files_to_journal(self, filetype="Image", journal_file="action.txt"):
+        jpath = os.path.join(str(self.path), journal_file)
+        j = load_journal(jpath, create=True)
+
+        files = []
+        tags = []
+        if filetype == "Image":
+            files = self.images
+            tags = [ 'camera', 'image', 'capture', 'created' ]
+        elif filetype == "Sound":
+            files = self.sounds
+            tags = [ 'sound', 'recorded', 'created' ]
+        elif filetype == "File":
+            files = self.files
+            tags = [ 'file', 'created' ]
+
+        for i in files:
+            #could also use j.make_entry() here:
+            #e = Moment()
+            #e.created = Timestamp(i.datetime())
+            #e.tags = tags
+            #e.data = i.path
+            #j.update_entry(e)
+            j.make_entry(data=str(i.path), tags=tags, created=i.datetime())
+
+        #print j
+        #j.sort_entries("reverse-chronological")
+        #l = Log(filename)
+        #j.to_file('temp.txt')
+        j.to_file(jpath, sort="reverse-chronological")
+
+    def create_journal(self, journal="action.txt", items="Images"):
+        """
+        if we don't have a journal
+        create one using the items of type items
+
+        adapted from moments/scripts/images_to_journal.py
+        """
+        j = self.load_journal(journal)
+        source = os.path.join(str(self.path), journal)
+        if not j:
+            self.scan_filetypes()
+
+            #this will not propigate to log
+            #creation times will take priority
+            #self.sort_by_paths("Image")
+            
+            #print self.images
+            #app.sources = self.images
+            j = Journal()
+
+            #TODO:
+            #if other item types are desired in the log
+            #items can be a list of types to check for
+            
+            for i in self.images:
+                #e = Moment()
+                created = Timestamp(i.datetime())
+                tags = [ 'image' ]
+                data = str(i.path)
+                #j.update_entry(e)
+                j.make_entry(data, tags, created)
+
+            j.to_file(source, sort="chronological")
+
+        else:
+            print "Journal: %s already exists" % (source)
+
+        return j
+
+
+    def load_journal(self, journal="action.txt"):
+        """
+        node should not need a function for loading a journal
+        in that case just use journal's load_journal function directly for that
+
+        but in the case of a directory, can be nice to have more direct
+        access to the directory's journal.
+        """
+        source = os.path.join(str(self.path), journal)
+        if os.path.exists(source):
+            j = Journal()
+            j.from_file(source)
+            return j
+        else:
+            #otherwise just fall back to the standard load_journal
+            #j = load_journal(self.path)
+            #return j
+            #if load_journal behavior is wanted, just call it directly
+            #this is for looking for the default action logs of a directory
+            return None
+
+
+    #rename to generate_thumbnails?        
+    def make_thumbs(self):
+        """
+        generate thumbnails for all images in this directory
+        """
+        self.scan_filetypes()
+            
+        if len(self.images):
+            for i in self.images:
+                i.make_thumbs()
+
+    def default_image(self, pick_by="random"):
+        self.scan_filetypes()
+        #print "%s has %s images" % (self.path.name, len(self.images))
+        choice = None           
+        if len(self.images):
+                                    
+            j = self.load_journal("action.txt")
+            if j:
+                #2009.12.19 13:19:27 
+                #need to generate the data association first now
+                j.associate_data()
+
+                #there is a problem if the max key is not an image
+                #could happen if other media is played more frequently
+                
+                maxkey = j.datas.max_key()
+                if maxkey:
+                    maxkey = maxkey.strip()
+                    altkey = os.path.join(str(self.path), os.path.basename(maxkey))
+                else:
+                    altkey = ''
+
+                mk = Path(maxkey)
+                ak = Path(altkey)
+                if mk.exists():
+                    if mk.type() == "Image":
+                        choice = mk.load()
+                    #elif ak.exists and ak.type() == "Image":
+                    #    return ak.load()
+                    else:
+                        choice = self.images[0]
+                    
+                #maybe the path has changed in the log:
+                elif ak.exists():
+                    if ak.type() == "Image":
+                        choice = Image(altkey)
+                    else:
+                        choice = self.images[0]
+
+            elif pick_by == "random":
+                random.seed()
+                r = random.randint(0, len(self.images)-1)
+                choice = self.images[r]
+
+            else:
+                choice = self.images[0]
+                #must not have found anything statistical if we make it here
+                #just return the first one in the list
+
+        else:
+            print "No images available"
+        #FOR DEBUG:
+        ## if choice:
+        ##     print "default image: %s" % choice.path
+        ## else:
+        ##     print "NO IMAGE FOUND!"
+        return choice
+
+    def auto_rotate_images(self, update_thumbs=True):
+        """
+        #it's best to just use:
+        jhead -autorot *.JPG
+
+        this resets the last modified timestamp to now()
+        not what we want, so go through and reset all timestamps
+        to original times
+
+        http://www.sentex.net/~mwandel/jhead/
+        """
+        self.scan_filetypes()
+        #image_list = self.get_images()
+        #images = image_list.as_objects()
+        images = self.images
+
+        #os.system("jhead -autorot %s/*.JPG" % self.path)
+        #result = os.popen("jhead -autorot %s/*.JPG" % self.path)
+        #jhead = subprocess.Popen("jhead -autorot %s/*.JPG" % self.path, shell=True, stdout=subprocess.PIPE)
+        #jhead.wait()
+        #result = jhead.stdout.read()
+
+        result = ''
+        for i in self.images:
+            jhead = subprocess.Popen("jhead -autorot %s" % i.path, shell=True, stdout=subprocess.PIPE)
+            current = jhead.communicate()[0]
+            #print "Finished rotating: %s, %s" % (i.name, current)
+            if current: print current
+            result += current
+
+        #similar issue with thumbnails... not updated
+        #for these we only want to regenerate those that changed for speed
+        new_result = ''
+        if update_thumbs:
+            for line in result.split('\n'):
+                if line:
+                    (x, path) = line.split('Modified: ')
+                    new_result += path + '\n'
+                    i = Image(path)
+                    i.make_thumbs()
+                
+        #can reset all image stat, even those not rotated, just to simplify task
+        for i in images:
+            i.reset_stats()
+
+        return new_result
+
+
+class OldDirectory(File):
+    """
+    *2010.12.20 19:04:11
+    DEPRECATED:  see Directory
+    keeping around just incase there is some functionality not migrated
+    in that case it is probably better modify the calling code to use the new object
+
     
     object to hold a summary of a single directory
     (no recursion.  one level only)
@@ -1835,24 +2316,4 @@ class Directory(File):
             f.adjust_time(hours)
 
 
-def nodes_to_paths(nodes):
-    """
-    take a list of nodes and
-    return a list of only the local paths to those nodes
-    """
-    new_list = []
-    for n in nodes:
-        new_list.append(str(n.path))
-    return new_list
-
-def paths_to_nodes(paths):
-    """
-    take a list of local paths
-    return a list of nodes for each path
-    """
-    new_list = []
-    for p in paths:
-        node = Path(p).load()
-        new_list.append(node)
-    return new_list
 

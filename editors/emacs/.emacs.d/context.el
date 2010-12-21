@@ -17,9 +17,10 @@
 ;  (if (file-exists-p "~/.emacs")
 ;      (load-file "~/.emacs")))
 
-; *2009.12.27 17:49:12 
-(global-set-key (kbd "C-x r") 'search-backwards)
-(global-set-key (kbd "C-r") 'revert-buffer)
+;*2009.12.27 17:49:12 
+;(global-set-key (kbd "C-x r") 'search-backward)
+;(global-set-key (kbd "C-r") 'revert-buffer)
+
 ; *2010.03.12 13:37:19 
 ; http://zhangda.wordpress.com/2009/04/13/hacking-on-revert-buffer/
 ; autorevert for log files
