@@ -4,13 +4,12 @@ sys.path.append(os.path.dirname(os.getcwd()))
 #for assert_equal
 from nose.tools import *
 
-from moments.path import *
 from moments.timestamp import Timestamp
-from moments.path import Directory
+from moments.path import File, Directory, Image, Path, name_only
 
 class TestStorage:
     def setUp(self):
-        self.node = moments.path.File(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
+        self.node = File(os.path.join(os.getcwd(), "IMG_6166_l.JPG"))
 
     def test_name(self):
         assert str(self.node.path) == os.path.join(os.getcwd(), "IMG_6166_l.JPG")
@@ -44,43 +43,50 @@ class TestStorage:
         assert str(mtime) == str(now)
         assert str(atime) == str(now)
             
-def test_osbrowser_get_images():
-    path = '.'
-    d = moments.path.Directory(path)
-
-    d.scan_filetypes()
-    images = []
-    for i in d.images:
-        images.append(str(i))
-
-    #special case for local path
-    cmd = os.popen('ls *.JPG')
-    #cmd = os.popen('ls %s/*.JPG' % path)
-    result = cmd.read()
-    images2 = result.split('\n')
-    #last new line in ls output adds an empty item to list
-    images2 = images2[:-1]
-
-    print images
-    print images2
-
-    assert images == images2
-
 def test_image_size_name():
-    i = moments.path.Image('./IMG_6166_l.JPG')
+    i = Image('./IMG_6166_l.JPG')
     new_name = i.size_name('small')
     assert_equal(new_name, 'IMG_6166_l_s.JPG')
 
 def test_image_get_size():
-    i = moments.path.Image('./IMG_6166_l.JPG')
+    i = Image('./IMG_6166_l.JPG')
 
     path = i.get_size('small')
     #print path
-    assert_equal(path, os.path.abspath('./sized/small/IMG_6166_l_s.JPG'))
+    assert_equal(str(path), os.path.abspath('./sized/small/IMG_6166_l_s.JPG'))
 
 class TestDirectory:
     def setUp(self):
         self.d = Directory(os.getcwd())
+
+    def test_default_image(self):
+        print self.d.default_image()
+
+        self.d = Directory(os.getcwd())
+
+        assert False
+
+    def test_get_images(self):
+        path = '.'
+        d = Directory(path)
+
+        d.scan_filetypes()
+        images = []
+        for i in d.images:
+            images.append(str(i.filename))
+
+        #special case for local path
+        cmd = os.popen('ls *.JPG')
+        #cmd = os.popen('ls %s/*.JPG' % path)
+        result = cmd.read()
+        images2 = result.split('\n')
+        #last new line in ls output adds an empty item to list
+        images2 = images2[:-1]
+
+        print images
+        print images2
+
+        assert images == images2
 
     #*2009.01.26 15:14:53
     #commenting out until tests are not dependent on file timestamps staying

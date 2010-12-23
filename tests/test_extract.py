@@ -14,9 +14,9 @@ from moments.path import load_journal
 
 class TestExtracts:
     def setUp(self):
-        source = "sample_log.txt"
+        source = "zoobar/sample_log.txt"
         #make a copy
-        self.test = "sample_log-copy.txt"
+        self.test = "zoobar/sample_log-copy.txt"
         cp = subprocess.Popen("cp %s %s" % (source, self.test), shell=True, stdout=subprocess.PIPE)
         cp.communicate()[0]
     

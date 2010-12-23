@@ -17,19 +17,19 @@ class TestLog:
     
     def test_init(self):
         #make sure log loads
-        assert Log("sample_log.txt")
+        assert Log("zoobar/sample_log.txt")
 
     def test_to_entries(self):
         #not sure if there is a good way to set this up globally
         #and still have it tested
-        l = Log("sample_log.txt")
+        l = Log("zoobar/sample_log.txt")
 	l.from_file()
         entries = l.to_entries()
         print "ENTRIES LOADED: %s" % len(entries)
         assert len(entries) == 4
 
     def test_render(self):
-        l = Log("./sample_log.txt")
+        l = Log("zoobar/sample_log.txt")
 	l.from_file()
         entries = l.to_entries()
         for e in entries:
@@ -37,16 +37,16 @@ class TestLog:
 
     def test_save(self):
         #opening a log and saving it should yield the same file:
-        l = Log("./sample_log.txt")
+        l = Log("zoobar/sample_log.txt")
 	l.from_file()
 
         entries = l.to_entries()
         l2 = Log()
-        l2.name = "./sample_log4.txt"
+        l2.name = "zoobar/sample_log4.txt"
         l2.from_entries(entries)
         l2.to_file()
-        f1 = open("./sample_log.txt")
-        f2 = open("./sample_log4.txt")
+        f1 = open("zoobar/sample_log.txt")
+        f2 = open("zoobar/sample_log4.txt")
         lines1 = f1.readlines()
         lines2 = f2.readlines()
         print "lines in f1: %s" % len(lines1)

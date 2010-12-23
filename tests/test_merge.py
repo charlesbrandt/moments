@@ -13,12 +13,12 @@ class TestJournal:
     ##         of the given cls.
     ##     """
     ##     self.j = journal.Journal()
-    ##     self.j.from_file("sample_log.txt")
+    ##     self.j.from_file("zoobar/sample_log.txt")
 
     def test_merge(self):
-        f1 = "sample_log.txt"
+        f1 = "zoobar/sample_log.txt"
         # 2 entries in common
-        f2 = "sample_log3.txt"
+        f2 = "zoobar/sample_log3.txt"
 
         j = Journal(f1)
         len1 = len(j)

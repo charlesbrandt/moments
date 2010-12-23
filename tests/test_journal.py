@@ -11,16 +11,16 @@ class TestJournal:
             of the given cls.
         """
         self.j = journal.Journal()
-        self.j.from_file("sample_log.txt")
+        self.j.from_file("zoobar/sample_log.txt")
 
     def test_init(self):
         j = journal.Journal()
-        j.from_file("sample_log.txt")
+        j.from_file("zoobar/sample_log.txt")
         assert j
 
     def test_reverse(self):
         #manually sorted in reverse:
-        reversed = journal.Journal("sample_reverse.txt")
+        reversed = journal.Journal("zoobar/sample_reverse.txt")
         #print dir(reversed)
 
         self.j.sort_entries("reverse")
@@ -35,22 +35,22 @@ class TestJournal:
 
     def test_from_file(self):
         j = journal.Journal()
-        j.from_file("sample_log.txt")
+        j.from_file("zoobar/sample_log.txt")
         print self.j
         assert len(j) == 4
 
     def test_to_file(self):
         e = moment.Moment("test entry")
         self.j.update_entry(e)
-        self.j.to_file("sample_log2.txt")
+        self.j.to_file("zoobar/sample_log2.txt")
         k = journal.Journal()
-        k.from_file("sample_log2.txt")
+        k.from_file("zoobar/sample_log2.txt")
         print len(k)
         assert len(k) == 5
 
     def test_merge(self):
         #f1 = "sample_log.txt"
-        f2 = "sample_log3.txt"
+        f2 = "zoobar/sample_log3.txt"
         j2 = journal.Journal()
         j2.from_file(f2)
         print j2
@@ -64,7 +64,7 @@ class TestJournal:
         assert len(self.j) == 6
 
     def test_merge2(self):
-        f2 = "sample_log3.txt"
+        f2 = "zoobar/sample_log3.txt"
         self.j.from_file(f2)
         #will have 1 dupe timestamp,
         #but now dupes are added so there should be 5:
@@ -117,7 +117,7 @@ class TestJournal:
         assert len(entries) == 2
 
     def test_newest_entries_from_file(self):
-        k = journal.Journal("sample_log2.txt")
+        k = journal.Journal("zoobar/sample_log2.txt")
         others = self.j.difference(k)
         assert len(others) == 1
 

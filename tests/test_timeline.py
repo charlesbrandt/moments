@@ -10,7 +10,7 @@ from nose.tools import *
 #from datetime import datetime
 
 #import any local modules
-from timeline import Timeline
+from moments.mindstream import Timeline
 
 class TimelineClass:
     def setUp(self):

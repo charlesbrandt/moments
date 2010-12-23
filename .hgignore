@@ -19,7 +19,7 @@ syntax: regexp
 ^editors/emacs/.emacs.d/matlab-emacs/
 ^binaries*
 ^packages/launcher/launcher.egg-info/SOURCES.txt
-^tests/sample_log2.txt
+^tests/zoobar/sample_log2.txt
 ^Moments.egg-info/SOURCES.txt
 ^build/
 ^packages/medialist/medialist.egg-info/SOURCES.txt
