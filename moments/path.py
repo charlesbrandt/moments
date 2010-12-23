@@ -280,7 +280,7 @@ class Path(object):
         """
         if re.match('^\.', self.path):
             path = os.path.abspath(self.path)
-            print path
+            #print path
             self.parse_path(path)
         elif not (re.match('^/', self.path)):
             path = os.path.join('./', self.path)
@@ -746,7 +746,8 @@ class Path(object):
         pass
 
     #def local_to_relative(path=None, add_prefix=False):
-    def to_relative(self, path='', leading_slash=False, extension=None):
+    #def to_relative(self, path='', leading_slash=False, extension=None):
+    def to_relative(self, path='', extension=None):
         """
         accept a path (either Path or path... will get resolved down to str)
         return the relative part
@@ -762,14 +763,17 @@ class Path(object):
             path = self.relative_prefix
         #want to make sure that the path we're looking at contains local_path
         prefix = os.path.commonprefix([self.path, path])
+        
         if prefix == self.path:
             #see if there is anything extra in the path part sent
             temp_path = path[len(prefix)+1:]
         else:
-            if leading_slash:
-                temp_path = self.path[len(prefix):]
-            else:
-                temp_path = self.path[len(prefix)+1:]
+            temp_path = self.path[len(prefix):]
+            
+            ## if leading_slash:
+            ##     temp_path = self.path[len(prefix):]
+            ## else:
+            ##     temp_path = self.path[len(prefix)+1:]
                 
         #if re.search(r'\\', temp_path):
         #temp_path = re.subn(r'\\', '/', temp_path)
@@ -817,14 +821,12 @@ class Path(object):
             #return urllib.quote(os.path.join('/', local_to_relative(path, add_prefix=True)))
             return urllib.quote(''.join(['/', local_to_relative(path, add_prefix=True)]))
 
-    def relative_path_parts(self, path=''):
+    def relative_path_parts(self):
         """
         split the pieces up so that they can be navigated
         """
         parts = []
-        if not path:
-            path = self.path
-        path = local_to_relative(path)
+        path = self.to_relative()
         os.path.join('/', path)
         while path and path != '/':
             (prefix, suffix) = os.path.split(path)
@@ -1112,7 +1114,8 @@ class Image(File):
         
     def size_path(self, size):
         """
-        take a size and create the corresponding thumbnail (local) path 
+        take a size and create the corresponding thumbnail (local) path
+
         """
         if size == 'tiny_o':
             #can keep the different tiny versions together:
@@ -1120,31 +1123,24 @@ class Image(File):
         else:
             size_dir = size
         thumb_path = os.path.join(self.thumb_dir_path, size_dir, self.size_name(size))
-        return thumb_path
+        return Path(thumb_path, relative_prefix=self.path.relative_prefix)
 
-    ## def size_path_relative(self, size):
-    ##     """
-    ##     some overlap here with relative_path,
-    ##     but it isn't working for thumbnails anyway
-    ##     """            
-    ##     if size == 'full':
-    ##         return os.path.join(relative_prefix, local_to_relative(self.path))
-    ##     else:
-    ##         return os.path.join(relative_prefix, os.path.dirname(local_to_relative(self.path)), self.thumb_dir_name, size, self.size_name(size))
-        
 
     def get_size(self, size, relative=False):
         """
-        tiny, small, medium, large
+        when size_path() just isn't enough...
+        
+        accepts: tiny, small, medium, large
         """
         thumb_path = self.size_path(size)
-        if not os.path.isfile(thumb_path):
+        #if not os.path.isfile(thumb_path):
+        if not thumb_path.exists():
             self.make_thumbs()
 
         if relative:
             #print self.path.relative_prefix
-            thmb = Path(thumb_path, relative_prefix=self.path.relative_prefix)
-            thumb_path = thmb.to_relative()
+            #thmb = Path(thumb_path, relative_prefix=self.path.relative_prefix)
+            thumb_path = thumb_path.to_relative()
         return thumb_path
 
     def move(self, destination, relative=False):
@@ -1327,13 +1323,11 @@ class Directory(File):
 
         #print "initializing directory: %s" % self.path
 
-        self.recurse = recurse
-
         #how many items we have total
         self.count = 0
 
         #self.ignores = []
-        self.ignores = [ '.hg', '.svn', 'index.xml', 'index.txt', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
+        self.ignores = [ '.hg', '.hgignore', '.svn', 'index.xml', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
 
         #everything
         self.contents = []
@@ -1361,8 +1355,8 @@ class Directory(File):
         """
         self.count = 0
         
-        self.contents = os.listdir(unicode(self.path))
-        for item in self.contents:
+        listdir = os.listdir(unicode(self.path))
+        for item in listdir:
             if item not in self.ignores:
                 self.count += 1
                 
@@ -1378,7 +1372,11 @@ class Directory(File):
                         print "could not open: %s" % item
 
                 item_path = unicode(item_path)
-                node = Path(item_path)
+                #propagate any relative settings passed to us
+                node = Path(item_path, relative_prefix=self.path.relative_prefix)
+
+                #everything
+                self.contents.append(node)
                 
                 if (os.path.isfile(item_path)):
                     self.files.append(node)
@@ -1419,37 +1417,21 @@ class Directory(File):
         if not self.filetypes_scanned:
             for f in self.files:
                 t = f.type()
-                #multiple ifs are desired behavior here
-                # (as opposed to one if with and)
-                # otherwise multiple calls with same files
-                # pass everything into else clause
                 if (t == "Image"):
-                    #this will never match since contents are now Image objects
-                    #not paths
-                    #if (f.path not in self.images):
-                    #self.images.append(f.path)
-                    self.images.append(Image(f))
+                    self.images.append(f)
                 elif (t == "Movie"):
-                    self.movies.append(File(f))
+                    self.movies.append(f)
                 elif (t == "Playlist"):
-                    self.playlists.append(File(f))
+                    self.playlists.append(f)
                 elif (t == "Sound"):
-                    self.sounds.append(File(f))
+                    self.sounds.append(f)
                 elif (t == "Log"):
-                    self.logs.append(File(f))
+                    self.logs.append(f)
                 elif (t == "Document"):
-                    self.documents.append(File(f))
+                    self.documents.append(f)
                 else:
                     #must be something else:
-
-                    #if scan_files is called more than once,
-                    #and checks above are performed at the same time,
-                    #then "already in" checks makes it skip to here
-                    #
-                    #fixed by moving in check below
-                    #if (f.path not in self.other):
-                    #self.other.append(f.path)
-                    self.other.append(File(f))
+                    self.other.append(f)
 
             self.filetypes_scanned = True
                     
@@ -1488,16 +1470,16 @@ class Directory(File):
                           "Document", "File", "Directory" ]
             for t in all_types:
                 self.sort_by_paths(filetype=t)
+            self.contents = self.sort_helper(self.contents)
 
     def sort_helper(self, collection):
-        strings = self.paths_to_strings(self.files)
         strings = []
         for item in collection:
             strings.append(str(item))
         strings.sort()
         paths = []
         for s in strings:
-            paths.append(Path(s))
+            paths.append(Path(s, relative_prefix=self.path.relative_prefix))
         return paths                
 
     #*2010.12.21 09:15:28 
@@ -1525,7 +1507,7 @@ class Directory(File):
     ##         new_list.append(node)
     ##     return new_list
 
-    def directory_size(self, recurse=False):
+    def check_size(self, recurse=False):
         """
         go through all files and find size
 
@@ -1540,10 +1522,11 @@ class Directory(File):
                     self.size = node.size
                 else:
                     self.size += node.size
+                    
             if recurse:
                 for d in self.directories:
                     sub_d = d.load()
-                    self.size += subd.directory_size(recurse)
+                    self.size += sub_d.directory_size(recurse)
             else:
                 #print "Not recursing; no size found for sub-directories"
                 #print item_path
@@ -1572,9 +1555,13 @@ class Directory(File):
         """
         for f in self.files:
             f.adjust_time(hours)
-
         
     def files_to_journal(self, filetype="Image", journal_file="action.txt"):
+        """
+        *2010.12.22 06:49:41
+        seems similar in function to create_journal
+        this is a bit easier to understand from the name though
+        """
         jpath = os.path.join(str(self.path), journal_file)
         j = load_journal(jpath, create=True)
 
@@ -1597,7 +1584,7 @@ class Directory(File):
             #e.tags = tags
             #e.data = i.path
             #j.update_entry(e)
-            j.make_entry(data=str(i.path), tags=tags, created=i.datetime())
+            j.make_entry(data=str(i), tags=tags, created=i.datetime())
 
         #print j
         #j.sort_entries("reverse-chronological")
@@ -1676,9 +1663,12 @@ class Directory(File):
             
         if len(self.images):
             for i in self.images:
-                i.make_thumbs()
+                i.load().make_thumbs()
 
     def default_image(self, pick_by="random"):
+        """
+        if we have an action log, use that regardless of pick_by
+        """
         self.scan_filetypes()
         #print "%s has %s images" % (self.path.name, len(self.images))
         choice = None           
@@ -1690,33 +1680,14 @@ class Directory(File):
                 #need to generate the data association first now
                 j.associate_data()
 
-                #there is a problem if the max key is not an image
-                #could happen if other media is played more frequently
+                most_frequent = j.datas.frequency_list()
+                while not choice and len(most_frequent):
+                    next_option = most_frequent.pop(0)
+                    path = Path(next_option, relative_prefix=self.path.relative_prefix)
+                    if path.exists():
+                        if path.type() == "Image":
+                            choice = path
                 
-                maxkey = j.datas.max_key()
-                if maxkey:
-                    maxkey = maxkey.strip()
-                    altkey = os.path.join(str(self.path), os.path.basename(maxkey))
-                else:
-                    altkey = ''
-
-                mk = Path(maxkey)
-                ak = Path(altkey)
-                if mk.exists():
-                    if mk.type() == "Image":
-                        choice = mk.load()
-                    #elif ak.exists and ak.type() == "Image":
-                    #    return ak.load()
-                    else:
-                        choice = self.images[0]
-                    
-                #maybe the path has changed in the log:
-                elif ak.exists():
-                    if ak.type() == "Image":
-                        choice = Image(altkey)
-                    else:
-                        choice = self.images[0]
-
             elif pick_by == "random":
                 random.seed()
                 r = random.randint(0, len(self.images)-1)
@@ -1729,11 +1700,13 @@ class Directory(File):
 
         else:
             print "No images available"
+
         #FOR DEBUG:
         ## if choice:
         ##     print "default image: %s" % choice.path
         ## else:
         ##     print "NO IMAGE FOUND!"
+
         return choice
 
     def auto_rotate_images(self, update_thumbs=True):
@@ -1760,7 +1733,7 @@ class Directory(File):
 
         result = ''
         for i in self.images:
-            jhead = subprocess.Popen("jhead -autorot %s" % i.path, shell=True, stdout=subprocess.PIPE)
+            jhead = subprocess.Popen("jhead -autorot %s" % i, shell=True, stdout=subprocess.PIPE)
             current = jhead.communicate()[0]
             #print "Finished rotating: %s, %s" % (i.name, current)
             if current: print current

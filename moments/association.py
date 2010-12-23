@@ -126,7 +126,7 @@ class Association(dict):
         keylist.reverse()
         dlist = []
         for key in keylist:
-            print "%s instances of %s" % (key[0], key[1])
+            #print "%s instances of %s" % (key[0], key[1])
             #represent ourself (dictionary) as a list of lists where:
             # [ [key, [items]], ... ]
             dlist.append([key[1], self[key[1]]])
