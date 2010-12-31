@@ -1,3 +1,10 @@
+*2010.12.30 16:15:24 moments
+/c/moments/instances.txt
+/c/moments/moments/sources.py
+/c/moments/moments/timestamp.py
+/c/moments/moments/journal.py
+/c/moments/moments/path.py
+
 *2010.04.01 10:31:45 launch
 /c/moments/instances.txt
 /c/scripts/priorities.txt

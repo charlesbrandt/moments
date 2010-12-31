@@ -28,111 +28,53 @@ from moments.path import Path
 #from moments.timestamp import Timestamp
 from timestamp import Timerange, RelativeRange, Timestamp
 
-#relative cycles
-class Measure(object):
-    def __init__(self):
-        self.beats = []
-
-class Tempo(object):
+class Summary(object):
+    """
+    """
     pass
 
-class Sequence(object):
-    """ collection of tracks """
-    def __init__(self):
-        self.tracks = []
-        self.timing = "relative" # for tempo base or "fixed" for seconds
-
-
-
-class Century(object):
-    def __init__(self):
-        self.decades = []
-
-class Decade(object):
-    def __init__(self):
-        self.years = []
-
-class Lifetime(object):
-    def __init__(self):
-        self.years = []
-
-class Year(object):
-    def __init__(self):
-        self.months = []
-
-class Month(Timerange):
+class Timeline(object):
     """
-    using this to hold a collection of days (or weeks?)
-    to ultimately render those days, and their content (summary)
-    to some other representation (HTML, areaui, etc)
-    """
-    def __init__(self, tstamp=None, **kwargs):
-        Timerange.__init__(self, tstamp, **kwargs)
-
-        #test to make sure we were sent an actual month,
-        rr = RelativeRange(self.start)
-        rr_month = rr.month()
-        if rr_month.start.datetime != self.start.datetime:
-            print "Moving start from: %s to: %s" % (self.start, rr_month.start)
-            self.start = rr_month.start
-            
-        if rr_month.end.datetime != self.end.datetime:
-            print "Moving end from: %s to: %s" % (self.end, rr_month.end)
-            self.end = rr_month.end
-        
-        #start = timerange.start
-        #end = timerange.end
-
-        #timerange = timerange
-
-        #using a dict for easier (more intuitive) access to the days
-        self.days = {}
-        #print range(start.day, end.day+1)
-        for i in range(self.start.day, self.end.day+1):
-            day_stamp = "%s%02d%02d" % ( self.start.year, self.start.month, i )
-            day = Day(day_stamp)
-            self.days[i] = day
-            #print i
-
-    def _get_name(self):
-        #months = [ "January"
-        return self.start.strftime("%B")
+    *2010.12.30 18:04:04
+    moving into cycles...
+    similar ideas here.
     
-    name = property(_get_name)
-        
-        
-class Week(object):
-    def __init__(self):
-        self.days = []
+    #2010.12.15 18:46:06
+    also [2010.12.19 11:41:55] 
+    combining with mindstream
 
-class Day(Timerange):
+    take a loaded journal (or journal subset)
+    index based on various cycles
+
+    allow easy formatting
+
+    (do not worry about loading here)
+
+    very similar to path.directory functionality
+    and pose functionality
     """
-    days are a 24 hour period
-    starting at midnight (00:00) and ending at 23:59...
-    have a number within a month
-    and a name and number within a week
-    have a number within a year
+    def __init__(self, journal, media='/c/binaries/journal'):
+        """
+        """
+        self.j = journal
 
-    These are a time range too
-    """
-    def __init__(self, tstamp=None, **kwargs):
-        Timerange.__init__(self, tstamp, **kwargs)
+    def render_year(self, year=None):
+        #if no year, use current year
 
-        #test to make sure we were sent an actual month,
-        rr = RelativeRange(self.start)
-        rr_day = rr.day()
-        if rr_day.start.datetime != self.start.datetime:
-            #print "Moving start from: %s to: %s" % (self.start, rr_day.start)
-            self.start = rr_day.start
-            
-        if rr_day.end.datetime != self.end.datetime:
-            #print "Moving end from: %s to: %s" % (self.end, rr_day.end)
-            self.end = rr_day.end
+        #look for all entries in this year
 
-        self.number = self.start.datetime.day
-        self.hours = []
+        #use the static image for the header
+        #or, if no static, look for most popular image in this year
 
-        self.items = []
+        #show all days for current month (summarize each day)
+
+        #show highlights only for two previous months for current year (not current month)
+
+        #show 3x3 grid of remaining months
+
+        #show grid for previous years
+        pass
+
 
 #seems that Cycles and TimeRanges are really equivalent
 class TimeCollection(object):
@@ -319,6 +261,111 @@ class TimeCollection(object):
                 overlap = True
 
         return overlap
+
+class Lifetime(object):
+    def __init__(self):
+        self.years = []
+
+class Century(object):
+    def __init__(self):
+        self.decades = []
+
+class Decade(object):
+    def __init__(self):
+        self.years = []
+
+class Year(object):
+    def __init__(self):
+        self.months = []
+
+class Month(Timerange):
+    """
+    using this to hold a collection of days (or weeks?)
+    to ultimately render those days, and their content (summary)
+    to some other representation (HTML, areaui, etc)
+    """
+    def __init__(self, tstamp=None, **kwargs):
+        Timerange.__init__(self, tstamp, **kwargs)
+
+        #test to make sure we were sent an actual month,
+        rr = RelativeRange(self.start)
+        rr_month = rr.month()
+        if rr_month.start.datetime != self.start.datetime:
+            print "Moving start from: %s to: %s" % (self.start, rr_month.start)
+            self.start = rr_month.start
+            
+        if rr_month.end.datetime != self.end.datetime:
+            print "Moving end from: %s to: %s" % (self.end, rr_month.end)
+            self.end = rr_month.end
+        
+        #start = timerange.start
+        #end = timerange.end
+
+        #timerange = timerange
+
+        #using a dict for easier (more intuitive) access to the days
+        self.days = {}
+        #print range(start.day, end.day+1)
+        for i in range(self.start.day, self.end.day+1):
+            day_stamp = "%s%02d%02d" % ( self.start.year, self.start.month, i )
+            day = Day(day_stamp)
+            self.days[i] = day
+            #print i
+
+    def _get_name(self):
+        #months = [ "January"
+        return self.start.strftime("%B")
+    
+    name = property(_get_name)
+        
+        
+class Week(object):
+    def __init__(self):
+        self.days = []
+
+class Day(Timerange):
+    """
+    days are a 24 hour period
+    starting at midnight (00:00) and ending at 23:59...
+    have a number within a month
+    and a name and number within a week
+    have a number within a year
+
+    These are a time range too
+    """
+    def __init__(self, tstamp=None, **kwargs):
+        Timerange.__init__(self, tstamp, **kwargs)
+
+        #test to make sure we were sent an actual month,
+        rr = RelativeRange(self.start)
+        rr_day = rr.day()
+        if rr_day.start.datetime != self.start.datetime:
+            #print "Moving start from: %s to: %s" % (self.start, rr_day.start)
+            self.start = rr_day.start
+            
+        if rr_day.end.datetime != self.end.datetime:
+            #print "Moving end from: %s to: %s" % (self.end, rr_day.end)
+            self.end = rr_day.end
+
+        self.number = self.start.datetime.day
+        self.hours = []
+
+        self.items = []
+
+
+#relative cycles
+class Measure(object):
+    def __init__(self):
+        self.beats = []
+
+class Tempo(object):
+    pass
+
+class Sequence(object):
+    """ collection of tracks """
+    def __init__(self):
+        self.tracks = []
+        self.timing = "relative" # for tempo base or "fixed" for seconds
 
 def main():
     if len(sys.argv) > 1:

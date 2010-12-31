@@ -586,7 +586,10 @@ class Path(object):
 
     def remove(self):
         if os.path.exists(self.path):
-            os.remove(self.path)
+            if self.type() == "Directory":
+                shutil.rmtree(self.path)
+            else:
+                os.remove(self.path)
             
     def rename(self, destination):
         destination = str(destination)
@@ -637,21 +640,6 @@ class Path(object):
             return None
             #return self #???
         
-    ## def parent(self):
-    ##     """
-    ##     return a Directory object for the current Node's parent 
-    ##     """
-    ##     if self.path != os.path.dirname(self.path):
-    ##         parent_path = os.path.dirname(self.path)
-    ##         parent = Directory(parent_path)
-    ##         return parent
-    ##     else:
-    ##         #special case for root directory
-    ##         return self
-
-    ## def get_parent(self):
-    ##     pass
-
     #aka split_path
     #as_list
     def parts(self):
@@ -674,7 +662,7 @@ class Path(object):
         return parts
 
     #def path_to_tags(self):
-    def to_tags(self, include_name=True):
+    def to_tags(self, include_name=True, include_parent=True):
         """
         looks at the specified path to generate a list of tags
         based on the file name and location
@@ -686,7 +674,7 @@ class Path(object):
         all_tags = Tags()
         parts = []
         parent = self.parent()
-        if parent:
+        if parent and include_parent:
             path_parts = parent.parts()
             parts.extend(path_parts)
         if include_name:
@@ -703,38 +691,6 @@ class Path(object):
                         all_tags.append(tag)
 
         return all_tags
-
-    ## def context_tags(self):
-    ##     """
-    ##     looks at the relative path and filename to generate a list of tags
-    ##     based on the file name and location
-
-    ##     *2009.06.18 13:11:55 
-    ##     could consider using moments.tags.path_to_tags
-    ##     but this likely approaches the problem slightly differently
-    ##     """
-    ##     all_tags = []
-    ##     rel_parent_dir = os.path.dirname(local_to_relative(self.path))
-    ##     path_parts = split_path(rel_parent_dir)
-    ##     #since each item in a path could be made up of multiple tags
-    ##     #i.e work-todo
-    ##     for p in path_parts:
-    ##         if p:
-    ##             ptags = Tags().from_tag_string(p)
-    ##             #ptags = tags_from_string(p)
-    ##             for pt in ptags:
-    ##                 if pt not in all_tags:
-    ##                     all_tags.append(pt)
-    ##     #name_tags = tags_from_string(self.name_only)
-    ##     name_tags = Tags().from_tag_string(self.name_only)
-
-    ##     #print "name tags: %s, name_only: %s" % (name_tags, self.name_only)
-    ##     for nt in name_tags:
-    ##         if nt not in all_tags:
-    ##             all_tags.append(nt)
-    ##     #all_tags.extend(name_tags)
-    ##     #print "all tags: %s" % all_tags
-    ##     return all_tags
 
     def distance(self, path):
         """
@@ -835,6 +791,34 @@ class Path(object):
         return parts
 
 
+    def log_action(self, actions=["view"]):
+        """
+        this is closely related to journal.log_action
+        (don't forget to use that if it's easier)
+        
+        but sometimes it is inconvenient to think in terms of a journal
+        when you are working with paths
+
+        this assumes the journal to log into is "action.txt"
+        if the path is a directory, look for it in the directory
+        if the path is a file (more common)
+        look for action.txt in the parent directory
+
+        if logs need to be added anywhere else, use this concept, or journal.log_action
+        """
+        if self.type() == "Directory":
+            d = self.load()
+        else:
+            d_path = self.parent()
+            d = d_path.load()
+
+        j = d.load_journal()
+        entry = j.make_entry(str(self.path), actions)
+        j.to_file()
+        return entry
+        
+
+    
     #this is now parent().name:
     ## def parent_part(self):
     ##     """
@@ -982,22 +966,6 @@ class File(object):
         modified.from_epoch(self.mtime)
         #print "Post: %s" % modified
 
-
-##     #should be load_journal  ... not really creating a new file here
-       # and if you need load_journal, just import the load journal
-       # directly from the journal object instead. (pass it the node path)
-##     def create_journal(self, add_tags=[]):
-##         """
-##         create a temporary, in memory journal from logs
-        
-##         this works for both directories and log files
-
-##         *2009.10.21 16:19:05
-##         should just call journal.load_journal
-##         """
-##         print "DEPRECATED: node.create_journal, please call load_journal"
-##         return load_journal(self.path)
-
     def move(self, rel_destination):
         """
         this utilizes the os.rename function
@@ -1059,10 +1027,6 @@ class File(object):
         
         return self.md5
     
-
-# should just call journal.log_action directly
-##     def log_action(self, actions=["access"], data=None,
-##                    log_in_media=False, log_in_outgoing=False, outgoing=None):
 
 ## #from sound import Sound
 ## class Sound(File):
@@ -1260,15 +1224,15 @@ class Image(File):
             #we want to fix the width at t, not concerned about height
             tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
 
-            try:
-                image.save(self.size_path('large'), "JPEG")
-                medium.save(self.size_path('medium'), "JPEG")
-                small.save(self.size_path('small'), "JPEG")
-                tiny.save(self.size_path('tiny'), "JPEG")
-                tiny_o.save(self.size_path('tiny_o'), "JPEG")
-            except:
-                print "error generating thumbs for: %s" % self.path.name
-                #pass
+            ## try:
+            image.save(str(self.size_path('large')), "JPEG")
+            medium.save(str(self.size_path('medium')), "JPEG")
+            small.save(str(self.size_path('small')), "JPEG")
+            tiny.save(str(self.size_path('tiny')), "JPEG")
+            tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
+            ## except:
+            ##     print "error generating thumbs for: %s" % self.path.name
+            ##     #pass
 
     def rotate_pil(self, degrees=90):
         """
@@ -1414,6 +1378,7 @@ class Directory(File):
         
         """        
         # we should only need to scan the filetypes once per instance:
+        # (don't want to end up with duplicates)
         if not self.filetypes_scanned:
             for f in self.files:
                 t = f.type()
@@ -1620,7 +1585,12 @@ class Directory(File):
                 #e = Moment()
                 created = Timestamp(i.datetime())
                 tags = [ 'image' ]
-                data = str(i.path)
+                #*2010.12.28 16:51:12 
+                #i.path is likely to change over time
+                #as tags are added to the directory, etc
+                #just use the file name in the local action tags
+                #elsewhere, full path is fine, knowing that it might change, but better than nothing
+                data = str(i.filename)
                 #j.update_entry(e)
                 j.make_entry(data, tags, created)
 
@@ -1649,10 +1619,17 @@ class Directory(File):
             #otherwise just fall back to the standard load_journal
             #j = load_journal(self.path)
             #return j
+            
             #if load_journal behavior is wanted, just call it directly
             #this is for looking for the default action logs of a directory
             return None
 
+    def fix_journal(self, journal="action.txt"):
+        """
+        *2010.12.28 16:59:39
+        currently full paths are used... these do not always stay consistent.
+        """
+        pass
 
     #rename to generate_thumbnails?        
     def make_thumbs(self):
@@ -1664,6 +1641,19 @@ class Directory(File):
         if len(self.images):
             for i in self.images:
                 i.load().make_thumbs()
+
+    def default_file(self):
+        """
+        usually just want an image
+        but if there are no images, we may want to look for other file types
+        """
+        pass
+
+    def summary(self):
+        """
+        standard way of representing the directory concisely?
+        """
+        pass
 
     def default_image(self, pick_by="random"):
         """
@@ -1678,15 +1668,24 @@ class Directory(File):
             if j:
                 #2009.12.19 13:19:27 
                 #need to generate the data association first now
-                j.associate_data()
+                j.associate_files()
 
-                most_frequent = j.datas.frequency_list()
+                most_frequent = j.files.frequency_list()
+                most_frequent.sort()
+                most_frequent.reverse()
+                if self.path.name == "20100522-rebel-slr":
+                    print most_frequent
                 while not choice and len(most_frequent):
                     next_option = most_frequent.pop(0)
-                    path = Path(next_option, relative_prefix=self.path.relative_prefix)
+                    file_part = next_option[1].strip()
+                    path_part = os.path.join(str(self.path), file_part)
+                    path = Path(path_part, relative_prefix=self.path.relative_prefix)
                     if path.exists():
                         if path.type() == "Image":
                             choice = path
+
+                    else:
+                        print "couldn't find: %s" % path
                 
             elif pick_by == "random":
                 random.seed()
@@ -1699,7 +1698,9 @@ class Directory(File):
                 #just return the first one in the list
 
         else:
-            print "No images available"
+            #print "No images available in: %s" % self.path.name
+            #choice will be None:
+            pass
 
         #FOR DEBUG:
         ## if choice:

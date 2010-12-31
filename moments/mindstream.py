@@ -69,45 +69,6 @@ from moments.journal import Journal
 from moments.path import load_journal
 from moments.timestamp import Timerange
 
-class Timeline(object):
-    """
-    #2010.12.15 18:46:06
-    also [2010.12.19 11:41:55] 
-    combining with mindstream
-
-    take a loaded journal (or journal subset)
-    index based on various cycles
-
-    allow easy formatting
-
-    (do not worry about loading here)
-
-    very similar to path.directory functionality
-    and pose functionality
-    """
-    def __init__(self, journal, media='/c/binaries/journal'):
-        """
-        """
-        self.j = journal
-
-    def render_year(self, year=None):
-        #if no year, use current year
-
-        #look for all entries in this year
-
-        #use the static image for the header
-        #or, if no static, look for most popular image in this year
-
-        #show all days for current month (summarize each day)
-
-        #show highlights only for two previous months for current year (not current month)
-
-        #show 3x3 grid of remaining months
-
-        #show grid for previous years
-        pass
-
-
 class Mindstream(object):
     """
     """
