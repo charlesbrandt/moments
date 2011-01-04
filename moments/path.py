@@ -1293,6 +1293,10 @@ class Directory(File):
         #self.ignores = []
         self.ignores = [ '.hg', '.hgignore', '.svn', 'index.xml', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
 
+        #string only version
+        #(sometimes it is easier to use just strings... like diff directories)
+        self.listdir = []
+
         #everything
         self.contents = []
 
@@ -1319,8 +1323,8 @@ class Directory(File):
         """
         self.count = 0
         
-        listdir = os.listdir(unicode(self.path))
-        for item in listdir:
+        self.listdir = os.listdir(unicode(self.path))
+        for item in self.listdir:
             if item not in self.ignores:
                 self.count += 1
                 

@@ -43,24 +43,24 @@ def export_logs(source, destination, add_tags=[], recurse=True):
     #dst = make_node(destination, relative=False)
     dst = Path(destination).load()
     dst.scan_directory()
-    dstcontents = dst.contents[:]
+    dstlistdircp = dst.listdir[:]
 
-    print "items found: %s" % src.contents
+    print "items found: %s" % src.listdir
     
-    for i in src.contents:
+    for i in src.listdir:
         #items to ignore (and make sure it's a text file)
         if i not in [ "ignore_me.txt", ".hg", "README.txt" ] and re.search("\.txt", i):
 
             #print datetime.now()
-            n1path = Path(os.path.join(source, i))
+            n1path = Path(os.path.join(source, i)) # == i ???
             n2path = Path(os.path.join(destination, i))
 
             print "exporting: %s" % i
 
-            if i in dstcontents:
+            if i in dstlistdircp:
                 #they both have an item with the same name
 
-                dstcontents.remove(i)
+                dstlistdircp.remove(i)
                 
                 #n1 = make_node(n1path)
                 #n2 = make_node(n2path)
@@ -103,9 +103,9 @@ def export_logs(source, destination, add_tags=[], recurse=True):
                     mv = subprocess.Popen("mv %s %s" % (n1path, n2path), shell=True, stdout=subprocess.PIPE)
                     mv.wait()
 
-    #if anything is left in dstcontents, it must not have been in src
-    #in the case of an export, it's already on the destination... fin
-    if len(dstcontents):
+    #if anything is left in dstlistdircp, it must not have been in src
+    #in the case of an export, it's already on the destination... fine
+    if len(dstlistdircp):
         pass
 
     return conflicts

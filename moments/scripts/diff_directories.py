@@ -126,9 +126,9 @@ def diff_dirs(dpath1, dpath2, recurse=True, indent=0, show_both=False ):
     d2 = p2.load()
     #d2 = make_node(dpath2, relative=False)
     d2.scan_directory()
-    d2contents = d2.contents[:]
+    d2contents = d2.listdir[:]
     
-    for i in d1.contents:
+    for i in d1.listdir:
         #items to ignore:
         if i not in [ "ignore_me.txt", ".hg" ]:
 
