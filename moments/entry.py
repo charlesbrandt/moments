@@ -48,7 +48,7 @@ class Entry(object):
         #could rename this to path potentially
         #self.source_file = None
         self.path = path
-
+        self.created = ''
 
     def is_equal(self, other, debug=False):
         """
