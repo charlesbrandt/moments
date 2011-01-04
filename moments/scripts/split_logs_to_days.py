@@ -86,6 +86,7 @@ def split_log(path, add_tags, destination='/c/journal/'):
 
         print ""
 
+#def walk_logs(path, add_tags=["people"], subtract_tags=[],
 def walk_logs(path, add_tags=[], subtract_tags=[],
               include_path_tags=True, create=False):
     """
