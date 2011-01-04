@@ -1518,7 +1518,8 @@ class Directory(File):
         adjust the modified time of all files in the directory by the number
         of hours specified.
         """
-        for f in self.files:
+        for fpath in self.files:
+            f = fpath.load()
             f.adjust_time(hours)
         
     def files_to_journal(self, filetype="Image", journal_file="action.txt"):
@@ -1542,14 +1543,15 @@ class Directory(File):
             files = self.files
             tags = [ 'file', 'created' ]
 
-        for i in files:
+        for fpath in files:
             #could also use j.make_entry() here:
             #e = Moment()
             #e.created = Timestamp(i.datetime())
             #e.tags = tags
             #e.data = i.path
             #j.update_entry(e)
-            j.make_entry(data=str(i), tags=tags, created=i.datetime())
+            f = fpath.load()
+            j.make_entry(data=str(fpath), tags=tags, created=f.datetime())
 
         #print j
         #j.sort_entries("reverse-chronological")
@@ -1724,7 +1726,14 @@ class Directory(File):
         self.scan_filetypes()
         #image_list = self.get_images()
         #images = image_list.as_objects()
-        images = self.images
+        #images = self.images
+
+        #load the images as File based objects so that we can reset timestamps later
+        #print "loading images:"
+        images = []
+        for ipath in self.images:
+            i = ipath.load()
+            images.append(i)
 
         #os.system("jhead -autorot %s/*.JPG" % self.path)
         #result = os.popen("jhead -autorot %s/*.JPG" % self.path)
@@ -1732,9 +1741,10 @@ class Directory(File):
         #jhead.wait()
         #result = jhead.stdout.read()
 
+        #print "rotating images:"
         result = ''
-        for i in self.images:
-            jhead = subprocess.Popen("jhead -autorot %s" % i, shell=True, stdout=subprocess.PIPE)
+        for i in images:
+            jhead = subprocess.Popen("jhead -autorot %s" % i.path, shell=True, stdout=subprocess.PIPE)
             current = jhead.communicate()[0]
             #print "Finished rotating: %s, %s" % (i.name, current)
             if current: print current
@@ -1742,6 +1752,7 @@ class Directory(File):
 
         #similar issue with thumbnails... not updated
         #for these we only want to regenerate those that changed for speed
+        #print "regenerating thumbnails:"
         new_result = ''
         if update_thumbs:
             for line in result.split('\n'):
@@ -1752,6 +1763,7 @@ class Directory(File):
                     i.make_thumbs()
                 
         #can reset all image stat, even those not rotated, just to simplify task
+        #print "resetting file timestamps:"
         for i in images:
             i.reset_stats()
 

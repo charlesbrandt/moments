@@ -21,7 +21,7 @@ from moments.timestamp import Timestamp
 from moments.path import Path
 from split_by_day import split_by_day
 
-def import_usb(src, dest_prefix, tags=[]):
+def import_usb(src, dest_prefix, tags=[], adjust_time=0):
     start = Timestamp()
 
     destinations = []
@@ -41,15 +41,19 @@ def import_usb(src, dest_prefix, tags=[]):
         #d = make_node(dest)
         path = Path(dest)
         d = path.load()
+        #print "rotating images:"
         d.auto_rotate_images()
         #adjust times:
         #-2 hours
         #for multiple calls, may want to comment out
         #(i.e. if it has been run on the directory once already... )
-        d.adjust_time(hours=-2)
+        #print "adjusting timestamp on images:"
+        d.adjust_time(hours=adjust_time)
+        #print "making thumbnails:"
         d.make_thumbs()
         #something is causing old timestamps to show up in the journal
         #trying to recreate directory object to fix
+        #print "making action log:"
         d = path.load()
         #d = make_node(dest)
         d.scan_filetypes()

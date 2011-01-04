@@ -171,8 +171,9 @@ def split_by_day(path, dest_prefix=None, tags=[]):
     last_date = None
     cur_batch = []
     print "%s Files found in %s" % (len(d.files), path)
-    for f in d.files:
+    for fpath in d.files:
         #print f.name
+        f = fpath.load()
         if f.date() != last_date:
             #check if we need to move the previous day's files:
             if cur_batch:
