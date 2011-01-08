@@ -99,7 +99,12 @@ def picture(source=''):
 
 #system_explorer, computer, etc
 def file_browse(source=''):
-    pass
+    if sys.platform == "linux2":
+        nautilus(source)
+    elif sys.platform == "darwin":
+        print "launch finder here"
+    else:
+        print "launch explorer here"
 
 def terminal(working_dirs=[], tabs=0):
     """
