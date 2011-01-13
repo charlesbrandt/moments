@@ -26,8 +26,7 @@ and the local destination is the second option
 import sys, os, re
 import subprocess
 from moments.journal import Journal
-from moments.path import load_journal, Path
-from moments.association import check_ignore
+from moments.path import load_journal, Path, check_ignore
 #from medialist.medialist import MediaList
 from moments.sources import Converter, Sources, Source
 

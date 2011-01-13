@@ -42,9 +42,9 @@ from datetime import datetime
 
 from journal import Journal
 from timestamp import Timestamp, Timerange
-from association import check_ignore, filter_list
+from association import filter_list
 from ascii import unaccented_map
-from path import Path, load_journal
+from path import Path, load_journal, check_ignore
 
 class ExtractConfig(object):
     """

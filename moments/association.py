@@ -44,19 +44,6 @@ def filter_list(items, ignores, search=False):
             pass
     return items
 
-def check_ignore(item, ignores=[]):
-    """
-    take a string (item)
-    and see if any of the strings in ignores list are in the item
-    if so ignore it.
-    """
-    ignore = False
-    for i in ignores:
-        if i and re.search(i, item):
-            #print "ignoring item: %s for ignore: %s" % (item, i)
-            ignore = True
-    return ignore
-
 class Association(dict):
     """
     Object to hold dict of tags as keys, and the list of times as items
