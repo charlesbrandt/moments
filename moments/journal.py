@@ -31,8 +31,7 @@ from datetime import datetime
 from log import Log
 from moment import Moment
 from timestamp import Timestamp
-from association import Association, check_ignore
-#from path import Path
+from association import Association
 
 # not to be confused with association.filter_list
 def filter_items(items, updates):

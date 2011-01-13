@@ -23,8 +23,9 @@ this functionality is implied many places:
 
 import sys, os, re
 from datetime import datetime
-from journal import load_journal, Journal
-from association import check_ignore
+
+from moments.journal import load_journal, Journal
+from moments.path import check_ignore
 
 def filter_log(path, filters, save=False):
     """

@@ -38,9 +38,21 @@ from datetime import datetime
 
 from timestamp import Timestamp
 from journal import Journal
-from association import check_ignore
 
 from tags import Tags
+
+def check_ignore(item, ignores=[]):
+    """
+    take a string (item)
+    and see if any of the strings in ignores list are in the item
+    if so ignore it.
+    """
+    ignore = False
+    for i in ignores:
+        if i and re.search(i, item):
+            #print "ignoring item: %s for ignore: %s" % (item, i)
+            ignore = True
+    return ignore
 
 def load_journal(path, **kwargs):
     """

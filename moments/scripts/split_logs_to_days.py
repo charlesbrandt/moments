@@ -28,8 +28,7 @@ $Id$ (???)
 
 import sys, os, subprocess, re
 from moments.journal import Journal
-from moments.association import check_ignore
-from moments.path import Path
+from moments.path import Path, check_ignore
 from moments.timestamp import Timestamp
 
 def split_log(path, add_tags, destination='/c/journal/'):
