@@ -38,6 +38,23 @@ standard cloud seems better than logarithmic one... something not quite right wi
 import types, math
 from path import check_ignore
 
+class TagList(list):
+    """
+    *2011.01.13 19:08:58 
+    a tag list is an ordered list of tags that are a subset of another group of
+    tags
+
+    might be able to just use Tags()
+
+    this should be an ordered list
+    of tags / topics of interest
+    for a particular context
+
+    that way it should be easier / possible to narrow down a tag cloud
+    to just items of interest
+    """
+    pass
+
 class Cloud(object):
     def __init__(self, source=None, steps=7, ignores=[]):
         #source is likely an Association
