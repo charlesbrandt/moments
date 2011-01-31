@@ -66,8 +66,51 @@ import sys, os
 import re
 
 from moments.journal import Journal
-from moments.path import load_journal
+from moments.path import load_journal, Path
 from moments.timestamp import Timerange
+
+
+def find(look_for, source="/c", recurse=True, include_files=False):
+    """
+    usually system 'find' should be sufficient for locating a file
+    but if we want to perform a specific action on the found files
+    it may be nice to perform the search in pure python
+
+    returns a list of found items
+    """
+    p = Path(source)
+    obj = p.load()
+    matches = []
+    if p.type() == "Directory":
+        for i in obj.contents:
+            for look_item in look_for:
+                if re.search(look_item, str(i)):
+                    #custom action goes here
+                    #could consider passing in function to call as parameter
+
+
+                    if ((not include_files) and i.type() == "Directory") or (include_files):
+                        prefix = str(source)
+                        i_path = os.path.join(prefix, str(i))
+                        matches.append(i_path)
+                    
+                #else:
+                #    print "No match: %s" % i
+
+        if recurse:
+            #print "%s sub_paths: %s" % (obj, obj.sub_paths)
+            for d in obj.directories:
+                #sub_d = os.path.join(source, d.path.name)
+                #print "recursing for: %s" % d
+                matches.extend(find(look_for, d, recurse))
+    
+    elif include_files:
+        if re.search(look_for, source):
+            matches.append(source)
+
+    return matches
+        
+
 
 class Mindstream(object):
     """

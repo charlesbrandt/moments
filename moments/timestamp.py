@@ -420,12 +420,19 @@ class Timestamp(object):
 
         Note that timezone feature is not yet working
         """
+        ## if len(text_time) == 29:
+        ##     #TODO: incorporate time zone when available
+        ##     #self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S.000-0.:00")[0:6]))
+
+        ##     #note:
+        ##     #TypeError: can't compare offset-naive and offset-aware datetimes
+        ##     from dateutil.parser import parse
+        ##     self.dt = parse(text_time)
+        ## elif len(text_time) == 19:
         if len(text_time) == 29:
-            #TODO: incorporate time zone when available
-            #self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S.000-0.:00")[0:6]))
-            from dateutil.parser import parse
-            self.dt = parse(text_time)
-        elif len(text_time) == 19:
+            #discarding timezone in this case:
+            text_time = text_time[:19]
+        if len(text_time) == 19:
             self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S")[0:6]))
         elif len(text_time) == 13:
             self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H%M")[0:6]))

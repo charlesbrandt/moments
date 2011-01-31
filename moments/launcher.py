@@ -130,6 +130,18 @@ def terminal(working_dirs=[], tabs=0):
 ############################################################
 
 
+def rsync(source, destination, verbose=True):
+    command = "rsync -av %s %s" % (source, destination)
+    if verbose:
+        print command
+    
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    output = process.communicate()[0]
+    if output:
+        print output
+    
+
 def emacs(source=''):
     #print os.name
     #print sys.platform
