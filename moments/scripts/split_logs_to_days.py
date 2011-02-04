@@ -46,7 +46,8 @@ def split_log(path, add_tags, destination='/c/journal/'):
         ##         exit()
             
         for e in j:
-            if hasattr(e, "created"):
+            #print str(e.render())
+            if hasattr(e, "created") and e.created:
                 month = "%02d" % e.created.month
                 dest_path = os.path.join(destination, str(e.created.year), month)
                 dest = os.path.join(dest_path, e.created.filename())
