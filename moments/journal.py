@@ -488,6 +488,12 @@ class Journal(list):
                 matches.extend(self.dates[t])
         return matches
 
+    def tags_to_entry(self):
+        """
+        take the current Journal's tags and convert them to an entry
+        """
+        pass
+
     def intersect_tags(self, tag_list):
         entry_set = set()
         for tag in tag_list:
