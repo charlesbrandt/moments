@@ -57,9 +57,17 @@ class TagList(list):
 
 class Cloud(object):
     def __init__(self, source=None, steps=7, ignores=[]):
-        #source is likely an Association
-        #which is just a dictionary
-        #where each key references a list of items
+        """
+        source is likely an Association
+        which is just a dictionary
+        where each key references a list of items
+
+        common usage is with a tag dictionary in a moments.journal object
+        c = Cloud(j.tags)
+        #need to decide which way to make it... logarithmically or not:
+        c.make()
+        result = c.render()
+        """
         
         #the length of that list is used to determine the size of the key
         self.source = source

@@ -380,14 +380,17 @@ class Journal(list):
 
         can merge later as needed using dedicated script for that purpose
         """
-        if entry not in self:
-            if not hasattr(entry, "created"):
+        if not hasattr(entry, "created"):
+            if entry not in self:
                 self._add_entry(entry, position)
                 if debug: print "Entry has no time associated, and no other entry found. added"
-                
-            else:
-                entry_time = str(entry.created)
-                
+
+        else:
+            #this makes entry_time available in the event the entry already
+            #is in the journal:
+            entry_time = str(entry.created)
+            if entry not in self:
+
                 if not self.dates.has_key(entry_time):
                     self._add_entry(entry, position)
                     if debug: print "No other entry found with time: %s. added" % entry_time
@@ -406,7 +409,9 @@ class Journal(list):
                             found_match = True
                             if debug: print "Equal entry found. Skipping"
 
-                        elif existing.data == entry.data:
+                        #only want to merge if we have data
+                        #otherwise blank entries can end up grouped together
+                        elif entry.data and (existing.data == entry.data):
                             #tags must differ... those are easy to merge:
                             print "from: %s, %s" % (existing.path, existing.created)
                             print "and: %s, %s" % (entry.path, entry.created)
@@ -430,8 +435,8 @@ class Journal(list):
                         self._add_entry(entry, position)
 
                         if debug: print "No equivalent entries found. adding"
-        else:
-            print "Entry (%s) already exists in journal" % entry_time
+            else:
+                if debug: print "Entry (%s) already exists in journal" % entry_time
 
     def remove_entry(self, entry):
         """

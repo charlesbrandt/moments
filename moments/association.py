@@ -107,6 +107,18 @@ class Association(dict):
             items.append( (len(self[key]), key) )
         return items
 
+    def frequent_first(self):
+        """
+        return a list of the keys... most frequent first
+        """
+        keylist = self.frequency_list()
+        keylist.sort()
+        keylist.reverse()
+        dlist = []
+        for key in keylist:
+            dlist.append(key[1])
+        return dlist
+
     def items_by_frequency(self):
         keylist = self.frequency_list()
         keylist.sort()
