@@ -1,0 +1,19 @@
+*2010.12.05 08:35:38 
+With so many events in life, it can be tricky enough to document the important ones.  It can be even more difficult to go back and summarize what happened and add information to help find those thoughts later.  
+
+Meta data.  The information that describes the rest of the information.  How many times have you heard a song?  How would you classify what is in a photo? There are many programs that will help you create meta data, but they also tend to lock that information up into proprietary formats and rigid structures. 
+
+In some sense, moments, journalling, is a way of creating that meta data for the events of life.  Text is a powerful way to condense and distill the personally meaningful results of the events of life.  After a while, however, those entries pile up.  A system is needed to retrieve thoughts based on a certain topic or concept.  
+
+Summarizing looks at all of the different events over a certain period of time and either subjectively or objectively determines which ones are the most important ones to describe what happened in that time. 
+
+Currently, entries summarizing a certain cycle of time are tagged "summary".  Here are a few good examples of files that do this well:
+
+/c/journal/summary.txt
+/c/journal/2009/10/200910-summary.txt
+
+Happy writing.  Peace.
+
+end [2010.12.05 08:49:01] 
+
+
