@@ -115,7 +115,7 @@ def find(look_for, source="/c", recurse=True, include_files=False):
 class Mindstream(object):
     """
     """
-    def __init__(self, source=None, look_for=[], debug=True):
+    def __init__(self, source=None, look_for=[], debug=False):
         """
         load the journal path
         """
