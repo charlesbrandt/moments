@@ -436,6 +436,12 @@ class Sources(Items):
         else:
             self.log_path = log_path
 
+    def add_if_new(self, source):
+        if not self.has_path(source.path):
+            self.append(source)
+        else:
+            print "Already have: %s" % source.path
+
     def has_path(self, path):
         """
         go through all of our items and see if we have the path

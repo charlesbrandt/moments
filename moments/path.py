@@ -390,6 +390,7 @@ class Path(object):
         elif (os.path.isdir(self.path)):
             return "Directory"
         else:
+            print "Node... exists? %s Unknown filetype: %s" % (os.path.exists(self.path), self.path)
             return "Node"
 
     def load(self, node_type=None, create=True):
@@ -1220,32 +1221,37 @@ class Image(File):
         except:
             print "Error opening image: %s" % str(self.path)
         else:
-            image.thumbnail((l,l), PILImage.ANTIALIAS)
+            try:
+                image.thumbnail((l,l), PILImage.ANTIALIAS)
+            except:
+                print "Error sizing image: %s" % str(self.path)
+                exit()
+            else:
 
-            medium = image.copy()
-            medium.thumbnail((m,m), PILImage.ANTIALIAS)
+                medium = image.copy()
+                medium.thumbnail((m,m), PILImage.ANTIALIAS)
 
-            small = medium.copy()
-            small = self._square_image(small)
-            small.thumbnail((s,s), PILImage.ANTIALIAS)
+                small = medium.copy()
+                small = self._square_image(small)
+                small.thumbnail((s,s), PILImage.ANTIALIAS)
 
-            tiny = small.copy()
-            tiny.thumbnail((t,t), PILImage.ANTIALIAS)
+                tiny = small.copy()
+                tiny.thumbnail((t,t), PILImage.ANTIALIAS)
 
-            #o for original dimensions
-            tiny_o = image.copy()
-            #we want to fix the width at t, not concerned about height
-            tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
+                #o for original dimensions
+                tiny_o = image.copy()
+                #we want to fix the width at t, not concerned about height
+                tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
 
-            ## try:
-            image.save(str(self.size_path('large')), "JPEG")
-            medium.save(str(self.size_path('medium')), "JPEG")
-            small.save(str(self.size_path('small')), "JPEG")
-            tiny.save(str(self.size_path('tiny')), "JPEG")
-            tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
-            ## except:
-            ##     print "error generating thumbs for: %s" % self.path.name
-            ##     #pass
+                ## try:
+                image.save(str(self.size_path('large')), "JPEG")
+                medium.save(str(self.size_path('medium')), "JPEG")
+                small.save(str(self.size_path('small')), "JPEG")
+                tiny.save(str(self.size_path('tiny')), "JPEG")
+                tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
+                ## except:
+                ##     print "error generating thumbs for: %s" % self.path.name
+                ##     #pass
 
     def rotate_pil(self, degrees=90):
         """
@@ -1601,11 +1607,12 @@ class Directory(File):
             #items can be a list of types to check for
             
             for i in self.images:
+                image = i.load()
                 #e = Moment()
-                created = Timestamp(i.datetime())
+                created = Timestamp(image.datetime())
                 tags = [ 'image' ]
                 #*2010.12.28 16:51:12 
-                #i.path is likely to change over time
+                #image.path is likely to change over time
                 #as tags are added to the directory, etc
                 #just use the file name in the local action tags
                 #elsewhere, full path is fine, knowing that it might change, but better than nothing

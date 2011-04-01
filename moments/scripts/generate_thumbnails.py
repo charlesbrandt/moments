@@ -27,26 +27,35 @@ def generate_thumbnails(src, rotate=False):
         node = path.load()
         node.scan_directory()
         node.scan_filetypes()
-        node.scan_subdirs()
+        #node.scan_subdirs()
         
         dirs = node.directories
         #print node.directories
-        for d in dirs:
-            image = d.default_image()
+        for dpath in dirs:
+            d = dpath.load()
+            #not sure that we need this here:
+            # this checks for existing thumbs, and skips generation if exists
+            image_path = d.default_image()
+            if image_path:
+                image = image_path.load()
+            else:
+                image = None
+                
             if image:
                 size_path = image.size_path('tiny_o')
             else:
                 size_path = None
-            #if (size_path and not os.path.exists(size_path)) or not size_path:
+            if (size_path and not os.path.exists(str(size_path))) or not size_path:
 
-            d.create_journal()
-            if rotate:
-                d.auto_rotate_images(update_thumbs=False)        
-            print "generating thumbs for directory: %s" % d.path
-            d.make_thumbs()
+                d.create_journal()
+                if rotate:
+                    d.auto_rotate_images(update_thumbs=False)        
+                print "generating thumbs for directory: %s" % d.path
 
-            #else:
-            #    print "skipping directory: %s" % d.path
+                d.make_thumbs()
+
+            else:
+                print "skipping directory: %s" % d.path
 
         if rotate:
             node.auto_rotate_images(update_thumbs=False)        
