@@ -1,0 +1,27 @@
+In a conversation with Ron DuPlain about moments:
+https://github.com/rduplain/
+
+> A while back I got frustrated by too much complexity in capturing
+> moments, so I made a few shell scripts that started as one-liners in
+> Bash.  This is simple, but effective:
+> 
+> https://github.com/rduplain/notice
+> 
+Nice! I understand the frustration with complexity in capturing moments. They're so fleeting! :)  
+
+I like that 'notice' writes to a separate log.  I configured my shell to be formatted in the moment log format I use with:
+export PS1="\n#\D{%Y.%m.%d} \t \u@\h:\w \n"
+
+I like the idea of a separate command that might 'notice' the last x number of commands, and log those. Most interaction with the command line doesn't need to be logged, so I still resort to just copy and paste for the occasional sections that are note worthy, usually for recipes.  
+
+For all others, I still find it more natural to use a text editor with a built in timestamping / 'make new moment' / 'notice' macro in the text editor itself.  
+
+Once captured, how do you manage your moments?
+> 
+Since I use a text editor, I use different files for different contexts.  Of course, over time, certain moments in a context become irrelevant, and other external moments are needed in that context.  This is where I find a tagging concept crucial.  With tags I am able to 'extract' tags from one set of moments ('Journal' in journal.py) and merge them in with another log.  If applicable, I'll add any relevant tags from the file's path in with the moment as they are extracted.  (sometimes the filename acts as a meta tag for all moments it holds). 
+
+I have quite a few scripts in the /scripts directory of the moments module that are mostly utility scripts for managing moments. They deal with different extract, merge, and splitting operations. 
+
+Although tags add one more level of complexity to a moment structure (I like that yours is distilled down to just a timestamp and data), I find them crucial for organization.  
+
+Everything else just gets rolled down to a daily log, sorted by time. 
