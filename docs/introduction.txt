@@ -1,5 +1,9 @@
-What is Moments?
-==================
+*2011.04.12 20:30:39 
+“But the fact is that writing is the only way in which I am able to cope with the memories which overwhelm me so frequently and so unexpectedly. If they remained locked away, they would become heavier and heavier as time went on, so that in the end I would succumb under their mounting weight. Memories lie slumbering within us for months and years, quietly proliferating, until they are woken by some trifle and in some strange way blind us to life…And yet, what would we be without memory? We would not be capable of ordering even the simplest thoughts, the most sensitive heart would lose the ability to show affection, our existence would be a mere never-ending chain of meaningless moments, and there would not be the faintest trace of a past.”
+—	 W. G. Sebald
+
+Introducing Moments:
+=====================
 
 Moments is python module for reading, creating, and processing notes and logs.  It uses a simple and consistent text based format that is easy for both humans and computers to create and read.  The python modules helps you organize these notes in a way that makes sense to you, and change that organization as your outlook on organization changes. 
 

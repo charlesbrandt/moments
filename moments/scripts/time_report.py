@@ -49,26 +49,30 @@ def format_minutes(j, skip=8):
     last_stamp = None
     total_minutes = 0
     for e in j:
-        if e.created.year != cur_year:
-            cur_year = e.created.year
-            #print "%s" % cur_year
-        if e.created.month != cur_month:
-            cur_month = e.created.month
-            #print "  %s" % cur_month
-        if e.created.day != cur_day:
-            cur_day = e.created.day
-            print e.created.text(accuracy="day")
+        if not e.created:
+            print "->%s<-" % e.created
+            print e.render()
+        else:
+            if e.created.year != cur_year:
+                cur_year = e.created.year
+                #print "%s" % cur_year
+            if e.created.month != cur_month:
+                cur_month = e.created.month
+                #print "  %s" % cur_month
+            if e.created.day != cur_day:
+                cur_day = e.created.day
+                print e.created.text(accuracy="day")
 
-        if last_stamp:
-            delta = e.created.dt - last_stamp.dt
-            minutes = (delta.seconds / 60) + (delta.days * 24 * 60)
-            if not minutes > skip*60:
-                total_minutes += minutes
-                print "%s minutes (%s - %s)" % (minutes, last_stamp, e.created)
-            else:
-                print "skipping: %s" % (minutes)
-                
-        last_stamp = e.created
+            if last_stamp:
+                delta = e.created.dt - last_stamp.dt
+                minutes = (delta.seconds / 60) + (delta.days * 24 * 60)
+                if not minutes > skip*60:
+                    total_minutes += minutes
+                    print "%s minutes (%s - %s)" % (minutes, last_stamp, e.created)
+                else:
+                    print "skipping: %s" % (minutes)
+
+            last_stamp = e.created
 
     hours = total_minutes / 60.0
     print "Total: %s minutes (%s hours)" % (total_minutes, hours)
