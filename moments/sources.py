@@ -439,8 +439,10 @@ class Sources(Items):
     def add_if_new(self, source):
         if not self.has_path(source.path):
             self.append(source)
+            return True
         else:
             print "Already have: %s" % source.path
+            return False
 
     def has_path(self, path):
         """
