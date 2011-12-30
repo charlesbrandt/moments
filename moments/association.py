@@ -26,24 +26,6 @@ import re
 #should also look at union and intersects for sets
 # and tag.union
 
-#maybe a function to:
-# take a list of items
-# take a list of itmes to ignore
-# return a new list of items based on first, original, with ignores removed
-# def filter_ignores(items, ignores):
-def filter_list(items, ignores, search=False):
-    for i in ignores:
-        if i in items:
-            items.remove(i)
-        elif search:
-            for item in items:
-                if re.search(i, item):
-                    items.remove(item)
-        else:
-            #must not match
-            pass
-    return items
-
 class Association(dict):
     """
     Object to hold dict of tags as keys, and the list of times as items

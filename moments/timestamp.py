@@ -140,8 +140,8 @@ def parse_line_for_time(line):
     return [ts, remainder]
 
 class Timestamp(object):
-    def __init__(self, time=None, tstamp=None, cstamp=None, compact=None,
-                 now=True, format=None):
+    def __init__(self, auto=None, tstamp=None, cstamp=None, compact=None,
+                 now=True, format=None, accuracy=None):
         """
         Timestamps have different ways of being formatted
         this object is a common place to store these
@@ -154,18 +154,30 @@ class Timestamp(object):
         #this is the internal datetime object:
         #it is available externally via self.datetime
         self.dt = None
+        
+        #might be handy to know what we determined
+        #after parsing line
+        #or remembering if it gets set elsewhere
+        #
+        #NOTE: if it gets passed in, it will get overwritten if
+        #string conversion accurracy is different.
+        self.accuracy = accuracy
+        self.format = format
 
-        if time is not None:
-            now = datetime.now()
-            if type(time) == type(now):
-                self.dt = time
-            elif type(time) == type(self):
-                self = time
-            elif (type(time) == type('')) or (type(time) == type(u'')):
-                #print "Got: %s type: %s" % (time, type(time))
-                self.from_text(time)
+        if auto is not None:
+            if isinstance(auto, datetime):
+                self.dt = auto
+            elif isinstance(auto, Timestamp):
+                #this doesn't seem to work:
+                #self = auto
+                self.dt = auto.dt
+            elif isinstance(auto, str) or isinstance(auto, unicode):
+                #self.from_text(auto)
+                self.parse(auto)
             else:
-                print "Unknown time item: %s (type: %s)" % (time, type(time))
+                #print "Unknown auto item: %s (type: %s)" % (auto, type(auto))
+                raise ValueError, "Unknown Timestamp start value: %s of type %s" % (auto, type(auto))
+
         elif tstamp:
             self.from_text(tstamp)
         elif cstamp:
@@ -175,7 +187,6 @@ class Timestamp(object):
         elif now:
             self.dt = datetime.now()
 
-        self.format = format
         
     def __getattr__(self, name):
         """
@@ -206,6 +217,35 @@ class Timestamp(object):
             text_time = self.dt.strftime("%Y.%m.%d")
         return text_time
 
+    #aka auto_text
+    def parse(self, text_time):
+        """
+        Attempt to automatically determine the time format in use
+
+        similar to dateutil.parser parse
+
+        but no timezones
+
+        note:
+        TypeError: can't compare offset-naive and offset-aware datetimes
+        from dateutil.parser import parse
+        self.dt = parse(text_time)
+
+        """
+        if re.search('T', text_time) and re.search(':', text_time):
+            if re.search('Z', text_time):
+                self.from_gps(text_time)
+            else:
+                self.from_google_calendar(text_time)
+                
+        elif re.search('T', text_time):
+            self.from_apple_compact(text_time)
+
+        elif re.search("-", text_time) or re.search("/", text_time) or re.search("\.", text_time):
+            self.from_text(text_time)
+        else:
+            self.from_compact(text_time)
+
     def round(self, accuracy=None):
         """
         return a new timestamp object with the desired accuracy
@@ -220,6 +260,10 @@ class Timestamp(object):
         YYYYMMDDHHMMSS
         controlled by 'accuracy'
         """
+        #if it was not passed in, see if it has been set elsewhere
+        if not accuracy and self.accuracy:
+            accuracy = self.accuracy
+
         if accuracy == 'year':
             return self.dt.strftime("%Y")
         elif accuracy == 'month':
@@ -241,6 +285,10 @@ class Timestamp(object):
         YYYYMMDDHHMMSS
         controlled by 'accuracy'
         """
+        #if it was not passed in, see if it has been set elsewhere
+        if not accuracy and self.accuracy:
+            accuracy = self.accuracy
+
         if accuracy == 'year':
             return self.dt.strftime("%Y")
         elif accuracy == 'month':
@@ -253,12 +301,6 @@ class Timestamp(object):
             return self.dt.strftime("%Y%m%d%H%M")
         else:
             return self.dt.strftime("%Y%m%d%H%M%S")
-
-    def now(self):
-        """
-        update the timestamp to be the current time (when now() is called)
-        """
-        self.dt = datetime.now()
 
     def filename(self, suffix=".txt"):
         """
@@ -275,7 +317,6 @@ class Timestamp(object):
         epoch.  aka POSIX timestamp
         *2009.11.04 13:57:55
         http://stackoverflow.com/questions/255035/converting-datetime-to-posix-time
-        *2009.11.10 10:00:21 
         """
         #import time, datetime
 
@@ -299,16 +340,22 @@ class Timestamp(object):
         """
         if len(text_time) == 14:
             self.dt = datetime(*(strptime(text_time, "%Y%m%d%H%M%S")[0:6]))
+            self.accuracy = 'second'
         elif len(text_time) == 12:
             self.dt = datetime(*(strptime(text_time, "%Y%m%d%H%M")[0:6]))
+            self.accuracy = 'minute'
         elif len(text_time) == 10:
             self.dt = datetime(*(strptime(text_time, "%Y%m%d%H")[0:6]))
+            self.accuracy = 'hour'
         elif len(text_time) == 8:
             self.dt = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+            self.accuracy = 'day'
         elif len(text_time) == 6:
             self.dt = datetime(*(strptime(text_time, "%Y%m")[0:6]))
+            self.accuracy = 'month'
         elif len(text_time) == 4:
             self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
+            self.accuracy = 'year'
         else:
             #some other format
             #self.dt = None
@@ -342,6 +389,7 @@ class Timestamp(object):
             #TODO: accept micro seconds
             text_time = text_time[:19]
             time = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S")[0:6]))
+            self.accuracy = 'second'
             
         elif len(text_time) == 19:
             # this only works with python 2.5
@@ -349,18 +397,48 @@ class Timestamp(object):
             #return datetime.strptime(text_time, self.text_time_format)
             # e.g. "%Y.%m.%d %H:%M:%S"
             time = datetime(*(strptime(text_time, format)[0:6]))
+            self.accuracy = 'second'
         elif len(text_time) == 16:
             # e.g. "%Y.%m.%d %H:%M"
             time = datetime(*(strptime(text_time, format[:14])[0:6]))
+            self.accuracy = 'minute'
+            
         elif len(text_time) == 10:
             # e.g. "%Y.%m.%d"
             time = datetime(*(strptime(text_time, format[:8])[0:6]))
+            self.accuracy = 'day'
         else:
             #some other format
-            time = None
+            #time = None
+            raise ValueError, "Unknown time string format passed to Timestamp.from_text: %s (type: %s)" % (text_time, type(text_time))
 
         self.dt = time
         return time
+
+    def from_text2(self, text_time):
+        """
+        Month DD, YYYY
+        """
+        months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]
+        (month_s, day_s, year_s) = text_time.split(' ')
+        if month_s in months:
+            month = months.index(month_s) + 1
+            #print month
+        else:
+            print "Couldn't find: %s" % month_s
+            month = None
+        #get rid of ',' after date
+        day = int(day_s[:-1])
+        year = int(year_s)
+        #print "Day: %s, Year: %s" % (day, year)
+        compact = "%s%02d%02d" % (year, month, day)
+        #try:
+        self.dt = datetime(*(strptime(compact, "%Y%m%d")[0:6]))
+        self.accuracy = 'day'
+        #stamp = Timestamp(compact=compact)
+        #except:
+        #    print "error making Timestamp from: %s" % compact
+        
 
     def from_gps(self, text_time, offset=-4):
         """
@@ -370,6 +448,7 @@ class Timestamp(object):
         """
         if len(text_time) == 20:
             self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%SZ")[0:6]))
+            self.accuracy = 'second'
         else:
             #some other format
             self.dt = None
@@ -387,18 +466,28 @@ class Timestamp(object):
         YYYYMMDDTHHMMSS  (where T is the character 'T')
         return a python datetime object
         """
+        #get rid of trailing Z
+        if len(text_time) == 16:
+            text_time = text_time[:15]
+            
         if len(text_time) == 15:
             self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H%M%S")[0:6]))
+            self.accuracy = 'second'
         elif len(text_time) == 13:
             self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H%M")[0:6]))
+            self.accuracy = 'minute'
         elif len(text_time) == 11:
             self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H")[0:6]))
+            self.accuracy = 'hour'
         elif len(text_time) == 8:
             self.dt = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+            self.accuracy = 'day'
         elif len(text_time) == 6:
             self.dt = datetime(*(strptime(text_time, "%Y%m")[0:6]))
+            self.accuracy = 'month'
         elif len(text_time) == 4:
             self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
+            self.accuracy = 'year'
         else:
             #some other format
             self.dt = None
@@ -434,16 +523,22 @@ class Timestamp(object):
             text_time = text_time[:19]
         if len(text_time) == 19:
             self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S")[0:6]))
+            self.accuracy = 'second'
         elif len(text_time) == 13:
             self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H%M")[0:6]))
+            self.accuracy = 'minute'
         elif len(text_time) == 11:
             self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H")[0:6]))
+            self.accuracy = 'hour'
         elif len(text_time) == 8:
             self.dt = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+            self.accuracy = 'day'
         elif len(text_time) == 6:
             self.dt = datetime(*(strptime(text_time, "%Y%m")[0:6]))
+            self.accuracy = 'month'
         elif len(text_time) == 4:
             self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
+            self.accuracy = 'year'
         else:
             #some other format
             self.dt = None
@@ -457,60 +552,24 @@ class Timestamp(object):
         """
         return self.dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-    def from_blog(self, text):
-        """
-        the following format is often used in blogs
-        """
-        pass
+    ## def from_blog(self, text):
+    ##     """
+    ##     the following format is often used in blogs
+    ##     """
+    ##     pass
 
-    def from_format(self, text, format):
-        """
-        use the supplied format to parse the text
-        """
-        pass
+    ## def from_format(self, text, format):
+    ##     """
+    ##     use the supplied format to parse the text
+    ##     """
+    ##     pass
 
     
-    def _links_part(self, accuracy, prefix, suffix):
+    def now(self):
         """
-        helper for links
+        update the timestamp to be the current time (when now() is called)
         """
-        accuracies = { 'second':'%S', 'minute':'%M', 'hour':'%H', 'day':"%d", 'month':"%m", 'year':"%Y" }
-        part = '<a href="%s/%s/%s">%s</a>' % (prefix, self.compact(accuracy=accuracy), suffix, self.dt.strftime(accuracies[accuracy]))
-        return part
-    
-    def links(self, prefix='/time', suffix=''):
-        """
-        return self
-        as a series of links
-        to the various timeranges
-        for a given timestamp
-        """
-        links = ''
-        parts = []
-        if self.dt.strftime("%S") != "00":
-            parts.append(self.dt.strftime(":%S"))
-
-        #pieces = ['minute', 'hour', 'day', 'month', 'year']
-
-        parts.insert(0, self._links_part('minute', prefix, suffix))
-        parts.insert(0, ':')
-
-        parts.insert(0, self._links_part('hour', prefix, suffix))
-        parts.insert(0, ' ')
-
-        parts.insert(0, self._links_part('day', prefix, suffix))
-        parts.insert(0, '.')
-                     
-        parts.insert(0, self._links_part('month', prefix, suffix))
-        parts.insert(0, '.')
-                     
-        parts.insert(0, self._links_part('year', prefix, suffix))
-
-        text_time = self.dt.strftime("%Y.%m.%d %H:%M")
-        
-        links = ''.join(parts)
-        
-        return links
+        self.dt = datetime.now()
 
     def future(self, years=0, weeks=0, days=0,
                hours=0, minutes=0, seconds=0):
@@ -678,50 +737,85 @@ class Timerange(object):
     or just a simple tstamp string
     in which case it will be evaluated as a range based on accuracy
 
-    *2009.03.18 05:28:03 
-    currently assuming start and end are datetime objects,
-    not timestamp objects
-    once Timestamp is a subclass of datetime, should be a moot point
+    *2011.07.06 19:21:53
+    start can be either a text based string range "start-end"
+    or a timestamp object representing the start of the range
+
+    *2011.07.06 22:15:06
+    merging in RelativeRange functions
+
+    Relative range was a 
+    class to quickly get ranges relative to 'now' (or start)
+    sometimes these are more complex than just 'future' and 'past' on Timestamp
+
+    results in timeranges from specific functions
     """
-    def __init__(self, trange=None, start=None, end=None):
-        if trange:
-            #print "trange: %s" % trange
-            self.from_trange(trange)
+
+    def __init__(self, start, end=None, name='', end_is_now=False):
+        """
+        remember that start can be a string based range value:
+        'YYYYMMDD-YYYYMMDD'
+        """
+        #this may get set in a number of different places
+        self.end = None
+        if isinstance(start, str) or isinstance(start, unicode):
+            self.from_text(start)
         else:
-            now = datetime.now()
-            #check for datetime passed in:
-            if type(start) == type(now):
-                self.start = Timestamp(start)
-            elif type(start) == type(""):
-                self.start = Timestamp(start)                
-            else:
-                self.start = start
+            #this should handle all different cases
+            self.start = Timestamp(start)
 
-            if type(end) == type(now):
-                self.end = Timestamp(end)
-            elif type(end) == type(""):
-                self.end = Timestamp(end)
-            else:
-                self.end = end
+        if end:
+            #this should handle
+            #all of the different conditions / formats / types
+            #that end could be in
+            self.end = Timestamp(end)
+        elif end_is_now:
+            #end = datetime.now()
+            self.end = Timestamp()
+        elif not self.end:
+            #default should set self.end now
+            self.default()
+            #temp = self.default()
+            #self.end = temp.end
+        else:
+            #end was not passed in,
+            #but self.end must have been set elsewhere (from_text())
+            #all should be ok then
+            pass
 
+
+        #print type(self)
+        #print "Name: ->%s<-" % name
+        #name could be a string indicating the type of relation
+        #e.g.
+        #last month, this month, next_month
+        self._name = name
+
+    #name is a property on the cycle.Month
+    #can't set a property in parent class in that case
+    def _get_name(self):
+        return self._name
+    
+    name = property(_get_name)
+        
     def __str__(self):
         if self.start == self.end:
-            return str(Timestamp(time=self.start))
-        #not sure if this is ever the case?
-        #elif not self.end:
-        #    return str(Timestamp(time=self.start))            
+            return self.start.compact()
         else:
-            #print "start: %s (type: %s)" % (self.start, type(self.start))
-            #print self.end
-            #return '-'.join( [Timestamp(time=self.start).compact(), Timestamp(time=self.end).compact()] )
-            #assuming that timestamp is used internally in Timerange now:
             return '-'.join( [self.start.compact(), self.end.compact()] )
 
     def as_tuple(self):
         return (self.start, self.end)
 
+    def has(self, timestamp):
+        """
+        return true if timestamp is in our range
 
-    def from_trange(self, trange, end_is_now=False):
+        see also Timestamp.is_in(Timerange)
+        """
+        pass
+
+    def from_text(self, trange):
         """
         will work with either a simple timestamp string
         or a string with a - separating two timestamp strings
@@ -729,11 +823,9 @@ class Timerange(object):
         check the tstamp for a range of times
         split if found
         return the range start and end
-
-        end defaults to now or tstamp_to_timerange end
         """
-        end = ''
         start = ''
+        end = ''
 
         #check for a '-' indicating a YYYYMMDD-YYYYMMDD string
         if re.search('-', trange):
@@ -741,83 +833,23 @@ class Timerange(object):
         else:
             start = trange
 
-        (start, default_end) = self.from_tstamp(start)
+        #(start, default_end) = self.from_tstamp(start)
+        self.start = Timestamp(compact=start)
 
         #if we found an explicit end in the string, use it
         if end:
             #end = Timestamp().from_compact(end)
-            end = Timestamp(compact=end)
+            self.end = Timestamp(compact=end)
             #end = ts.time
             #end = tstamp_to_time(end)
-        elif end_is_now:
-            #end = datetime.now()
-            end = Timestamp()
         else:
-            end = default_end
+            self.default()
+            #end = self.end
 
-        self.end = end
-        self.start = start
-        return (start, end)
-
-    #was tstamp_to_timerange
-    def from_tstamp(self, text_time):
-        """
-        take a string of the format:
-        YYYYMMDDHHMMSS
-        return a tuple of python datetime objects
-        based on the format supplied
-        can assume different ranges based on the degree of accuracy
-
-        we want to assume the difference 
-        """
-        if len(text_time) == 14:
-            start = datetime(*(strptime(text_time, "%Y%m%d%H%M%S")[0:6]))
-            end = start
-
-        elif len(text_time) == 12:
-            start = datetime(*(strptime(text_time, "%Y%m%d%H%M")[0:6]))
-            delta = timedelta(minutes=1)
-            end = start+delta
-
-        elif len(text_time) == 10:
-            start = datetime(*(strptime(text_time, "%Y%m%d%H")[0:6]))
-            delta = timedelta(hours=1)
-            end = start+delta
-
-        elif len(text_time) == 8:
-            start = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
-
-            #this differs from RelativeRange that uses same date, 23:59:59 instead
-            delta = timedelta(days=1)
-            end = start+delta
-
-        elif len(text_time) == 6:
-            start = datetime(*(strptime(text_time, "%Y%m")[0:6]))
-            month = start.month
-            if month == 12:
-                month = 1
-            else:
-                month += 1
-                
-            #there is no concept of months in timedelta:
-            #delta = timedelta(months=1)
-            #end = start+delta
-            end = datetime(start.year, month, 1)
-
-        elif len(text_time) == 4:
-            start = datetime(*(strptime(text_time, "%Y")[0:6]))
-            delta = timedelta(days=365)
-            end = start+delta
-
-        else:
-            #some other format
-            #start = None
-            #end = None
-            raise AttributeError, "Unknown timerange format: %s"  % text_time
-        
-        self.start = Timestamp(start)
-        self.end = Timestamp(end)
+        #self.start = start
+        #self.end = end
         return (self.start, self.end)
+
 
     def biggest_cycle(self):
         """
@@ -850,25 +882,7 @@ class Timerange(object):
                 print "DAY"
                 return "day"
             else:
-                return "hours"
-
-    def days(self, overlap_edges=True):
-        """
-        return a list of all days contained in self
-        (this could also be an iterator)
-
-        if overlap_edges is set, may extend beyond the current range
-        rounding to the nearest full day on each end
-        """
-        rr = RelativeRange()
-        current = self.start.round("day")
-        end = self.end.round("day")
-        days = []
-        while str(current) != str(end):
-            day = rr.day(current)
-            days.append(day)
-            current = current.future(days=1)
-        return days
+                return "hour"
 
     def months(self, overlap_edges=True):
         """
@@ -878,61 +892,88 @@ class Timerange(object):
         if overlap_edges is set, may extend beyond the current range
         rounding to the nearest full month on each end
         """
-        rr = RelativeRange()
+        #rr = RelativeRange()
         current = self.start.round("month")
         end = self.end.round("month")
         months = []
         while str(current) != str(end):
-            month = rr.month(current)
+            #month = rr.month(current)
+            month = self.month(current)
             months.append(month)
             current = current.future_month(months=1)
         return months
+                    
+    def days(self, overlap_edges=True):
+        """
+        return a list of all days contained in self
+        (this could also be an iterator)
 
+        if overlap_edges is set, may extend beyond the current range
+        rounding to the nearest full day on each end
+        """
+        #rr = RelativeRange()
+        current = self.start.round("day")
+        end = self.end.round("day")
+        days = []
+        while str(current) != str(end):
+            #day = rr.day(current)
+            day = self.day(current)
+            days.append(day)
+            current = current.future(days=1)
+        return days
 
-#class RelativeRange(Timerange):
-class RelativeRange(object):
-    """
-    class to quickly get ranges relative to 'now'
-    sometimes these are more complex than just 'future' and 'past' on Timestamp
-
-    return timeranges from specific functions
-    """
-    def __init__(self, timestamp=None, name=''):
-        #Timerange.__init__(self)
-        #name should be a string indicating the type of relation
-        #e.g.
-        #last month, this month, next_month
-        self.name = name
-        if not timestamp:
-            self.now = Timestamp()
+    #Relative Range functions
+    #the following functions could be used independent of a Timerange context
+    #but keeping them here for easier access
+    def default(self):
+        """
+        checks the accuracy of the start timestamp
+        calls correct method automatically to generate a range
+        based on that accuracy
+        """
+        accuracy = self.start.accuracy
+        if accuracy and accuracy != "second":
+            if accuracy == "year":
+                return self.year()
+            elif accuracy == "month":
+                return self.month()
+            elif accuracy == "day":
+                return self.day()
+            elif accuracy == "hour":
+                return self.hour()
+            elif accuracy == "minute":
+                return self.minute()
         else:
-            self.now = timestamp
-            
+            #print "Invalid accuracy for automatic Timerange: %s" % self.start.accuracy
+            #if we can't make an intelligent choice about the range
+            #based on the accuracy of the start
+            #then we can just default to now
+            self.end = Timestamp()
+            return self
+
     def year(self, timestamp=None):
         """
         return a range for the year that timestamp falls in
         """
-        if not timestamp:
-            timestamp = self.now
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
         start_compact = "%s" % (timestamp.year)
         end_compact = "%s1231235959" % (timestamp.year)
-        return Timerange("%s-%s" % (start_compact, end_compact))
-
-    def year_past(self, timestamp=None):
-        """the last 12 months"""
-        if not timestamp:
-            timestamp = self.now
-        end_compact = timestamp.compact()
-        last_year = timestamp.past(years=1)
-        start_compact = last_year.compact()
+        self.end = Timestamp(compact=end_compact)
         return Timerange("%s-%s" % (start_compact, end_compact))
 
     def month(self, timestamp=None):
         """
         return a range for the month that timestamp falls in
         """
-        if not timestamp:
-            timestamp = self.now
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
 
         #start_compact = "%s%02d" % (timestamp.year, timestamp.month)
         #month_start_stamp = Timestamp(compact=start_compact)
@@ -946,20 +987,8 @@ class RelativeRange(object):
         month_end = next_month_stamp.datetime - sec
         #print month_end
         month_end_stamp = Timestamp(month_end)
+        self.end = month_end_stamp
         return Timerange(start=month_start_stamp, end=month_end_stamp)
-
-    def this_month(self):
-        return self.month(self.now)
-
-    def last_month(self):
-        #last_compact = "%s%02d" % (self.now.
-        last_month_ts = self.now.past_month()
-        return self.month(last_month_ts)
-
-    def next_month(self):
-        #last_compact = "%s%02d" % (self.now.
-        next_month_ts = self.now.future_month()
-        return self.month(next_month_ts)
 
     def week(self, timestamp=None, week_start=0):
         """
@@ -967,8 +996,11 @@ class RelativeRange(object):
         Monday is 0, (default week_start)
         if another day should be used, specify in week_start
         """
-        if not timestamp:
-            timestamp = self.now
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
 
         #round timestamp to the beginning of the day:
         day = timestamp.round(accuracy='day')
@@ -991,9 +1023,92 @@ class RelativeRange(object):
         week_end = week_end_plus.datetime - sec
         #print month_end
         week_end_stamp = Timestamp(week_end)
-
+        self.end = week_end_stamp
         return Timerange(start=week_start_stamp, end=week_end_stamp)
         
+
+    def day(self, timestamp=None):
+        """
+        return a range for the day that timestamp falls in
+        """
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
+
+        today_start_stamp = timestamp.round(accuracy="day")
+        
+        tomorrow_stamp = timestamp.future(days=1)
+        sec = timedelta(seconds=1)
+        today_end = tomorrow_stamp.datetime - sec
+        today_end_stamp = Timestamp(today_end)
+        self.end = today_end_stamp
+        return Timerange(start=today_start_stamp, end=today_end_stamp)
+
+    def hour(self, timestamp=None):
+        """
+        return a range for the day that timestamp falls in
+        """
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
+
+        start_stamp = timestamp.round(accuracy="hour")
+        
+        next_stamp = timestamp.future(hours=1)
+        sec = timedelta(seconds=1)
+        hour_end = next_stamp.datetime - sec
+        end_stamp = Timestamp(hour_end)
+        self.end = end_stamp        
+        return Timerange(start=start_stamp, end=end_stamp)
+
+    def minute(self, timestamp=None):
+        """
+        return a range for the minute that timestamp falls in
+        """
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
+
+        start_stamp = timestamp.round(accuracy="minute")
+        
+        next_stamp = timestamp.future(minutes=1)
+        sec = timedelta(seconds=1)
+        minute_end = next_stamp.datetime - sec
+        end_stamp = Timestamp(minute_end)
+        self.end = end_stamp
+        return Timerange(start=start_stamp, end=end_stamp)
+
+    def year_past(self, timestamp=None):
+        """the last 12 months"""
+        if timestamp:
+            #want to make sure we normalize to an acutal Timestamp object
+            timestamp = Timestamp(timestamp)
+        else:
+            timestamp = self.start
+
+        end_compact = timestamp.compact()
+        last_year = timestamp.past(years=1)
+        start_compact = last_year.compact()
+        return Timerange("%s-%s" % (start_compact, end_compact))
+
+    def this_month(self):
+        return self.month(self.start)
+
+    def last_month(self):
+        #last_compact = "%s%02d" % (self.start.
+        last_month_ts = self.start.past_month()
+        return self.month(last_month_ts)
+
+    def next_month(self):
+        #last_compact = "%s%02d" % (self.start.
+        next_month_ts = self.start.future_month()
+        return self.month(next_month_ts)
         
     #should see future and past operations on Timestamp now
     #def this_week_last_year(today=date.today()):
@@ -1015,25 +1130,92 @@ class RelativeRange(object):
         end = last_year + timedelta(4)
         #stamp = start.strftime("%Y%m%d") + '-' + end.strftime("%Y%m%d")
 
-        tr = Timerange(start=start, end=end)
-        stamp = str(tr)
-        return stamp
+        return Timerange(start=start, end=end)
+        #stamp = str(tr)
+        #return stamp
 
 
-    def day(self, timestamp=None):
-        """
-        return a range for the day that timestamp falls in
-        """
-        if not timestamp:
-            timestamp = self.now
 
-        today_start_stamp = timestamp.round(accuracy="day")
+    ## #was tstamp_to_timerange
+    ## def from_tstamp(self, text_time):
+    ##     """
+    ##     take a string of the format:
+    ##     YYYYMMDDHHMMSS
+    ##     return a tuple of python datetime objects
+    ##     based on the format supplied
+    ##     can assume different ranges based on the degree of accuracy
+
+    ##     we want to assume the difference 
+    ##     """
+    ##     if len(text_time) == 14:
+    ##         start = datetime(*(strptime(text_time, "%Y%m%d%H%M%S")[0:6]))
+    ##         end = start
+
+    ##     elif len(text_time) == 12:
+    ##         start = datetime(*(strptime(text_time, "%Y%m%d%H%M")[0:6]))
+    ##         delta = timedelta(minutes=1)
+    ##         end = start+delta
+
+    ##     elif len(text_time) == 10:
+    ##         start = datetime(*(strptime(text_time, "%Y%m%d%H")[0:6]))
+    ##         delta = timedelta(hours=1)
+    ##         end = start+delta
+
+    ##     elif len(text_time) == 8:
+    ##         start = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+
+    ##         #this differs from RelativeRange that uses same date, 23:59:59 instead
+    ##         delta = timedelta(days=1)
+    ##         end = start+delta
+
+    ##     elif len(text_time) == 6:
+    ##         start = datetime(*(strptime(text_time, "%Y%m")[0:6]))
+    ##         month = start.month
+    ##         if month == 12:
+    ##             month = 1
+    ##         else:
+    ##             month += 1
+                
+    ##         #there is no concept of months in timedelta:
+    ##         #delta = timedelta(months=1)
+    ##         #end = start+delta
+    ##         end = datetime(start.year, month, 1)
+
+    ##     elif len(text_time) == 4:
+    ##         start = datetime(*(strptime(text_time, "%Y")[0:6]))
+    ##         delta = timedelta(days=365)
+    ##         end = start+delta
+
+    ##     else:
+    ##         #some other format
+    ##         #start = None
+    ##         #end = None
+    ##         raise AttributeError, "Unknown timerange format: %s"  % text_time
         
-        tomorrow_stamp = timestamp.future(days=1)
-        sec = timedelta(seconds=1)
-        today_end = tomorrow_stamp.datetime - sec
-        today_end_stamp = Timestamp(today_end)
+    ##     self.start = Timestamp(start)
+    ##     self.end = Timestamp(end)
+    ##     return (self.start, self.end)
 
-        return Timerange(start=today_start_stamp, end=today_end_stamp)
+
+## #class RelativeRange(Timerange):
+## class RelativeRange(object):
+##     """
+##     class to quickly get ranges relative to 'now'
+##     sometimes these are more complex than just 'future' and 'past' on Timestamp
+
+##     return timeranges from specific functions
+##     """
+##     def __init__(self, timestamp=None, name=''):
+##         #Timerange.__init__(self)
+
+##         #name should be a string indicating the type of relation
+##         #e.g.
+##         #last month, this month, next_month
+##         self.name = name
+##         if not timestamp:
+##             self.ts = Timestamp()
+##         else:
+##             self.ts = timestamp
+
 
 

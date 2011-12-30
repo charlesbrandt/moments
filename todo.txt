@@ -1,20 +1,39 @@
-*2010.10.13 08:46:03 relativerange
-wonder if it's better to use the next cycle's start as the current cycle's end
-instead of the second before the next cycle's start
+*2011.07.24 21:11:02 
+convert from evernote to moments (potentially lossy)
+also [2011.12.05 08:01:28] 
+(and moments to evernote)
 
-as an example:
-if the day is:
-20101013 
-the start is
-201010130000
-the end is currently
-20101013235959
-but it might make more sense to just say the end is actually:
-20101014
-when testing for inclusion, ends can be treated differently...
-i.e. if something has a start that == another end, it's not overlapping
+*2011.09.12 12:54:25 
+convert from bookmarks to moments
 
-*2010.10.13 08:29:45 
-consider renaming Timerange to TimeRange
-(maybe also Timestamp to TimeStamp?)
+where are bookmarks??
+/c/journal/bookmarks
+
+also [2011.12.05 08:55:24] 
+from moments to bookmarks
+
+*2011.10.16 18:01:57 
+import calendar conversion code to editors directory
+
+*2011.09.19 12:13:44 
+migrate to python 3
+
+*2011.08.02 12:36:24 
+serve a sample javascript page (similar to what is being done in pose2) from journal_server.
+this could serve as a foundation for anyone who wants to use javascript Journal in their own web applications
+
+also [2011.08.02 23:39:48] 
+this is what was needed for pose2 to work
+could also flesh out there, then re-incorporate
+
+also [2011.09.02 14:27:34] 
+consider JSONP so that journal server does not need to be on same server / port
+
+also [2011.07.16 10:38:01]
+create a javascript based version of RemoteJournal
+
+
+
+
+
 

@@ -1,0 +1,4 @@
+Thanks
+==================
+
+Thanks to Ron Duplain (https://github.com/rduplain/notice) for showing interest in the project and discussing approaches. 

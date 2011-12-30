@@ -1,0 +1,12 @@
+*2011.09.02 12:32:34 
+something else to keep in extractable log after other extracts applied
+
+*2011.09.02 12:32:27 todo
+todo task2 
+
+*2011.09.02 12:32:23 todo
+todo task1
+
+*2011.09.02 12:32:18 music
+music entry
+

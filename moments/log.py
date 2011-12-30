@@ -23,13 +23,11 @@
 import StringIO, re, os
 import codecs
 
-from entry import Entry
 from moment import Moment
 
 import timestamp
-from tags import Tags
+from tag import Tags
 
-#class EntryList(StringIO.StringIO):
 class Log(StringIO.StringIO):
     """
     Log is an in memory buffer (StringIO) that holds
@@ -39,9 +37,7 @@ class Log(StringIO.StringIO):
 
     For each entry:
     
-    will create an Entry if no timestamp is found
-
-    will create a Moment if timestamp is found 
+       will create a Moment (with or without timestamp)
     """
     def __init__(self, filename=None):
         StringIO.StringIO.__init__(self)
@@ -139,7 +135,7 @@ class Log(StringIO.StringIO):
         self.seek(0)
         
         for entry in entries:
-            entry.omit_tags(omits)
+            entry.tags.omit(omits)
             self.write(entry.render(include_path=include_path))
 
         if len(entries):
@@ -162,7 +158,7 @@ class Log(StringIO.StringIO):
         entry_regex = "\*"
         entry_search = re.compile(entry_regex)
 
-        cur_entry = Entry()
+        cur_entry = Moment()
         cur_entry.path = self.name
 
         new_entry = None
@@ -187,7 +183,7 @@ class Log(StringIO.StringIO):
                     new_entry.created = timestamp.Timestamp(ts)
                 elif entry_search.match(line):            
                     if not moments_only:
-                        new_entry = Entry()
+                        new_entry = Moment()
                     elif add_time and moments_only:
                         #ok to make a default time for the entry
                         new_entry = Moment()

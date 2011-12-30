@@ -39,8 +39,7 @@ from datetime import datetime
 
 from timestamp import Timestamp
 from journal import Journal
-
-from tags import Tags
+from tag import Tags
 
 def check_ignore(item, ignores=[]):
     """
@@ -70,22 +69,28 @@ def load_instance(instances="/c/instances.txt", tag=None):
     """
     j = load_journal(instances)
     if tag is not None:
-        if j.tags.has_key(tag):
-            entries = j.tags[tag]
-        else:
-            entries = []
+        #if j.tag(tag):
+        #    entries = j.tag(tag]
+        #else:
+        #    entries = []
+        entries = j.tag(tag)
     else:
         entries = j
         
     if len(entries):
         #for sorting a list of entries:
         j2 = Journal()
-        j2.from_entries(entries)
-        entries = j2.sort_entries(sort='reverse-chronological')
+        j2.update_many(entries)
+        entries = j2.sort('reverse-chronological')
 
         #should be the newest entry with tag "tag"
         e = entries[0]
         items = e.data.splitlines()
+        for i in items:
+            #get rid of any empty strings from blank lines
+            if not i:
+                items.remove(i)
+                
         #print items
         return items
     else:
@@ -161,57 +166,6 @@ except:
     config = {}
 
 
-class Context(object):
-    """
-    A context is essentially just a collection of files with some standard attributes
-    a place to collect files for a certain task, project, etc
-    the main requirement is an instances file (typically instances.txt)
-    
-    see scripts/new_context.py
-
-    todo:
-    integrate new_context
-    move this to moments (context.py)
-    """
-    def __init__(self, context):
-        string = ''
-        if type(context) == type(string):
-            #context is just the parent directory
-            self.context = context
-
-            self.instances = os.path.join(context, "instances.txt")
-            self.calendars = os.path.join(context, "calendars")
-            self.priorities = os.path.join(context, "priorities.txt")
-            self.motd = os.path.join(context, "motd.txt")
-
-        else:
-            #going to assume that if it's not a string, it's already one of us:
-            self = context
-
-            
-        #return [ self.instances, self.calendars, self.priorities, self.motd ]
-
-## def check_context(context):
-##     instances = "./instances.txt"
-##     calendars = "/c/calendars/"
-##     priorities = "/c/scripts/priorities.txt"
-##     motd = "/c/scripts/motd.txt"
-
-##     i = os.path.join(context, "instances.txt")
-##     if os.path.exists(i):
-##         instances = i
-##     c = os.path.join(context, "calendars")
-##     if os.path.exists(c):
-##         calendars = c
-##     p = os.path.join(context, "priorities.txt")
-##     if os.path.exists(p):
-##         priorities = p
-##     m = os.path.join(context, "motd.txt")
-##     if os.path.exists(m):
-##         motd = m
-##     #destination = os.path.join(context, "outgoing")
-
-##     return [ instances, calendars, priorities, motd ]
 
 class Path(object):
     """
@@ -369,6 +323,7 @@ class Path(object):
         #determine what the right type of node should be based on path
         if (os.path.isfile(self.path)):
             #ext = extension(self.name)
+            #print "Extension: %s" % self.extension
             ext = self.extension
             if ext in image_extensions:
                 return "Image"
@@ -391,7 +346,8 @@ class Path(object):
             return "Directory"
         else:
             print "Node... exists? %s Unknown filetype: %s" % (os.path.exists(self.path), self.path)
-            return "Node"
+            raise ValueError
+            #return "Node"
 
     def load(self, node_type=None, create=True):
         """
@@ -476,7 +432,7 @@ class Path(object):
         ::
 
           j = Journal()
-          j.from_file(path, add_tags=these_tags)
+          j.load(path, add_tags=these_tags)
 
         -or-
         ::
@@ -484,8 +440,8 @@ class Path(object):
           j = load_journal(path)
           j.path = destination
 
-        of course you can always pass the path in explicitly to to_file:
-        to_file(filename=path)
+        of course you can always pass the path in explicitly to save:
+        save(filename=path)
 
         """
         #ignore_dirs = [ 'downloads', 'binaries' ]
@@ -548,14 +504,14 @@ class Path(object):
                         for tag in subtract_tags:
                             if tag in these_tags:
                                 these_tags.remove(tag)
-                        j.from_file(os.path.join(root, f), add_tags=these_tags)
+                        j.load(os.path.join(root, f), add_tags=these_tags)
 
         elif os.path.isfile(self.path) and log_check.search(self.path):
-            j.from_file(self.path, add_tags)
+            j.load(self.path, add_tags)
         elif create and log_check.search(self.path):
             #make a new log:
-            j.to_file(self.path)
-            j.from_file(self.path, add_tags)
+            j.save(self.path)
+            j.load(self.path, add_tags)
         else:
             #no journal to create
             pass
@@ -719,11 +675,13 @@ class Path(object):
     #def to_relative(self, path='', leading_slash=False, extension=None):
     def to_relative(self, path='', extension=None):
         """
+        should work either way...
+        returns the difference between the two paths (self.path and path)
+        return value is just a string representation
+        
         accept a path (either Path or path... will get resolved down to str)
         return the relative part
         by removing the path sent from our prefix
-
-        return a new path object
 
         convert a local file path into one acceptable for use as a relative path in a URL
 
@@ -752,10 +710,10 @@ class Path(object):
         #if add_prefix:
         #    temp_path = os.path.join(config['relative_prefix'], temp_path)
 
-        if extension:
-            temp = Path(temp_path)
-            temp.extension = extension
-            temp_path = str(temp)
+        ## if extension:
+        ##     temp = Path(temp_path)
+        ##     temp.extension = extension
+        ##     temp_path = str(temp)
         
         return temp_path
 
@@ -826,9 +784,11 @@ class Path(object):
             d_path = self.parent()
             d = d_path.load()
 
-        j = d.load_journal()
-        entry = j.make_entry(str(self.path), actions)
-        j.to_file()
+        dest = os.path.join(str(d), "action.txt")
+        j = load_journal(dest, create=True)
+        #j = d.load_journal()
+        entry = j.make(str(self.path), actions)
+        j.save(dest)
         return entry
         
 
@@ -1129,6 +1089,10 @@ class Image(File):
         if relative is true, will expect a relative path that is
         joined with the local path
         otherwise destination is assumed to be full local path
+
+        very similar functionality as minstream.import_media._move_image_and_thumbs()
+        import_media uses subprocess system level move commands
+        which is not as cross platform
         """        
         #new_dir = os.path.join(image_dir, data)
         (new_dir, new_name) = os.path.split(destination)
@@ -1433,7 +1397,7 @@ class Directory(File):
             #print d[0]
             self.files.append(d[1])
 
-    def sort_by_paths(self, filetype=None):
+    def sort_by_path(self, filetype=None):
         if filetype is not None:
             if (filetype == "File"):
                 self.files = self.sort_helper(self.files)
@@ -1457,7 +1421,7 @@ class Directory(File):
             all_types = [ "Image", "Movie", "Playlist", "Sound", "Log",
                           "Document", "File", "Directory" ]
             for t in all_types:
-                self.sort_by_paths(filetype=t)
+                self.sort_by_path(filetype=t)
             self.contents = self.sort_helper(self.contents)
 
     def sort_helper(self, collection):
@@ -1545,12 +1509,19 @@ class Directory(File):
             f = fpath.load()
             f.adjust_time(hours)
         
-    def files_to_journal(self, filetype="Image", journal_file="action.txt"):
+    def files_to_journal(self, filetype="Image", journal_file="action.txt", full_path=False):
         """
         *2010.12.22 06:49:41
         seems similar in function to create_journal
         this is a bit easier to understand from the name though
+
+        this is used by
+        /c/moments/scripts/import_usb.py
+
         """
+        #just incase we haven't:
+        self.scan_filetypes()
+        
         jpath = os.path.join(str(self.path), journal_file)
         j = load_journal(jpath, create=True)
 
@@ -1567,36 +1538,45 @@ class Directory(File):
             tags = [ 'file', 'created' ]
 
         for fpath in files:
-            #could also use j.make_entry() here:
+            #could also use j.make() here:
             #e = Moment()
             #e.created = Timestamp(i.datetime())
             #e.tags = tags
             #e.data = i.path
             #j.update_entry(e)
             f = fpath.load()
-            j.make_entry(data=str(fpath), tags=tags, created=f.datetime())
+            if full_path:
+                data = str(fpath)
+            else:
+                data = str(fpath.filename)
+            j.make(data=data, tags=tags, created=f.datetime())
 
         #print j
         #j.sort_entries("reverse-chronological")
         #l = Log(filename)
-        #j.to_file('temp.txt')
-        j.to_file(jpath, sort="reverse-chronological")
+        #j.save('temp.txt')
+        j.save(jpath, order="reverse-chronological")
 
-    def create_journal(self, journal="action.txt", items="Images"):
+    def create_journal(self, journal="action.txt", items="Images", full_path=False):
         """
         if we don't have a journal
         create one using the items of type items
 
         adapted from moments/scripts/images_to_journal.py
         """
-        j = self.load_journal(journal)
+        j = None
+        source = os.path.join(str(self.path), journal)
+        if os.path.exists(source):
+            j = Journal()
+            j.load(source)
+
         source = os.path.join(str(self.path), journal)
         if not j:
             self.scan_filetypes()
 
             #this will not propigate to log
             #creation times will take priority
-            #self.sort_by_paths("Image")
+            #self.sort_by_path("Image")
             
             #print self.images
             #app.sources = self.images
@@ -1616,11 +1596,14 @@ class Directory(File):
                 #as tags are added to the directory, etc
                 #just use the file name in the local action tags
                 #elsewhere, full path is fine, knowing that it might change, but better than nothing
-                data = str(i.filename)
+                if full_path:
+                    data = str(i)
+                else:
+                    data = str(i.filename)
                 #j.update_entry(e)
-                j.make_entry(data, tags, created)
+                j.make(data, tags, created)
 
-            j.to_file(source, sort="chronological")
+            j.save(source, order="chronological")
 
         else:
             print "Journal: %s already exists" % (source)
@@ -1628,34 +1611,40 @@ class Directory(File):
         return j
 
 
-    def load_journal(self, journal="action.txt"):
-        """
-        node should not need a function for loading a journal
-        in that case just use journal's load_journal function directly for that
+    # *2011.09.01 15:58:18
+    # I think the only place this was in use was for path.log_action
+    # but in that case we should specify the destination log there
+    #
+    # also used in default_image
+    
+    ## def load_journal(self, journal="action.txt"):
+    ##     """
+    ##     node should not need a function for loading a journal
+    ##     in that case just use journal's load_journal function directly for that
 
-        but in the case of a directory, can be nice to have more direct
-        access to the directory's journal.
-        """
-        source = os.path.join(str(self.path), journal)
-        if os.path.exists(source):
-            j = Journal()
-            j.from_file(source)
-            return j
-        else:
-            #otherwise just fall back to the standard load_journal
-            #j = load_journal(self.path)
-            #return j
+    ##     but in the case of a directory, can be nice to have more direct
+    ##     access to the directory's journal.
+    ##     """
+    ##     source = os.path.join(str(self.path), journal)
+    ##     if os.path.exists(source):
+    ##         j = Journal()
+    ##         j.load(source)
+    ##         return j
+    ##     else:
+    ##         #otherwise just fall back to the standard load_journal
+    ##         #j = load_journal(self.path)
+    ##         #return j
             
-            #if load_journal behavior is wanted, just call it directly
-            #this is for looking for the default action logs of a directory
-            return None
+    ##         #if load_journal behavior is wanted, just call it directly
+    ##         #this is for looking for the default action logs of a directory
+    ##         return None
 
-    def fix_journal(self, journal="action.txt"):
-        """
-        *2010.12.28 16:59:39
-        currently full paths are used... these do not always stay consistent.
-        """
-        pass
+    ## def fix_journal(self, journal="action.txt"):
+    ##     """
+    ##     *2010.12.28 16:59:39
+    ##     currently full paths are used... these do not always stay consistent.
+    ##     """
+    ##     pass
 
     #rename to generate_thumbnails?        
     def make_thumbs(self):
@@ -1684,19 +1673,22 @@ class Directory(File):
     def default_image(self, pick_by="random"):
         """
         if we have an action log, use that regardless of pick_by
+
+        Not currently configured to work with RemoteJournal
         """
         self.scan_filetypes()
         #print "%s has %s images" % (self.path.name, len(self.images))
         choice = None           
         if len(self.images):
-                                    
-            j = self.load_journal("action.txt")
+
+            dest = os.path.join(str(self.path), "action.txt")
+            j = load_journal(dest)
             if j:
                 #2009.12.19 13:19:27 
                 #need to generate the data association first now
                 j.associate_files()
 
-                most_frequent = j.files.frequency_list()
+                most_frequent = j._files.frequency_list()
                 most_frequent.sort()
                 most_frequent.reverse()
                 if self.path.name == "20100522-rebel-slr":

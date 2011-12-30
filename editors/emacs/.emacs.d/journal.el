@@ -41,6 +41,7 @@
   (tstamp)
 )
 (global-set-key "\C-xj" 'journal)
+(global-set-key "\C-j" 'journal)
 
 (defun also ()
   (interactive)

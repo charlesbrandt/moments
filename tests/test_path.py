@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.getcwd()))
 from nose.tools import *
 
 from moments.timestamp import Timestamp
-from moments.path import File, Directory, Image, Path, name_only
+from moments.path import File, Directory, Image, Path, name_only, load_instance
 
 class TestStorage:
     def setUp(self):
@@ -15,8 +15,14 @@ class TestStorage:
         assert str(self.node.path) == os.path.join(os.getcwd(), "zoobar/IMG_6166_l.JPG")
         assert str(self.node) == "IMG_6166_l.JPG"
 
+    def test_load_instance(self):
+        items = load_instance('zoobar/instances.txt', 'tests')
+        print items
+        assert len(items) == 3
+
     def test_change(self):
         print "THIS WILL FAIL ON MAC OSX.  NO SUPPORT FOR os.utime"
+        print "others may need to run twice to get times set as expected"
         now = Timestamp()
         #this does not work as expected:
         #atime = Timestamp().from_epoch(self.node.atime)
@@ -61,6 +67,15 @@ class TestDirectory:
         #self.d = Directory(os.getcwd())
         path = './zoobar'
         self.d = Directory(path)
+
+    def test_files_to_journal(self):
+        output = "temp_files_to_journal_test_output.txt"
+        self.d.files_to_journal(journal_file=output)
+        dest = os.path.join('./zoobar', output)
+        assert os.path.exists(dest)
+        path = Path(dest)
+        path.remove()
+        assert not os.path.exists(dest)
 
     def test_default_image(self):
         d2 = Directory("./zoobar")
@@ -151,14 +166,22 @@ class TestPath:
         assert_equal (s, ["h", "i", "j", "k"])
 
     def test_hidden(self):
-        path_s = "/c/scripts/system/archive/configs/.gconfd"
+        path_s = "zoobar/.emacs"
         hidden = Path(path_s)
         print str(hidden)
         print "Filename: %s (name: %s, extension: %s)" % (hidden.filename, hidden.name, hidden.extension)
-        assert hidden._full_name == ".gconfd"
+        assert hidden._full_name == ".emacs"
         #assert name_only(path_s)
-        assert hidden.filename == ".gconfd"
+        assert hidden.filename == ".emacs"
         assert str(hidden) == path_s
+
+    def test_load_journal(self):
+        dest = 'zoobar/todo.txt'
+        p = Path(dest)
+        p.load_journal(create=True)
+        assert os.path.exists(dest)
+        p.remove()
+        assert not os.path.exists(dest)
         
     def test_create(self):
         p = "create_me.txt"

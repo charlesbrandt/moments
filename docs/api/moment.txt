@@ -1,9 +1,3 @@
-The :mod:`entry` Module
------------------------------
-
-.. automodule:: moments.entry
-   :members:
-
 The :mod:`moment` Module
 -----------------------------
 

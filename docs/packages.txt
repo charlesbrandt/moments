@@ -1,4 +1,0 @@
-Supporting Packages
-========================
-
-There are a few python packages that are included in the packages directory.  These either utilize the Moments package, or are useful to use with it.

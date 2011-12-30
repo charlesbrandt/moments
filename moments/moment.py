@@ -21,112 +21,195 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-A Moment object is a subclass of Entry
+An Moment is the foundation for a journal.
+It does not require a timestamp, but most moments use one. 
 
-Adds a timestamp and corresponding helper functions to an Entry
+In its most simple (text based) form, a moment consists of:
+::
+
+  * tags
+  data
+  \\n
+
+With a timestamp:
+::
+
+  * timestamp tags
+  data
+  \\n
+
 """
 
 from datetime import datetime
 import string, re
 
-#from webhelpers.html import url_escape
-#or use urllib.quote(path)
-#import urllib
-
 from timestamp import Timestamp
-from tags import Tags
+from tag import Tags
 
-from entry import Entry
 
-class Moment(Entry):
+class Moment(object):
     """
-    Object to hold a unique Moment (Journal Entry with Time)
-    """
-    def __init__(self, data=u'', tags=[], created=None, closed=None, placeholder=False, path=u''):
+    Object to hold a unique Moment
 
-        Entry.__init__(self, data, tags, path)
+    #*2011.07.03 09:16:58
+    #by not having a separate moment and entry (no-timestamp)
+    #we lose the ability to automatically assign a default timestamp
+    #within the moment object itself
+    #shouldn't be that big of a deal, since in practice we're often
+    #creating moments withing the context of a journal
+    #
+    #if not, just pass in the timestamp on init
+
+    also adding a parameter 'now' to set the timestamp automatically on init
+    default is false
+    """
+    #def __init__(self, data=u'', tags=[], created=None, closed=None, placeholder=False, path=u''):
+    def __init__(self, data=u'', tags=[], created='', path=u'', now=False):
+
+        self.data = data        
+        self.tags = Tags(tags)
         
-        now = datetime.now()
-        if not created:
+        #could rename this to path potentially
+        #self.source_file = None
+        #*2011.06.21 09:59:10
+        #now wishing it was just self.source
+        #maybe both should be available?
+        self.path = path
+        self.source = path
+        #*2011.08.14 18:56:17 
+        #path implies a source and destination
+        
+        #self.created = ''
+        
+        #*2011.07.06 08:24:43
+        #this may closely mimic the way Timestamp initializes
+        #may want to leverage that
+        #or just pass created and now values in to there
+        
+        if now:
             self.created = Timestamp()
-        elif type(created) == type(now):
+
+        #elif type(created) == type(now):
+        elif isinstance(created, datetime):
             self.created = Timestamp(created)
 
-        #*2009.08.08 17:58:40 not sure why this 'else' was commented
-        #if causing incorrect behavior should document that.
-        else:
-            #assuming we passed in an actual Timestamp here:
+        #passed in an actual Timestamp here:
+        elif isinstance(created, Timestamp):
             self.created = created
+
+        elif isinstance(created, str) or isinstance(created, unicode):
+            if created:
+                self.created = Timestamp(created)
+            else:
+                self.created = created
+                
+        else:
+            raise TypeError, "Unknown time format for moment created value: %s type: %s" % (created, type(created))
         
-        self.closed = closed
+        #self.closed = closed
         
         #should not be stored in any database
-        self.placeholder = placeholder
+        #self.placeholder = placeholder
+
+    def as_dict(self):
+        """
+        return self as a dictionary suitable for JSON use
+        """
+        item = {}
+        item['data'] = self.data
+        item['created'] = str(self.created)
+        item['tags'] = list(self.tags)
+        item['path'] = str(self.path)
+
+        #TODO
+        #is item equivalent to a json.loads(json.dumps(self)) ???
+
+        return item
 
     def is_equal(self, other, debug=False):
         """
         take another entry/moment
         see if our contents are equal
         """
-        equal = Entry.is_equal(self, other, debug)
-        if equal and str(self.created) != str(other.created):
+        equal = True
+        if not self.tags.is_equal(other.tags):
+            equal = False
+            if debug: print "Tags: %s (self) != %s (other)" % (str(self.tags), str(other.tags))
+            
+        #elif self.data != other.data:
+        elif self.render_data() != other.render_data():
+            equal = False
+            if debug: print "Data: %s (self) != %s (other)" % (self.data, other.data)
+
+        elif equal and str(self.created) != str(other.created):
             equal = False
             if debug: print "Created: %s (self) != %s (other)" % (str(self.created), str(other.created))
+
         return equal
 
-    def total_time(self):
-        #could also check sub_entries to see how much time was accounted for
-        #see if it gets close
-        return self.closed.datetime - self.created.datetime
-
-    def is_placeholder(self):
-        return self.placeholder
-
-    def to_placeholder(self, destination_log):
-        if not self.placeholder:
-            data = u" [moved / exported to: %s]\n\n" % destination_log
-            new = Entry(data, self.created, self.closed, [destination_log], True)
-            return new
-        else:
-            return self
-
-    def render_date(self, date=None):
-        if not date:
-            date = self.created
-        return str(date)
-
-    def render_compact(self):
-        return self.created.compact()
-
-    def render_first_line(self, format='text', link_tags=True):
+    def render_first_line(self, comment=False):
         """
         render the date and the tags for the entry
         """
-        text_time = str(self.created)
-
-        line = ''
-        if format == 'text':
-            line = '*' + text_time + ' ' + ' '.join(self.tags) + "\n"
-        elif format == 'html':
-            tags = ''
-            if link_tags:
-                for t in self.tags:
-                    tags += u'<a href="/tags/%s.html">%s</a> ' % (t, t)
-            else:
-                tags = ' '.join(self.tags)
-            line = u'<div class="entry_header"><span class="asterisk">*</span><span class="date">%s </span><span class="tags">%s</span></div>' % (text_time, tags)
+        if comment:
+            line = '#' + str(self.created) + ' ' + ' '.join(self.tags) + "\n"
         else:
-            print "Unknown format: %s" % format
+            line = '*' + str(self.created) + ' ' + ' '.join(self.tags) + "\n"
         return unicode(line)
 
-    def render_comment(self):
+    def has_data(self):
+        return self.data.strip()
+
+    def render_data(self):
         """
-        render the date and the tags for the entry as a comment
+        return a textual representation of the entry data only
         """
-        text_time = str(self.created)
-        
-        line = '#'
-        line += text_time + " " + ' '.join(self.tags)
-        line += "\n"
-        return unicode(line)
+        if self.data:
+            #print "ENTRY DATA: %s" % type(self.data)
+            #make sure that data is buffered with a blank line at the end
+            #makes the resulting log easier to read.
+            #if there are more than one blanklines, can leave them
+            last_line = self.data.splitlines()[-1]
+            #not re.match('\s', last_line) and
+            
+            #are there characters in the last line?  need to adjust if so:
+            if re.search('\S', last_line):
+                if re.search('\n$', last_line):
+                    self.data += "\n"
+                else:
+                    #self.data += "\n"
+                    #web entries added will end up with 3 newlines somehow
+                    #but other entries created with a single string
+                    #won't have enough new lines...
+                    #should troubleshoot web entries
+                    self.data += "\n\n"
+
+            return unicode(self.data)
+        else:
+            #*2011.11.17 16:44:15
+            #if loaded from a file, data almost always has newlines in it
+            #shouldn't ever get here in that case
+            
+            #print "no data in this entry! : %s" % self.render_first_line()
+            return unicode('')
+
+    def render(self, include_path=False):
+        """
+        return a textual representation of the entry
+
+        include_path assumed to be false in some places
+        """
+        entry = u''
+        entry += self.render_first_line()
+
+        #in most cases we do not want to show the source path,
+        #(it can change easily and frequently, and is determined on read)
+        #but when merging and reviewing (summarize)
+        #it could be useful to see in a temporary file
+        if include_path:
+            entry += self.path + "\n"
+            
+        entry += self.render_data()
+        return entry
+
 

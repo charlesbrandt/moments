@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export.dtd">
+<en-export export-date="20110809T200641Z" application="Evernote" version="Evernote Mac 2.2.3 (158341)">
+<note><title>exporting content</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+todo:
+<div>collect links on the export format</div>
+<div>generate a simple converter to moments</div>
+<div>notebooks should be the equivalent of a new file</div>
+</en-note>
+]]></content><created>20110808T153335Z</created><updated>20110808T153702Z</updated><note-attributes/></note>
+<note><title>evernote history</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+<a href="http://www.tuaw.com/2009/11/16/phil-libin-on-the-past-present-and-future-of-evernote/">http://www.tuaw.com/2009/11/16/phil-libin-on-the-past-present-and-future-of-evernote/</a>
+<div><br/></div>
+<div>sounds like they got started around 2008</div>
+<div><br/></div>
+<div>Moments was timely, but far too slow to keep up with demand.  </div>
+</en-note>
+]]></content><created>20110719T213437Z</created><updated>20110719T213548Z</updated><tag>evernote</tag><note-attributes/></note>
+<note><title>alternatives</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+<a href="http://www.linux.com/learn/tutorials/322137-finding-evernote-replacements-for-linux">http://www.linux.com/learn/tutorials/322137-finding-evernote-replacements-for-linux</a>
+<div><a href="http://nevernote.sourceforge.net/index.htm">http://nevernote.sourceforge.net/index.htm</a><br/></div>
+</en-note>
+]]></content><created>20110719T213121Z</created><updated>20110719T213152Z</updated><tag>evernote</tag><note-attributes/></note>
+<note><title>Upsides</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+tag autocomplete is cool
+<div><br/></div>
+<div>I'm sure the searching is pretty nice</div>
+<div><br/></div>
+<div>automatic syncing (as mentioned)</div>
+<div><br/></div>
+<div>other meta data fields (location, author, url)</div>
+<div><br/></div>
+<div>entry formatting</div>
+<div><br/></div>
+<div>audio</div>
+<div><br/></div>
+<div>video</div>
+<div><br/></div>
+<div>I'm sure there will be more as I use it more.  Just hoping that the promotions don't ruin it for me.  (I'm not sure I see enough value for paying... note taking is something that should be free IMO)</div>
+</en-note>
+]]></content><created>20110719T212354Z</created><updated>20110719T212637Z</updated><note-attributes/></note>
+<note><title>Downsides</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+In some ways, it is trickier to add tags (maybe that is what I should use the title for?)
+<div><br/></div>
+<div>No linux support</div>
+<div><br/></div>
+<div>Ads / Promotions in non-premium version</div>
+<div><br/></div>
+<div>Everything is public (I'm counting a password protected account as public in this case, even though that is not technically public).</div>
+<div><br/></div>
+<div>Monthly limits in free version.</div>
+<div><br/></div>
+<div><br/></div>
+<div>That's about all I can come up with at this point, which really isn't much.  It's a nice system.  Moments will still have it's place for lower level operations, and it is very functional. It could be good for embedding journalling/note tracking into other applications and web services.  </div>
+<div><br/></div>
+<div>But for public cases, this might be a nice way to go.  </div>
+</en-note>
+]]></content><created>20110719T211719Z</created><updated>20110719T212317Z</updated><tag>evernote</tag><note-attributes/></note>
+<note><title>automatic sync</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+<p>notes from client already show up in the web version.  This is being created on the web version... at what point does it show up in the client?</p>
+<p>(After pressing Done? .. yep)</p>
+</en-note>
+]]></content><created>20110719T211138Z</created><updated>20110719T212321Z</updated><tag>evernote</tag><note-attributes><source-application>Evernote Web; 159201; Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.2.3) Gecko/20100401 Firefox/3.6.3</source-application></note-attributes></note>
+<note><title>Export notes</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+Looks like they have it all figured out in a nice package... tags, locations, nice UI on multiple platforms.  Multiple formats.  What about exporting?
+<div><br/></div>
+<div>Yup... it's there too...</div>
+<div>File -&gt; Export Notes to Archive...</div>
+<div><br/></div>
+<div>Evernote XML Format (.enex)</div>
+</en-note>
+]]></content><created>20110719T210319Z</created><updated>20110719T212324Z</updated><tag>evernote</tag><note-attributes/></note>
+<note><title>new note keystroke</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+command-n... easy enough...
+<div>how accurate is the timestamp?</div>
+<div><br/></div>
+<div>looks like it's to the minute... nice that it has an updated field</div>
+</en-note>
+]]></content><created>20110719T205327Z</created><updated>20110719T212328Z</updated><tag>evernote</tag><note-attributes/></note>
+<note><title>First "Evernote"</title><content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+<en-note style="word-wrap: break-word; -webkit-nbsp-mode: space; -webkit-line-break: after-white-space;">
+testing out evernote... key stroke for a new entry?
+</en-note>
+]]></content><created>20110719T205227Z</created><updated>20110719T212355Z</updated><tag>evernote</tag><note-attributes/></note>
+</en-export>

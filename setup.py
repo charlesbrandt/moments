@@ -7,10 +7,10 @@ except ImportError:
 
 import sys, os
 
-version = '1.0'
+version = '2.0'
 
 setup(
-    name='Moments',
+    name='moments',
     version=version,
     description="Python package to process moments log files",
     long_description="""Moment log files are simple text documents with the \
@@ -26,10 +26,10 @@ setup(
     """,
     # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[],
-    keywords='',
+    keywords='moments journal log self_tracking logging blog entry time quantified_self',
     author='Charles Brandt',
-    author_email='code@contextiskey.com',
-    url='http://www.contextiskey.com',
+    author_email='code@charlesbrandt.com',
+    url='http://bitbucket.org/cbrandt/moments',
     license='MIT',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,

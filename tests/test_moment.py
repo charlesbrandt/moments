@@ -2,7 +2,7 @@ import sys, os
 sys.path.append(os.path.dirname(os.getcwd()))
 
 from datetime import datetime
-from moments import moment, entry, timestamp, journal
+from moments import moment, timestamp, journal
 
 class TestMoment:
     def setUp(self):

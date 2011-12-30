@@ -19,11 +19,19 @@ def test_time():
 
 class TestTimestamp:
     def setUp(self):
-        pass
+        self.ts = Timestamp("20110707")
     
     def test_init(self):
         #make sure it loads
-        assert Timestamp("20090210")
+        ts = Timestamp("20090210")
+        assert ts.compact() == "20090210"
+
+    def test_dupe_init(self):
+        dupe_ts = Timestamp(self.ts)
+        print self.ts.dt
+        print isinstance(self.ts, Timestamp)
+        print dupe_ts.dt
+        assert dupe_ts.dt == self.ts.dt
 
     def test_months(self):
         now = Timestamp()
@@ -33,28 +41,36 @@ class TestTimerange:
     def setUp(self):
         tstamp = "20081218210057"
         self.tr = Timerange(tstamp)
+        #self.now = datetime.now()
+        self.now = Timestamp()
 
     def test_init(self):
         (start, end) = self.tr.as_tuple()
         t = datetime(2008, 12, 18, 21, 0, 57)
         assert start.datetime == t
-        assert end.datetime == t
+        #print end.datetime
+        #print self.now
+        assert end.compact() == self.now.compact()
 
     def test_str(self):
         tstamp = "20081218"
         tr = Timerange(tstamp)
         print str(tr)
-        assert str(tr) == "20081218-20081219"
+        #assert str(tr) == "20081218-20081219"
+        assert str(tr) == "20081218-20081218235959"
         tstamp = "20081231"
         tr = Timerange(tstamp)
-        assert str(tr) == "20081231-20090101"
+        #assert str(tr) == "20081231-20090101"
+        assert str(tr) == "20081231-20081231235959"
 
     def test_from_trange(self):
         tstamp = "20081218"
-        (start, end) = Timerange().from_trange(tstamp)
+        (start, end) = Timerange('').from_text(tstamp)
         #bit kludgy here... probably a better way to test for types
-        assert str(type(start.datetime)) == "<type 'datetime.datetime'>"
-        assert str(type(end.datetime)) == "<type 'datetime.datetime'>"
+        #assert str(type(start.datetime)) == "<type 'datetime.datetime'>"
+        #assert str(type(end.datetime)) == "<type 'datetime.datetime'>"
+        assert isinstance(start.datetime, datetime)
+        assert isinstance(end.datetime, datetime)
 
 class TestRelativeRange:
     def setUp(self):
@@ -65,14 +81,20 @@ class TestRelativeRange:
 
         #june 2, 2010 is a Wednesday:
         tstamp = Timestamp(compact="20100602")
-        self.rr = RelativeRange(tstamp)
-
+        #print tstamp
+        #self.rr = RelativeRange(tstamp)
+        self.rr = Timerange(tstamp)
+        print self.rr
+        
         #december 1, 2010 is a Wednesday:
         self.dec = Timestamp(compact='201012')
-        self.rr_dec = RelativeRange(self.dec)
+        #self.rr_dec = RelativeRange(self.dec)
+        self.rr_dec = Timerange(self.dec)
         
     def test_year(self):
-        assert str(self.rr.year()) == "20100101-20101231235959"
+        print str(self.rr)
+        print self.rr.year()
+        assert str(self.rr.year()) == "2010-20101231235959"
 
     def test_month(self):
         feb = Timestamp(compact='201002')

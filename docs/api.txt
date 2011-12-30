@@ -12,11 +12,15 @@ For further details, please view the python source code directly.
 .. toctree::
    :maxdepth: 2
 
-   api/journal
-   api/log
    api/moment
+   api/journal
    api/parts
-   api/helpers
+   api/log
+   api/path
+   api/filters
+   api/association
+   api/server
+
 
 
 

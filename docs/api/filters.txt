@@ -1,0 +1,6 @@
+The :mod:`filters` Module
+-----------------------------
+
+.. automodule:: moments.filters
+   :members:
+

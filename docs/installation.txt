@@ -1,6 +1,23 @@
 Installation
 ====================
 
+The best way to get moments is to clone the mercurial repository:
+::
+
+  hg clone http://bitbucket.org/cbrandt/moments
+  cd moments
+  sudo python setup.py install
+
+This assumes you already have Python and Mercurial installed.  
+
+Editors
+----------
+See the editors/ directory for different configurations for adding a time stamp command to your editor.  
+
+
+Python
+--------
+
 Python is included with many operating systems.  
 
 An easy way to check if your system already has Python is to open up a terminal / command prompt and type:
