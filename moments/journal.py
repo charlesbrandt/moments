@@ -852,6 +852,14 @@ class Journal(object):
 
 class RemoteJournal(object):
     """
+    This is a drop in replacement for Journal
+    but rather than load and store the data in an internal data structure
+    all information is retrieved from a journal_server using json
+
+    ultimately this avoids needing to reload a large journal set
+    when working on applications to leverage information in a journal.
+
+    
     wraps calls to a journal_server to make the object interaction
     behave the same as a local Journal object
 
@@ -1053,8 +1061,8 @@ class RemoteJournal(object):
         #print json_raw
         e = json.loads(json_raw)
         #print e
-        #m = Moment(data=e['data'], tags=e['tags'], created=e['created'])
         m = Moment(data=e['data'], tags=e['tags'], created=e['created'], path=e['path'])
+        #print m
         return m
 
     def entries(self):
@@ -1156,20 +1164,6 @@ class RemoteJournal(object):
 
 
 
-class JournalClient(object):
-    """
-    This should (eventually) be a drop in replacement for Journal
-    but rather than load and store the data in an internal data structure
-    all information will be retrieved from a journal_server
-    using json
-
-    ultimately this avoids needing to reload a large journal set
-    when working on applications to leverage information in a journal.
-    
-    """
-    def __init__(self, path=None, items=[], title=''):
-        pass
-                
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

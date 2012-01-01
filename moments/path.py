@@ -477,23 +477,32 @@ class Path(object):
                             relative_path = Path(os.path.join('/', relative_path))
 
                             filename_tags = relative_path.to_tags()
+
+                            #journal.txt is often used as a default name
+                            #in repositories
+                            #but does not really indicate anything
+                            #about the entries themselves (watered down)
+                            #ok to remove if added by path
+                            if "journal" in filename_tags:
+                                filename_tags.remove("journal")
+                                
                             for t in filename_tags:
                                 try:
                                     ts = Timestamp(compact=t)
                                 except:
                                     #if it's *not* a valid timestamp,
                                     #then we want to keep it as a tag
-                                    if (str(t) != '01' or
-                                        str(t) != '02' or
-                                        str(t) != '03' or
-                                        str(t) != '04' or
-                                        str(t) != '05' or
-                                        str(t) != '06' or
-                                        str(t) != '07' or
-                                        str(t) != '08' or
-                                        str(t) != '09' or
-                                        str(t) != '10' or
-                                        str(t) != '11' or
+                                    if (str(t) != '01' and
+                                        str(t) != '02' and
+                                        str(t) != '03' and
+                                        str(t) != '04' and
+                                        str(t) != '05' and
+                                        str(t) != '06' and
+                                        str(t) != '07' and
+                                        str(t) != '08' and
+                                        str(t) != '09' and
+                                        str(t) != '10' and
+                                        str(t) != '11' and
                                         str(t) != '12'):
                                         these_tags.append(t)
                                     #print "adding: %s" % t
