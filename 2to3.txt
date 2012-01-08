@@ -1,0 +1,17 @@
+*2012.01.07 16:17:09 
+getting ready to test a 2to3 conversion for moments
+
+http://docs.python.org/library/2to3.html
+
+
+cd /c
+
+cp -r moments/ moments3
+
+2to3 -w -n moments3
+
+*2012.01.08 17:21:12 moments python3
+print works, but urllib2 is now know as just urllib
+so that breaks
+
+can run the above command to make it work with python3
