@@ -17,18 +17,11 @@ index*
 syntax: regexp
 ^docs/_build*
 ^editors/emacs/.emacs.d/matlab-emacs/
+^editors/emacs/.emacs.d/session*
 ^binaries*
-^packages/launcher/launcher.egg-info/SOURCES.txt
 ^tests/zoobar/sample_log2.txt
 ^Moments.egg-info/SOURCES.txt
+^moments.egg-info*
 ^build/
-^packages/medialist/medialist.egg-info/SOURCES.txt
-^packages/osbrowser/osbrowser.egg-info/SOURCES.txt
-^packages/osbrowser/build/
-^packages/osbrowser/dist/
-^packages/pose/pose.egg-info/SOURCES.txt
-^packages/pose/pose/public/test/outgoing/logs/200*
-^packages/pose/pose/public/test/media/graphics/action.txt
-^packages/pose/data*
 sized
 ^snapshots*
