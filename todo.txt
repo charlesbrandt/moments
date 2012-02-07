@@ -1,3 +1,15 @@
+*2012.01.09 11:09:28 todo moments_web utc
+add note about unix timestamp to this: 
+def from_epoch(self, posix_time): 
+""" 
+accept a posix time and convert it to a local datetime 
+(in current Timestamp) 
+http://docs.python.org/library/datetime.html#datetime.datetime.fromtimestamp
+see also datetime.utcfromtimestamp() 
+""" 
+self.dt = datetime.fromtimestamp(posix_time) 
+
+
 *2011.07.24 21:11:02 
 convert from evernote to moments (potentially lossy)
 also [2011.12.05 08:01:28] 
