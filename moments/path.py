@@ -1436,7 +1436,7 @@ class Directory(File):
     def sort_helper(self, collection):
         strings = []
         for item in collection:
-            strings.append(str(item))
+            strings.append(unicode(item))
         strings.sort()
         paths = []
         for s in strings:

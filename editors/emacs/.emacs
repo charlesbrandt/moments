@@ -82,3 +82,8 @@
 
 ;uncomment the following on windows:
 ;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
+
+;*2012.02.05 14:25:26 
+;looking for a way to switch to only one window (in the emacs sense) open
+;(one editing panel)
+(delete-other-windows)
