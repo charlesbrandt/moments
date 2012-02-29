@@ -637,6 +637,14 @@ class Path(object):
         while path and path != '/':
             (path, suffix) = os.path.split(path)
             parts.insert(0, suffix)
+
+        #this will take care of windows paths that are being worked on in a unix environment manually
+        new_parts = []
+        for p in parts:
+            new_parts.extend(p.split('\\'))
+
+        parts = new_parts
+
         #print parts
         return parts
 

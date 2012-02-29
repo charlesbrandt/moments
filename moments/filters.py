@@ -56,6 +56,8 @@ def omit_date_tags(items):
 
 def filter_list(items, ignores, search=False):
     """
+    IF SEARCH IS NOT TRUE, IGNORES MUST BE AN EXACT MATCH
+    
     take a list of items
     take a list of itmes to ignore
     return a new list of items based on first, original, with ignores removed
