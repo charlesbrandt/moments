@@ -1057,6 +1057,13 @@ class Image(File):
         #self.last_four = parts[-2][-4:]
         self.last_four = self.path.name[-4:]
 
+    def dimensions(self):
+        """
+        return the dimensions of this image
+        """
+        image = PILImage.open(str(self.path))
+        return image.size
+
     def size_name(self, size):
         """
         take a size and create the corresponding thumbnail filename
