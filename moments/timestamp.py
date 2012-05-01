@@ -315,6 +315,7 @@ class Timestamp(object):
         
         return the current timestamp object as the number of seconds since the
         epoch.  aka POSIX timestamp
+        aka utime (?)
         *2009.11.04 13:57:55
         http://stackoverflow.com/questions/255035/converting-datetime-to-posix-time
         """
