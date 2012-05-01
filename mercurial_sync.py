@@ -164,6 +164,7 @@ def usage():
     print "sudo chmod 777 /c/outgoing/*"
     print "python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/"
 
+    print "(reset any open journal buffers after export)"
     print ""
     print "/c/moments/mercurial_sync.py /c/clients /media/CHARLES/clients"    
     print "/c/moments/mercurial_sync.py /c/clients /media/WORK/clients"    
