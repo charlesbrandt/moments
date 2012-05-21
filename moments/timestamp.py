@@ -421,6 +421,8 @@ class Timestamp(object):
         Month DD, YYYY
         """
         months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]
+        #get rid of double spacing, if it exists
+        text_time = text_time.replace("  ", " ")
         (month_s, day_s, year_s) = text_time.split(' ')
         if month_s in months:
             month = months.index(month_s) + 1
@@ -429,7 +431,11 @@ class Timestamp(object):
             print "Couldn't find: %s" % month_s
             month = None
         #get rid of ',' after date
-        day = int(day_s[:-1])
+        if re.search(',', day_s):
+            day = int(day_s[:-1])
+        else:
+            day = int(day_s)
+            
         year = int(year_s)
         #print "Day: %s, Year: %s" % (day, year)
         compact = "%s%02d%02d" % (year, month, day)
