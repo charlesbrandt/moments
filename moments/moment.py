@@ -34,7 +34,7 @@ In its most simple (text based) form, a moment consists of:
 With a timestamp:
 ::
 
-  * timestamp tags
+  *timestamp tags
   data
   \\n
 

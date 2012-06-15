@@ -727,10 +727,12 @@ class Path(object):
         #if add_prefix:
         #    temp_path = os.path.join(config['relative_prefix'], temp_path)
 
-        ## if extension:
-        ##     temp = Path(temp_path)
-        ##     temp.extension = extension
-        ##     temp_path = str(temp)
+        # this allows replacing an extension with something else
+        # used in gallery scripts to replace .jpg with .html
+        if extension:
+            temp = Path(temp_path)
+            temp.extension = extension
+            temp_path = str(temp)
         
         return temp_path
 
@@ -1241,6 +1243,19 @@ class Image(File):
                 ##     print "error generating thumbs for: %s" % self.path.name
                 ##     #pass
 
+    def reset_stats(self):
+        """
+        some actions (like image rotate) may update the file's modified times
+        but we might want to keep the original time
+
+        this should redefine File.reset_stats for images only
+        """
+        #this resets them to what they were when originally initialized
+        #os.utime(str(self.path), (self.atime, self.mtime))
+
+        #might be better to get the actual time from the image meta data
+        os.system("jhead -dt %s" % (self.path))
+
     def rotate_pil(self, degrees=90):
         """
         rotate image by number of degrees (clockwise!!)
@@ -1274,6 +1289,8 @@ class Image(File):
         but if you need to tune individually, better to call jpegtrans here
 
         jhead -cmd "jpegtran -progressive -rotate 90 &i > &o" IMG_4965.JPG
+
+        http://www.sentex.net/~mwandel/jhead/usage.html
         """
         os.system("jhead -cmd \"jpegtran -progressive -rotate %s &i > &o\" %s" % (degrees, self.path))
         self.make_thumbs()
