@@ -711,6 +711,7 @@ class Journal(object):
             elif order == "chronological" or order == 'oldest to newest':
                 if self.debug: print "oldest to newest"
                 entry_times.sort()
+                if self.debug: print entry_times
             else:
                 raise ValueError, "Unknown sort option supplied: %s" % order
 

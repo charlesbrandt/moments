@@ -1243,18 +1243,18 @@ class Image(File):
                 ##     print "error generating thumbs for: %s" % self.path.name
                 ##     #pass
 
-    def reset_stats(self):
-        """
-        some actions (like image rotate) may update the file's modified times
-        but we might want to keep the original time
+    ## def reset_stats(self):
+    ##     """
+    ##     some actions (like image rotate) may update the file's modified times
+    ##     but we might want to keep the original time
 
-        this should redefine File.reset_stats for images only
-        """
-        #this resets them to what they were when originally initialized
-        #os.utime(str(self.path), (self.atime, self.mtime))
+    ##     this should redefine File.reset_stats for images only
+    ##     """
+    ##     #this resets them to what they were when originally initialized
+    ##     #os.utime(str(self.path), (self.atime, self.mtime))
 
-        #might be better to get the actual time from the image meta data
-        os.system("jhead -dt %s" % (self.path))
+    ##     #might be better to get the actual time from the image meta data
+    ##     os.system("jhead -dt %s" % (self.path))
 
     def rotate_pil(self, degrees=90):
         """
@@ -1806,6 +1806,8 @@ class Directory(File):
             #print "Finished rotating: %s, %s" % (i.name, current)
             if current: print current
             result += current
+            #make sure timestamps stay the same
+            i.reset_stats()
 
         #similar issue with thumbnails... not updated
         #for these we only want to regenerate those that changed for speed
