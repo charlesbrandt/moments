@@ -689,6 +689,10 @@ class Timestamp(object):
         #print "Start Datetime: %s" % timerange.start.datetime
         #print "End Datetime: %s" % timerange.end.datetime
 
+        #print type(self.datetime)
+        #print type(self.dt)
+        #print type(timerange.start.datetime)
+
         if ( (self.datetime > timerange.start.datetime) and
              (self.datetime < timerange.end.datetime) ):
             return True

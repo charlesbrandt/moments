@@ -10,7 +10,13 @@
 ; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
 (setq load-path (cons "~/.emacs.d/" load-path))
 
-(tool-bar-mode)
+(tool-bar-mode -1) 
+
+(setq mac-option-key-is-meta nil) 
+(setq mac-command-key-is-meta t) 
+(setq mac-command-modifier 'meta) 
+(setq mac-option-modifier nil) 
+
 
 ;; Prevent accidentally killing emacs.
 (global-set-key [(control x) (control c)]
