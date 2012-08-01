@@ -531,17 +531,17 @@ class Timestamp(object):
         if len(text_time) == 19:
             self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M:%S")[0:6]))
             self.accuracy = 'second'
-        elif len(text_time) == 13:
-            self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H%M")[0:6]))
+        elif len(text_time) == 16:
+            self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H:%M")[0:6]))
             self.accuracy = 'minute'
-        elif len(text_time) == 11:
-            self.dt = datetime(*(strptime(text_time, "%Y%m%dT%H")[0:6]))
+        elif len(text_time) == 13:
+            self.dt = datetime(*(strptime(text_time, "%Y-%m-%dT%H")[0:6]))
             self.accuracy = 'hour'
-        elif len(text_time) == 8:
-            self.dt = datetime(*(strptime(text_time, "%Y%m%d")[0:6]))
+        elif len(text_time) == 10:
+            self.dt = datetime(*(strptime(text_time, "%Y-%m-%d")[0:6]))
             self.accuracy = 'day'
-        elif len(text_time) == 6:
-            self.dt = datetime(*(strptime(text_time, "%Y%m")[0:6]))
+        elif len(text_time) == 7:
+            self.dt = datetime(*(strptime(text_time, "%Y-%m")[0:6]))
             self.accuracy = 'month'
         elif len(text_time) == 4:
             self.dt = datetime(*(strptime(text_time, "%Y")[0:6]))
