@@ -1190,8 +1190,12 @@ class Image(File):
             t = int(config['thumb.t'])
             u = int(config['thumb.u'])
         else:
-            l = 1280
-            m = 800
+            #this is still big (maybe too big?)
+            #but might shrink file size some?
+            l = 2880
+            m = 1280
+            #doesn't seem like medium is ever used at this size
+            #m = 800
             s = 200
             t = 100
             u = 25
@@ -1255,6 +1259,12 @@ class Image(File):
 
     ##     #might be better to get the actual time from the image meta data
     ##     os.system("jhead -dt %s" % (self.path))
+
+    def datetime_metadata(self):
+        #resets the timestamp of the file to what was stored
+        meta = os.system("jhead -ft %s" % (self.path))
+        print "TIMESTAMP FROM EXIF: %s" % meta
+        return meta
 
     def rotate_pil(self, degrees=90):
         """
@@ -1430,13 +1440,33 @@ class Directory(File):
                     
     def sort_by_date(self):
         dates = []
-        for f in self.files:
-            dates.append( (f.load().date(), f) )
+
+        #just in case something is looking
+        #at 1 of the 3 main groups for a directory
+        #(contents, files, directories)
+        #instead of just files (more common)
+        #we'll update all 3
+
+        for f in self.contents:
+            date = f.load().datetime()
+            dates.append( (date, f) )
         dates.sort()
+        self.contents = []
         self.files = []
+        self.directories = []
+        
+        #print "AFTER SORT: "
         for d in dates:
-            #print d[0]
-            self.files.append(d[1])
+            #print "%s, %s" % (d[0], d[1])
+            item_path = d[1]
+            self.contents.append(item_path)
+
+            if (os.path.isfile(str(item_path))):
+                self.files.append(item_path)
+
+            elif (os.path.isdir(str(item_path))):
+                self.directories.append(item_path)
+
 
     def sort_by_path(self, filetype=None):
         if filetype is not None:
@@ -1474,31 +1504,6 @@ class Directory(File):
         for s in strings:
             paths.append(Path(s, relative_prefix=self.path.relative_prefix))
         return paths                
-
-    #*2010.12.21 09:15:28 
-    # these are not backed up in OldDirectory, hence comment
-    # functionality moved to self.sort_helper
-    ## #formerly nodes_to_paths and paths_to_nodes
-    ## def paths_to_strings(self, nodes):
-    ##     """
-    ##     take a list of nodes and
-    ##     return a list of only the local paths to those nodes
-    ##     """
-    ##     new_list = []
-    ##     for n in nodes:
-    ##         new_list.append(str(n.path))
-    ##     return new_list
-
-    ## def paths_to_nodes(self, paths):
-    ##     """
-    ##     take a list of local paths
-    ##     return a list of nodes for each path
-    ##     """
-    ##     new_list = []
-    ##     for p in paths:
-    ##         node = Path(p).load()
-    ##         new_list.append(node)
-    ##     return new_list
 
     def check_size(self, recurse=False):
         """
@@ -1630,7 +1635,11 @@ class Directory(File):
             for i in self.images:
                 image = i.load()
                 #e = Moment()
+
+                #this works, but if the file timestamp has been modified
+                #it won't be set to when the picture was taken:
                 created = Timestamp(image.datetime())
+
                 tags = [ 'image' ]
                 #*2010.12.28 16:51:12 
                 #image.path is likely to change over time
@@ -1650,42 +1659,6 @@ class Directory(File):
             print "Journal: %s already exists" % (source)
 
         return j
-
-
-    # *2011.09.01 15:58:18
-    # I think the only place this was in use was for path.log_action
-    # but in that case we should specify the destination log there
-    #
-    # also used in default_image
-    
-    ## def load_journal(self, journal="action.txt"):
-    ##     """
-    ##     node should not need a function for loading a journal
-    ##     in that case just use journal's load_journal function directly for that
-
-    ##     but in the case of a directory, can be nice to have more direct
-    ##     access to the directory's journal.
-    ##     """
-    ##     source = os.path.join(str(self.path), journal)
-    ##     if os.path.exists(source):
-    ##         j = Journal()
-    ##         j.load(source)
-    ##         return j
-    ##     else:
-    ##         #otherwise just fall back to the standard load_journal
-    ##         #j = load_journal(self.path)
-    ##         #return j
-            
-    ##         #if load_journal behavior is wanted, just call it directly
-    ##         #this is for looking for the default action logs of a directory
-    ##         return None
-
-    ## def fix_journal(self, journal="action.txt"):
-    ##     """
-    ##     *2010.12.28 16:59:39
-    ##     currently full paths are used... these do not always stay consistent.
-    ##     """
-    ##     pass
 
     #rename to generate_thumbnails?        
     def make_thumbs(self):
