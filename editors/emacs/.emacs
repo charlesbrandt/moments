@@ -17,6 +17,9 @@
 (setq mac-command-modifier 'meta) 
 (setq mac-option-modifier nil) 
 
+;; newer versions of emacs are opening new frames for multiple files
+;; this suppresses that behavior
+(setq ns-pop-up-frames nil)
 
 ;; Prevent accidentally killing emacs.
 (global-set-key [(control x) (control c)]
@@ -37,18 +40,15 @@
 ;http://www.emacswiki.org/cgi-bin/wiki/Icicles
 ;need to investigate icicles
 
-(custom-set-variables
-  ;; custom-set-variables was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(global-font-lock-mode t)
- '(inhibit-startup-screen t))
-
 (load-file "~/.emacs.d/theme.el")
 
 ;keeping this around to undo the bad settings done elsewhere
 (my-color-theme-light)
+
+;; this works, but will probably be global for all instances
+;; unless frame-setup overrides
+(set-frame-height (selected-frame) 43)
+(set-frame-width (selected-frame) 97)
 
 ;(name height width font)
 ;where height and width are for the frame
@@ -56,7 +56,7 @@
  '(("blank" 29 98 '() ) ;; example
    ("drishti" 34 125 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 97 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; my netbook
    ("context" 30 98 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; my laptop
-
+   ("breathe" 43 97 '(:height 43 :width 97) )
    )
 )
 
@@ -77,14 +77,13 @@
 ;(color-theme-midnight)
 ;(color-theme-late-night)
 
+
+
 ;http://www.delorie.com/gnu/docs/emacs/emacs_465.html
 ;persistent buffers:
 ;The first time you save the state of the Emacs session, you must do it manually, with the command M-x desktop-save
 ;(desktop-load-default)
 ;(desktop-read)
-
-; (setq mac-option-modifier 'meta)
-; (setq mac-pass-option-to-system nil)
 
 ;uncomment the following on windows:
 ;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
@@ -92,4 +91,27 @@
 ;*2012.02.05 14:25:26 
 ;looking for a way to switch to only one window (in the emacs sense) open
 ;(one editing panel)
-(delete-other-windows)
+; this is what ctl-x 1 does
+; but it must happen too early in the sequence (before other files are loaded)
+; (delete-other-windows)
+
+; this works:
+(add-hook 'window-setup-hook 'delete-other-windows)
+; via: 
+; http://stackoverflow.com/questions/1144729/how-do-i-prevent-emacs-from-horizontally-splitting-the-screen-when-opening-multi
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(global-font-lock-mode t)
+ '(inhibit-startup-screen t)
+ '(tool-bar-mode nil))
+
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
