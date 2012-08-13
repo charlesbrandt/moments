@@ -1034,8 +1034,12 @@ class File(object):
 try:
     import Image as PILImage
 except:
-    print "WARNING: Python Image Library not intalled."
-    print "Image manipulation will not work"
+    try:
+        #also check for Pillow version of PIL:
+        import PIL as PILImage
+    except:
+        print "WARNING: Python Image Library not intalled."
+        print "Image manipulation will not work"
 
 class Image(File):
     """
