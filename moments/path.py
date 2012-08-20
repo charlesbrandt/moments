@@ -141,29 +141,29 @@ def extension(name):
 #from paths import *
 #unless defined elsewhere, 
 #will assume all paths passed in to Node objects are relative to this dir:
-relative_prefix = ''
-local_path = u'./'
-log_path = u'./'
-sort_config = 'alpha'
+## relative_prefix = ''
+## local_path = u'./'
+## log_path = u'./'
+## sort_config = 'alpha'
 
-config_log_in_outgoing = False
-config_log_in_media = False
-try:
-    #if not using in pylons, can define manually above
-    from pylons import config
-    if config.has_key('local_path'):
-        local_path = unicode(config['local_path'])
-    if config.has_key('log_local_path'):
-        log_path = unicode(config['log_local_path'])
-        config_log_in_outgoing = True
-    if config.has_key('log_in_media') and config['log_in_media'] == "True":
-        config_log_in_media = True
-    if config.has_key('sort_order'):
-        sort_config = config['sort_order']
-    if config.has_key('relative_prefix'):
-        relative_prefix = config['relative_prefix']
-except:
-    config = {}
+## config_log_in_outgoing = False
+## config_log_in_media = False
+## try:
+##     #if not using in pylons, can define manually above
+##     from pylons import config
+##     if config.has_key('local_path'):
+##         local_path = unicode(config['local_path'])
+##     if config.has_key('log_local_path'):
+##         log_path = unicode(config['log_local_path'])
+##         config_log_in_outgoing = True
+##     if config.has_key('log_in_media') and config['log_in_media'] == "True":
+##         config_log_in_media = True
+##     if config.has_key('sort_order'):
+##         sort_config = config['sort_order']
+##     if config.has_key('relative_prefix'):
+##         relative_prefix = config['relative_prefix']
+## except:
+##     config = {}
 
 
 
@@ -251,7 +251,7 @@ class Path(object):
             self.parse_path(path)
         elif not (re.match('^/', self.path)):
             path = os.path.join('./', self.path)
-            print "Assuming relative, adding './' prefix: %s" % path
+            #print "Assuming relative, adding './' prefix: %s" % path
             path = os.path.abspath(self.path)
             self.parse_path(path)
         #otherwise must already be expanded... do nothing
@@ -1036,7 +1036,7 @@ try:
 except:
     try:
         #also check for Pillow version of PIL:
-        import PIL as PILImage
+        import PIL.Image as PILImage
     except:
         print "WARNING: Python Image Library not intalled."
         print "Image manipulation will not work"
@@ -1057,7 +1057,8 @@ class Image(File):
         self.thumb_dir_path = os.path.join(str(self.path.parent()),
                                            self.thumb_dir_name)
         
-        self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
+        #self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
+        self.sizes = { 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l', 'xlarge':'_xl'}
 
         #parts = self.path.name.split('.')
         #self.last_four = parts[-2][-4:]
@@ -1070,46 +1071,38 @@ class Image(File):
         image = PILImage.open(str(self.path))
         return image.size
 
-    def size_name(self, size):
-        """
-        take a size and create the corresponding thumbnail filename
-        """
-        #parts = self.name.split('.')
-        #new_name = '.'.join(parts[:-1]) + self.sizes[size] + '.' + parts[-1]
-        #new_name = self.path.name + self.sizes[size] + '.' +self.path.extension
-        new_name = self.path.name + self.sizes[size] + self.path.extension
-        return new_name                  
+    ## def size_name(self, size):
+    ##     """
+    ##     take a size and create the corresponding thumbnail filename
+
+    ##     *2012.08.18 11:24:30
+    ##     deprecated...
+    ##     seems like it's only used in self.size_path method
+    ##     simple enough to just include it there
+    ##     """
+    ##     #parts = self.name.split('.')
+    ##     #new_name = '.'.join(parts[:-1]) + self.sizes[size] + '.' + parts[-1]
+    ##     #new_name = self.path.name + self.sizes[size] + '.' +self.path.extension
+    ##     new_name = self.path.name + self.sizes[size] + self.path.extension
+    ##     return new_name                  
         
-    def size_path(self, size):
-        """
-        take a size and create the corresponding thumbnail (local) path
 
-        """
-        if size == 'tiny_o':
-            #can keep the different tiny versions together:
-            size_dir = 'tiny'
-        else:
-            size_dir = size
-        thumb_path = os.path.join(self.thumb_dir_path, size_dir, self.size_name(size))
-        return Path(thumb_path, relative_prefix=self.path.relative_prefix)
-
-
-    def get_size(self, size, relative=False):
-        """
-        when size_path() just isn't enough...
+    ## def get_size(self, size, relative=False):
+    ##     """
+    ##     when size_path() just isn't enough...
         
-        accepts: tiny, small, medium, large
-        """
-        thumb_path = self.size_path(size)
-        #if not os.path.isfile(thumb_path):
-        if not thumb_path.exists():
-            self.make_thumbs()
+    ##     accepts: tiny, small, medium, large
+    ##     """
+    ##     thumb_path = self.size_path(size)
+    ##     #if not os.path.isfile(thumb_path):
+    ##     if not thumb_path.exists():
+    ##         self.make_thumbs()
 
-        if relative:
-            #print self.path.relative_prefix
-            #thmb = Path(thumb_path, relative_prefix=self.path.relative_prefix)
-            thumb_path = thumb_path.to_relative()
-        return thumb_path
+    ##     if relative:
+    ##         #print self.path.relative_prefix
+    ##         #thmb = Path(thumb_path, relative_prefix=self.path.relative_prefix)
+    ##         thumb_path = thumb_path.to_relative()
+    ##     return thumb_path
 
     def move(self, destination, relative=False):
         """
@@ -1146,6 +1139,32 @@ class Image(File):
         """
         pass
             
+    def size_path(self, size, square=True):
+        """
+        take a size and create the corresponding thumbnail (local) path
+
+        *2012.08.18 11:28:13 
+        also, decide if a squared version of the image is requested
+
+        seems like this is something that should be done here
+        (and maybe both should be available)
+
+        """
+        if size == 'tiny_o':
+            #can keep the different tiny versions together:
+            size_dir = 'tiny'
+        else:
+            size_dir = size
+
+        if square:
+            size_name = self.path.name + self.sizes[size] + '_sq' + self.path.extension
+        else:
+            size_name = self.path.name + self.sizes[size] + self.path.extension
+
+        #thumb_path = os.path.join(self.thumb_dir_path, size_dir, self.size_name(size))
+        thumb_path = os.path.join(self.thumb_dir_path, size_dir, size_name)
+        return Path(thumb_path, relative_prefix=self.path.relative_prefix)
+
     def make_thumb_dirs(self, base=None):
         """
         if they don't already exist, create them
@@ -1187,66 +1206,95 @@ class Image(File):
         """
         regenerate all thumbnails from original
         """
-        if config.has_key('thumb.l'):
-            l = int(config['thumb.l'])
-            m = int(config['thumb.m'])
-            s = int(config['thumb.s'])
-            t = int(config['thumb.t'])
-            u = int(config['thumb.u'])
-        else:
-            #this is still big (maybe too big?)
-            #but might shrink file size some?
-            l = 2880
-            m = 1280
-            #doesn't seem like medium is ever used at this size
-            #m = 800
-            s = 200
-            t = 100
-            u = 25
+        ## if config.has_key('thumb.l'):
+        ##     l = int(config['thumb.l'])
+        ##     m = int(config['thumb.m'])
+        ##     s = int(config['thumb.s'])
+        ##     t = int(config['thumb.t'])
+        ##     u = int(config['thumb.u'])
+        ## else:
+
+        #this is still big (maybe too big?)
+        #but might shrink file size some?
+        xl = 2880
+        l = 1280
+        m = 800
+        s = 400
+        t = 200
+        #u = 25
+
+        #*2012.08.18 12:23:19 
+        #when rendering images for the web,
+        #now it's a good idea to set dimensions to half the size
             
         name = self.path.name
 
         self.make_thumb_dirs()
         
-        #remove exisiting thumbs before regen?
-        #or does save overwrite anyway?
-        #for s in self.sizes.keys():
-        #    if os.path.isdir(self.size_path(s)):
-        #        os.remove(self.size_path(s))
-
         try:
             image = PILImage.open(str(self.path))
         except:
             print "Error opening image: %s" % str(self.path)
         else:
+            #keep a copy of original for squaring
+            square = image.copy()
+            square = self._square_image(square)
+
+            #made it this far... start resizing
             try:
-                image.thumbnail((l,l), PILImage.ANTIALIAS)
+                image.thumbnail((xl,xl), PILImage.ANTIALIAS)
             except:
                 print "Error sizing image: %s" % str(self.path)
                 exit()
             else:
+                large = image.copy()
+                large.thumbnail((l,l), PILImage.ANTIALIAS)
 
-                medium = image.copy()
+                medium = large.copy()
                 medium.thumbnail((m,m), PILImage.ANTIALIAS)
 
                 small = medium.copy()
-                small = self._square_image(small)
                 small.thumbnail((s,s), PILImage.ANTIALIAS)
 
                 tiny = small.copy()
                 tiny.thumbnail((t,t), PILImage.ANTIALIAS)
 
+                #make squared versions
+                #xl_sq = square.copy()
+                #xl_sq.thumbnail((xl,xl), PILImage.ANTIALIAS)
+
+                #l_sq = xl_sq.copy()
+                l_sq = square.copy()
+                l_sq.thumbnail((l,l), PILImage.ANTIALIAS)
+
+                m_sq = l_sq.copy()
+                m_sq.thumbnail((m,m), PILImage.ANTIALIAS)
+
+                s_sq = m_sq.copy()
+                s_sq.thumbnail((s,s), PILImage.ANTIALIAS)
+
+                t_sq = s_sq.copy()
+                t_sq.thumbnail((t,t), PILImage.ANTIALIAS)
+
                 #o for original dimensions
-                tiny_o = image.copy()
+                #tiny_o = image.copy()
                 #we want to fix the width at t, not concerned about height
-                tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
+                #tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
 
                 ## try:
-                image.save(str(self.size_path('large')), "JPEG")
-                medium.save(str(self.size_path('medium')), "JPEG")
-                small.save(str(self.size_path('small')), "JPEG")
-                tiny.save(str(self.size_path('tiny')), "JPEG")
-                tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
+                image.save(str(self.size_path('xlarge', square=False)), "JPEG")
+                large.save(str(self.size_path('large', square=False)), "JPEG")
+                medium.save(str(self.size_path('medium', square=False)), "JPEG")
+                small.save(str(self.size_path('small', square=False)), "JPEG")
+                tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
+
+                l_sq.save(str(self.size_path('large')), "JPEG")
+                m_sq.save(str(self.size_path('medium')), "JPEG")
+                s_sq.save(str(self.size_path('small')), "JPEG")
+                t_sq.save(str(self.size_path('tiny')), "JPEG")
+
+                
+                #tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
                 ## except:
                 ##     print "error generating thumbs for: %s" % self.path.name
                 ##     #pass
@@ -1262,13 +1310,16 @@ class Image(File):
     ##     #os.utime(str(self.path), (self.atime, self.mtime))
 
     ##     #might be better to get the actual time from the image meta data
-    ##     os.system("jhead -dt %s" % (self.path))
+    ##     os.system("jhead -ft %s" % (self.path))
 
-    def datetime_metadata(self):
-        #resets the timestamp of the file to what was stored
+    def datetime_exif(self):
+        #resets the timestamp of the file to what was stored in exif header
+        #this will print the filepath to the console
         meta = os.system("jhead -ft %s" % (self.path))
-        print "TIMESTAMP FROM EXIF: %s" % meta
-        return meta
+        #print "TIMESTAMP FROM EXIF: %s" % meta
+        #not sure that meta will have a value here
+        #just 0, no error
+        #return meta
 
     def rotate_pil(self, degrees=90):
         """
@@ -1325,12 +1376,21 @@ class Directory(File):
 
         #print "initializing directory: %s" % self.path
 
-        #how many items we have total
-        self.count = 0
 
         #self.ignores = []
         self.ignores = [ '.hg', '.hgignore', '.svn', 'index.xml', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
 
+        self.reset()
+        
+        self.scan_directory()
+
+    def reset(self):
+        """
+        if we've already scanned something once, and a subsequent scan is called,
+        we'll want to reset ourself so duplicates are not added (common mistake)
+        this is the same thing that happens during initialization,
+        so breaking it out here
+        """
         #string only version
         #(sometimes it is easier to use just strings... like diff directories)
         self.listdir = []
@@ -1353,14 +1413,20 @@ class Directory(File):
         self.last_scan = None
         self.filetypes_scanned = False
 
-        self.scan_directory()
+        #how many items we have total
+        self.count = 0
+
         
     def scan_directory(self, recurse=False):
         """
         only load paths
+
+        this will clear out any previous scans to avoid duplication
+        reset includes filetypes and sorts
         """
-        self.count = 0
-        
+        if self.last_scan:
+            self.reset()
+            
         self.listdir = os.listdir(unicode(self.path))
         for item in self.listdir:
             if item not in self.ignores:

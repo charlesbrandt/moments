@@ -33,6 +33,10 @@ Make sure you have the following items available on your computer:
 Python: (currently using versions 2.5 and up)
 http://www.python.org
 
+Image manipulations are an optional part of the path.py module and require:
+Python Image Library (or Pillow)
+jhead command line utility
+
 Higher level notes for installing and configuring a computer system that runs python are beyond the scope of this document.  For details and recommendations on this process, please see:
 charlesbrandt.com
 
