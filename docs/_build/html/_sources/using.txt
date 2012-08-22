@@ -3,10 +3,10 @@ Usage
 
 This assumes you already have a text file with some moment entries in it.  See '`Make Moments <processes.html#make-moments>`_' if not.
 
-I'll base these examples off of a demonstration context, available with:
+I'll base these examples off of the sample context, available in the moments source:
 ::
 
-  hg clone https://bitbucket.org/context/context
+  moments/sample/
 
 Most interactions with the library involve loading a collection of moments from a log file into a Journal object:
 ::
