@@ -1,0 +1,1264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>moments.journal &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for moments.journal</h1><div class="highlight"><pre>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="c"># moments</span>
+<span class="c"># Copyright (c) 2009-2011, Charles Brandt</span>
+<span class="c"># </span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c"># in the Software without restriction, including without limitation the rights</span>
+<span class="c"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c"># furnished to do so, subject to the following conditions:</span>
+<span class="c"># </span>
+<span class="c"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c"># all copies or substantial portions of the Software.</span>
+<span class="c"># </span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c"># THE SOFTWARE.</span>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Moments Journal object and functions related to using journals</span>
+
+<span class="sd">A journal holds a collection of Moments</span>
+<span class="sd">(and Entries, for moments with no timestamps)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">codecs</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">urllib</span><span class="o">,</span> <span class="nn">urllib2</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">simplejson</span> <span class="kn">as</span> <span class="nn">json</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">json</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;No json module found&quot;</span>
+        <span class="nb">exit</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">log</span> <span class="kn">import</span> <span class="n">Log</span>
+<span class="kn">from</span> <span class="nn">moment</span> <span class="kn">import</span> <span class="n">Moment</span>
+<span class="kn">from</span> <span class="nn">timestamp</span> <span class="kn">import</span> <span class="n">Timestamp</span><span class="p">,</span> <span class="n">Timerange</span>
+<span class="kn">from</span> <span class="nn">association</span> <span class="kn">import</span> <span class="n">Association</span>
+
+<div class="viewcode-block" id="log_action"><a class="viewcode-back" href="../../api/journal.html#moments.journal.log_action">[docs]</a><span class="k">def</span> <span class="nf">log_action</span><span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[]):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    this is a common need...</span>
+<span class="sd">    open a journal</span>
+<span class="sd">    create a new entry (now)</span>
+<span class="sd">    and save the journal/log</span>
+
+<span class="sd">    this returns the entry created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">Journal</span><span class="p">()</span>
+    <span class="n">j</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+    <span class="n">entry</span> <span class="o">=</span> <span class="n">j</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">tags</span><span class="p">)</span>
+    <span class="n">j</span><span class="o">.</span><span class="n">to_file</span><span class="p">()</span>
+
+    <span class="c">#print entry.render()</span>
+    <span class="k">return</span> <span class="n">entry</span>
+</div>
+<div class="viewcode-block" id="Journal"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal">[docs]</a><span class="k">class</span> <span class="nc">Journal</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main Moments module for collecting Moment entries in one place</span>
+
+<span class="sd">    *2011.06.26 13:50:20</span>
+<span class="sd">    not sure that it even makes sense to base this on a standard list</span>
+<span class="sd">    should use a list internally</span>
+<span class="sd">    but we really don&#39;t use any of the methods for a list to interact</span>
+<span class="sd">    with a Journal object</span>
+
+<span class="sd">    so we could have</span>
+<span class="sd">    self._entries</span>
+<span class="sd">    self._tags</span>
+<span class="sd">    self._dates</span>
+
+<span class="sd">    to store everything internally</span>
+<span class="sd">    and then use custom methods for interacting with the Journal</span>
+<span class="sd">    these methods should be the same</span>
+<span class="sd">    whether the Journal is a local, native, instance,</span>
+<span class="sd">    or if it is remote.</span>
+
+<span class="sd">    i.e.</span>
+<span class="sd">    using journal object attributes directly in code is discouraged</span>
+<span class="sd">    to ensure that local and remote journal objects work identically</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="p">[],</span> <span class="n">title</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c">#keys are compact date string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+
+        <span class="c">#keys are tag name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+
+        <span class="c"># renamed self.name to self.path</span>
+        <span class="c"># then use name as a general name for the journal, if displayed</span>
+        <span class="c"># *2009.11.07 10:28:44 </span>
+        <span class="c"># using title instead of name, then if anything else is still</span>
+        <span class="c"># using name the old way, it will flag a more recognizable error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">debug</span>
+
+        <span class="c">#*2011.06.26 13:45:20</span>
+        <span class="c">#really no such thing as a default path (self.path)</span>
+        <span class="c"># used for default file path:</span>
+        <span class="c"># convert to string just incase a Path object is sent</span>
+        <span class="c">#self.path = str(path)</span>
+
+        <span class="c">#if we want to store it to a path, then should specify that</span>
+        <span class="c">#in a to_file / save call</span>
+        <span class="c">#otherwise should keep track of all paths loaded</span>
+        <span class="c">#so that we can reload them later.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c">#or ...</span>
+        <span class="c">#could index based on original source too</span>
+        <span class="c">#this would allow them to be re-saved to their original source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sources</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_entries</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+
+
+
+
+
+    <span class="c">#*2011.06.26 13:53:03</span>
+    <span class="c">#should there be a to_file</span>
+    <span class="c">#and also a to_original_files (or something like that) ?</span>
+    <span class="c">#could loop through all of self.loaded and store changes to those</span>
+    <span class="c">#entries affected in those sources</span>
+
+    <span class="c">#aka to_file</span>
+<div class="viewcode-block" id="Journal.save"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;original&#39;</span><span class="p">,</span> <span class="n">include_path</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; from entry import Entry</span>
+<span class="sd">        &gt;&gt;&gt; e = Entry(&quot;test entry&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; j.add_entry(e)</span>
+<span class="sd">        &gt;&gt;&gt; j.to_file(&quot;sample_log2.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; k = Journal()</span>
+<span class="sd">        &gt;&gt;&gt; k.load(&quot;sample_log2.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; len(k.entries)</span>
+<span class="sd">        2</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&quot;path&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="n">Log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;No name to save Journal to&quot;</span>
+            <span class="nb">exit</span><span class="p">()</span>
+
+        <span class="c">#l.from_journal(self, holder, entry)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">from_entries</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">),</span> <span class="n">include_path</span><span class="o">=</span><span class="n">include_path</span><span class="p">)</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">to_file</span><span class="p">()</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+</div>
+<div class="viewcode-block" id="Journal.save_originals"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.save_originals">[docs]</a>    <span class="k">def</span> <span class="nf">save_originals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        loop through all self.sources or self.loaded</span>
+<span class="sd">        and save the corresponding entries back</span>
+<span class="sd">        (only if there is an actual change???)</span>
+
+<span class="sd">        might want to return any entries that don&#39;t have a destination</span>
+<span class="sd">        or would it be better to return an error?</span>
+<span class="sd">        or not save if entries don&#39;t have a destination</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="Journal.save_instance"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.save_instance">[docs]</a>    <span class="k">def</span> <span class="nf">save_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        save the currently loaded sources to an instance file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    </div>
+<div class="viewcode-block" id="Journal.load_instance"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.load_instance">[docs]</a>    <span class="k">def</span> <span class="nf">load_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance_name</span><span class="p">,</span> <span class="n">instance_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        load the first entry tagged instance_name from the instance file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+    <span class="c">#aka open, etc</span>
+    <span class="c">#formerly: from_file, add_log_to_journal, add_file</span></div>
+<div class="viewcode-block" id="Journal.load"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_name</span><span class="p">,</span> <span class="n">add_tags</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        adds a log file to the journal object currently in memory</span>
+
+<span class="sd">        this can be called multiple times with different filenames</span>
+<span class="sd">        to merge those files/entries into the journal</span>
+
+<span class="sd">        &gt;&gt;&gt; from journal import *</span>
+<span class="sd">        &gt;&gt;&gt; j = Journal()</span>
+<span class="sd">        &gt;&gt;&gt; j.load(&quot;sample_log.txt&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; len(j.entries)</span>
+<span class="sd">        1</span>
+
+<span class="sd">        return True if the file was able to be loaded</span>
+<span class="sd">        False if it was not a journal/Log file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">found_entries</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_name</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">log_name</span><span class="p">))</span>
+        <span class="c">#TODO:</span>
+        <span class="c">#should also handle adding entry to self._sources??</span>
+        <span class="c">#or will that happen in update_entries</span>
+
+        <span class="c">#would it be better for sources and loaded to be associated</span>
+        <span class="c">#on an update?</span>
+        <span class="c">#that way if entries are added outside of a load</span>
+        <span class="c">#the sources would still get updated.</span>
+
+            
+        <span class="n">l</span> <span class="o">=</span> <span class="n">Log</span><span class="p">()</span>
+        <span class="n">l</span><span class="o">.</span><span class="n">from_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">log_name</span><span class="p">))</span>
+
+        <span class="n">entries</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">to_entries</span><span class="p">(</span><span class="n">add_tags</span><span class="p">)</span>
+        <span class="c">#print &quot;%s entries loaded from file&quot; % len(entries)</span>
+        <span class="c">#print &quot;%s entries in self before merging in entries&quot; % len(self)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_many</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
+        <span class="c">#print &quot;%s entries in self after merging in entries&quot; % len(self)</span>
+
+        <span class="c">#if l.has_entries:</span>
+        <span class="n">found_entries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span>
+        
+        <span class="n">l</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">found_entries</span>
+
+</div>
+<div class="viewcode-block" id="Journal.reload"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.reload">[docs]</a>    <span class="k">def</span> <span class="nf">reload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        create a new instance of a journal</span>
+<span class="sd">        based on the paths we have previously loaded</span>
+<span class="sd">        (self.loaded)</span>
+
+<span class="sd">        load everything that was previously loaded</span>
+<span class="sd">        then swap out the contents old journal for the new one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#use this to load new _entries, etc</span>
+        <span class="n">temp_j</span> <span class="o">=</span> <span class="n">Journal</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span><span class="p">:</span>
+            <span class="n">new_j</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+            <span class="c">#temp_j = load_journal(item)</span>
+            <span class="c">#new_j.from_entries(temp_j.entries())</span>
+            <span class="c">#del temp_j</span>
+        <span class="n">old_entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span>
+        <span class="n">old_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span>
+        <span class="n">old_dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span>
+        <span class="n">old_sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sources</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span> <span class="o">=</span> <span class="n">new_j</span><span class="o">.</span><span class="n">_entries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">new_j</span><span class="o">.</span><span class="n">_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span> <span class="o">=</span> <span class="n">new_j</span><span class="o">.</span><span class="n">_dates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sources</span> <span class="o">=</span> <span class="n">new_j</span><span class="o">.</span><span class="n">_sources</span>
+
+        <span class="k">del</span> <span class="n">old_entries</span>
+        <span class="k">del</span> <span class="n">old_tags</span>
+        <span class="k">del</span> <span class="n">old_dates</span>
+        <span class="k">del</span> <span class="n">old_sources</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        this is the base case for adding an entry</span>
+<span class="sd">        blindly adds the entry object to the journal&#39;s list of entries</span>
+<span class="sd">        no checks are performed</span>
+
+<span class="sd">        will add multiple copies of the same entry to the journal</span>
+<span class="sd">        use update to avoid duplicates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">position</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="c">#cannot assume insert here...</span>
+            <span class="c">#insert(0, entry) reverses the list order on log read</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">position</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="s">&quot;created&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
+            <span class="n">entry_time</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">entry_time</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="c">#TODO:</span>
+    <span class="c">#integrate source</span>
+<div class="viewcode-block" id="Journal.update"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        checks if an entry already exists in the journal</span>
+<span class="sd">        if other entries in with that time stamp are similar, </span>
+<span class="sd">        see if they can be merged easily (i.e. only tags differ)</span>
+
+<span class="sd">        otherwise just add it as a separate entry</span>
+<span class="sd">        no longer attempting to choose which one to keep here</span>
+<span class="sd">        since journal can hold multiple entries with the same timestamp</span>
+
+<span class="sd">        can merge later as needed using dedicated script for that purpose</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="s">&quot;created&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Entry has no time associated, and no other entry found. added&quot;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#this makes entry_time available in the event the entry already</span>
+            <span class="c">#is in the journal:</span>
+            <span class="c">#print entry.created</span>
+            <span class="n">entry_time</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">entry_time</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;No other entry found with time: </span><span class="si">%s</span><span class="s">. added&quot;</span> <span class="o">%</span> <span class="n">entry_time</span>
+                
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">entry_time</span><span class="p">):</span>
+                    <span class="c">#it must have *something* in that time slot</span>
+                    <span class="c">#check for duplicates</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Other entries found with time: </span><span class="si">%s</span><span class="s">. checking all..&quot;</span> <span class="o">%</span> <span class="n">entry_time</span>
+
+                    <span class="n">options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="p">[</span><span class="n">entry_time</span><span class="p">]</span>
+                    <span class="n">found_match</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">for</span> <span class="n">existing</span> <span class="ow">in</span> <span class="n">options</span><span class="p">:</span>
+
+                        <span class="k">if</span> <span class="n">existing</span><span class="o">.</span><span class="n">is_equal</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">):</span>
+                            <span class="c">#print &quot;DUPE, but tags and data are same... skipping&quot;</span>
+                            <span class="n">found_match</span> <span class="o">=</span> <span class="bp">True</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Equal entry found. Skipping&quot;</span>
+
+                        <span class="c">#only want to merge if we have data</span>
+                        <span class="c">#otherwise blank entries can end up grouped together</span>
+                        <span class="k">elif</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span> <span class="ow">and</span> <span class="p">(</span><span class="n">existing</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                            <span class="c">#tags must differ... those are easy to merge:</span>
+                            <span class="k">print</span> <span class="s">&quot;from: </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">existing</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">existing</span><span class="o">.</span><span class="n">created</span><span class="p">)</span>
+                            <span class="k">print</span> <span class="s">&quot;and: </span><span class="si">%s</span><span class="s">, </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="p">)</span>
+                            <span class="k">print</span> <span class="s">&quot;only TAGS differ&quot;</span>
+                            <span class="k">print</span> <span class="s">&quot;original: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">existing</span><span class="o">.</span><span class="n">tags</span>
+                            <span class="k">print</span> <span class="s">&quot;new: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">entry</span><span class="o">.</span><span class="n">tags</span>
+                            <span class="n">existing</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
+                            <span class="k">print</span> <span class="s">&quot;merged: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">existing</span><span class="o">.</span><span class="n">tags</span>
+                            <span class="n">found_match</span> <span class="o">=</span> <span class="bp">True</span>
+
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c">#this one didn&#39;t match</span>
+                            <span class="c">#but we won&#39;t add the entry until we&#39;ve checked them all</span>
+                            <span class="k">pass</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">found_match</span><span class="p">:</span>
+                        <span class="c">#2009.12.04 16:03:15 </span>
+                        <span class="c">#this information doesn&#39;t help much anymore:</span>
+                        <span class="c">#print &quot;MULTIPLE ENTRIES EXISTS AT: %s&quot; % (entry_time)</span>
+                        <span class="c">#print &quot;but none matched this one.  Adding now&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">position</span><span class="p">)</span>
+
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;No equivalent entries found. adding&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Entry (</span><span class="si">%s</span><span class="s">) already exists in journal&quot;</span> <span class="o">%</span> <span class="n">entry_time</span>
+
+    <span class="c">#aka create, new</span></div>
+<div class="viewcode-block" id="Journal.make"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.make">[docs]</a>    <span class="k">def</span> <span class="nf">make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[],</span> <span class="n">created</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        helper for making a new entry right in a journal object</span>
+<span class="sd">        this way should not need to import moments.entry.Entry elsewhere</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">created</span><span class="p">:</span>
+            <span class="n">created</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">created</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">source</span><span class="p">)</span>
+        <span class="c">#print &quot;Journal.make.position: %s&quot; % position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">entry</span>
+
+    <span class="c">#AKA DELETE</span></div>
+<div class="viewcode-block" id="Journal.remove"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        remove associations from self._dates and self._tags</span>
+<span class="sd">        then remove the entry from the journal.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#text_time = str(entry.created)</span>
+        <span class="c">#text_time = e.created.strftime(time_format)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+        <span class="c">#remove from the list of entries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+    <span class="c">#*2011.07.09 10:32:42 </span>
+    <span class="c">#is this ever used?</span>
+    <span class="c">#seems dangerous to remove everything at a given timestamp</span>
+    <span class="c">#more likely to add as a separate one</span>
+    <span class="c">#or remove explicitly and then add/update/make</span>
+    <span class="c">## def replace(self, entry):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     remove all entries from the journal with the same timestamp as entry</span>
+    <span class="c">##     then add the new entry to the journal</span>
+
+    <span class="c">##     i.e.</span>
+    <span class="c">##     accepts a new entry</span>
+    <span class="c">##     and uses it to find and then remove the original one(s)</span>
+    <span class="c">##     add the new one to the journal</span>
+    <span class="c">##     thereby replacing the original(s)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     entry_time = entry.created.compact()</span>
+
+    <span class="c">##     if self._dates.has_key(entry_time):</span>
+    <span class="c">##         options = self._dates[entry_time]</span>
+    <span class="c">##     else:</span>
+    <span class="c">##         options = []</span>
+    <span class="c">##     for existing in options:</span>
+    <span class="c">##         self.remove(existing)</span>
+
+    <span class="c">##     self._add(entry)</span>
+
+    <span class="c">#aka from_entries</span>
+    <span class="c">#aka add_entries</span>
+    <span class="c">#aka update_entries</span></div>
+<div class="viewcode-block" id="Journal.update_many"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.update_many">[docs]</a>    <span class="k">def</span> <span class="nf">update_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entries</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        loop over a list of entries to add/update each one to the journal</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">)</span>
+
+    <span class="c">#aka remove_entries</span></div>
+<div class="viewcode-block" id="Journal.remove_many"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.remove_many">[docs]</a>    <span class="k">def</span> <span class="nf">remove_many</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entries</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a list of entry objects,</span>
+<span class="sd">        remove each one</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+
+
+    <span class="c">#Following are all different ways to READ</span>
+    <span class="c">#they are also closely related to the hidden properties:</span>
+    <span class="c">#_tags, _dates, _entries</span>
+
+    <span class="c">#*2011.07.05 21:14:47</span>
+    <span class="c">#thinking that it makes sense to have two separate calls</span>
+    <span class="c">#could combine tag and tags (etc)</span>
+    <span class="c">#by returning the plural version (dict) when no tag specified</span>
+    <span class="c">#but the function name is unclear in that case</span>
+    </div>
+<div class="viewcode-block" id="Journal.tag"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.tag">[docs]</a>    <span class="k">def</span> <span class="nf">tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag_key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        lookup tag_key in self._tags</span>
+
+<span class="sd">        should only return a list of entries associated with that tag</span>
+<span class="sd">        not a dict</span>
+<span class="sd">        with the tag name</span>
+<span class="sd">        server can do that</span>
+<span class="sd">        but server needs to be a little different</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#print self._tags.keys()</span>
+        <span class="k">if</span> <span class="n">tag_key</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">tag_key</span><span class="p">):</span>
+            <span class="c">#print self._tags[tag_key]</span>
+            <span class="c">## moments = []</span>
+            <span class="c">## for m in self._tags[tag_key]:</span>
+            <span class="c">##     #instead of rendering a string:</span>
+            <span class="c">##     #moments.append(m.render())</span>
+            <span class="c">##     #supply a dictionary of the moment item</span>
+            <span class="c">##     moments.append(m.as_dict())</span>
+            <span class="c">#return { tag_key:self._tags[tag_key] }</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag_key</span><span class="p">]</span>
+        <span class="c">## elif tag_key:</span>
+        <span class="c">##     #must not have any content associated with this tag</span>
+        <span class="c">##     return { tag_key:[] }</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#could also return self.tags()</span>
+            <span class="c">#return self.tags()</span>
+            <span class="c">#return { &#39;tags&#39;: self._tags.keys() }</span>
+            <span class="c">#return { tag_key:[] }</span>
+            <span class="k">return</span> <span class="p">[]</span>
+</div>
+<div class="viewcode-block" id="Journal.tags"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.tags">[docs]</a>    <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a dictionary with:</span>
+<span class="sd">        all tags as keys, and</span>
+<span class="sd">        number of entries for each tag as values</span>
+
+<span class="sd">        *2011.07.10 10:38:07</span>
+<span class="sd">        also</span>
+<span class="sd">        could use mindstream.entries_tagged</span>
+<span class="sd">        to accept a list of tags</span>
+<span class="sd">        and combine all of those entries into a single list</span>
+<span class="sd">        and return that</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="c">#*2011.11.09 11:42:38</span>
+            <span class="c">#if there is only one tag</span>
+            <span class="c">#should we just call self.tag()???</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span> <span class="n">tags</span> <span class="p">]</span>
+            <span class="n">found_entries</span> <span class="o">=</span> <span class="n">Journal</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+                    <span class="c">#print len(self._tags[t])</span>
+                    <span class="n">found_entries</span><span class="o">.</span><span class="n">update_many</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">t</span><span class="p">])</span>
+
+            <span class="n">found_entries</span> <span class="o">=</span> <span class="n">found_entries</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s">&quot;reverse-chronological&quot;</span><span class="p">)</span>
+            <span class="c">#return found_entries._entries</span>
+            <span class="k">return</span> <span class="n">found_entries</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tdict</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">tdict</span><span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">tdict</span>
+    </div>
+<div class="viewcode-block" id="Journal.date"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.date">[docs]</a>    <span class="k">def</span> <span class="nf">date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date_key</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        lookup date_key in self._dates</span>
+<span class="sd">        date_key should be compact stamp</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">date_key</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">date_key</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
+                <span class="n">ts</span> <span class="o">=</span> <span class="n">date_key</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ts</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">date_key</span><span class="p">)</span>
+
+            <span class="c">#print ts, type(ts)</span>
+            <span class="c">#print ts.accuracy</span>
+            <span class="k">if</span> <span class="n">ts</span><span class="o">.</span><span class="n">accuracy</span> <span class="ow">and</span> <span class="n">ts</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">!=</span> <span class="s">&quot;second&quot;</span><span class="p">:</span>
+                <span class="n">rr</span> <span class="o">=</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+                <span class="c">#get the timerange</span>
+                <span class="n">tr</span> <span class="o">=</span> <span class="n">rr</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+                <span class="c">#print tr</span>
+                <span class="c">#print tr.start.datetime</span>
+                <span class="c">#print tr.end.datetime</span>
+                <span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+
+                <span class="c">#return {ts.compact():entries}</span>
+                <span class="k">return</span> <span class="n">entries</span>
+                
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">ts</span><span class="o">.</span><span class="n">compact</span><span class="p">()):</span>
+                <span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">compact</span><span class="p">()]</span>
+                <span class="c">#print &quot;LEN ENTRIES: %s&quot; % len(entries)</span>
+                <span class="c">#print entries</span>
+                <span class="c">#return { ts.compact():entries }</span>
+                <span class="k">return</span> <span class="n">entries</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c">#return { ts.compact():[] }</span>
+                <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#could also return self.dates()</span>
+            <span class="c">#return self.dates()</span>
+            <span class="c">#return { date_key:[] }</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+</div>
+<div class="viewcode-block" id="Journal.dates"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.dates">[docs]</a>    <span class="k">def</span> <span class="nf">dates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a dictionary with:</span>
+<span class="sd">        all dates as keys, and</span>
+<span class="sd">        number of entries for each date as values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ddict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="c">#print &quot;KEY:&quot;, key</span>
+            
+            <span class="c">#key might be blank here (i.e. no timestamp)</span>
+            <span class="k">if</span> <span class="n">key</span><span class="p">:</span>
+                <span class="n">ts</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">key</span><span class="p">)</span>
+                <span class="c">#print ts</span>
+                <span class="n">ddict</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">compact</span><span class="p">()]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ddict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">ddict</span>
+
+    <span class="c">#aka item???</span></div>
+<div class="viewcode-block" id="Journal.entry"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.entry">[docs]</a>    <span class="k">def</span> <span class="nf">entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return the item at index point in list</span>
+<span class="sd">        is this already defined on a list object? should be consistent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">index</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+</div>
+<div class="viewcode-block" id="Journal.entries"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.entries">[docs]</a>    <span class="k">def</span> <span class="nf">entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a list of entries</span>
+<span class="sd">        making a function call rather than an attribute</span>
+<span class="sd">        to make consistent between local and remote calls</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span>
+    </div>
+<div class="viewcode-block" id="Journal.related"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.related">[docs]</a>    <span class="k">def</span> <span class="nf">related</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        look for tags</span>
+<span class="sd">        if no matching tags</span>
+<span class="sd">        see if it is a date string  (get range, find entries there)</span>
+
+<span class="sd">        either way return tags that are related</span>
+<span class="sd">        (maybe as a dictionary {&#39;tag&#39;:number_of_items} ...</span>
+<span class="sd">         same as self._tags)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#make sure we have it, otherwise nothing relates</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        
+        <span class="n">entries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="n">related</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="c">#todo:</span>
+            <span class="c">#could also generate a cloud</span>
+            <span class="c">#ranking most common related higher</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">related</span><span class="p">:</span>
+                    <span class="n">related</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">related</span>
+    </div>
+<div class="viewcode-block" id="Journal.search"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.search">[docs]</a>    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_for</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        scan tags for tags matching (searching) look_for</span>
+<span class="sd">        if data is True, look in entry.data too</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c"># in this case, we&#39;ll return the whole entry</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">look_for</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                    <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">e</span><span class="o">.</span><span class="n">tags</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">look_for</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+                            <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+
+        <span class="c"># in this case we&#39;ll only return matching tags</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">look_for</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+                    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+            <span class="c">## #now look for the results that start with &quot;look_for&quot;</span>
+            <span class="c">## matches = []</span>
+            <span class="c">## for r in results:</span>
+            <span class="c">##     if re.match(look_for, r):</span>
+            <span class="c">##         matches.append(r)</span>
+            <span class="c">##         results.remove(r)</span>
+
+            <span class="c"># sort tags by the number of entries they have</span>
+            <span class="n">priority</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="n">priority</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">]),</span> <span class="n">tag</span><span class="p">)</span> <span class="p">)</span>
+            <span class="n">priority</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">priority</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="c">#print &quot;Priority: %s&quot; % priority</span>
+            
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">priority</span><span class="p">:</span>
+                <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">found</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="n">limit</span><span class="p">)]</span>
+            
+        <span class="k">return</span> <span class="n">found</span>
+</div>
+<div class="viewcode-block" id="Journal.sort"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.sort">[docs]</a>    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;original&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sorts the items in our Journal&#39;s ._entries list</span>
+<span class="sd">        </span>
+<span class="sd">        returns a list of  the rearranged order of the entries in the journal</span>
+
+<span class="sd">        can specify order:</span>
+
+<span class="sd">        &#39;original&#39;</span>
+<span class="sd">        to keep the original order that the entries were added to the journal</span>
+
+<span class="sd">        &#39;reverse&#39;</span>
+
+<span class="sd">        &#39;chronological&#39; or &#39;oldest to newest&#39;</span>
+<span class="sd">        oldest entries first in the list</span>
+
+<span class="sd">        &#39;reverse-chronological&#39;  or &#39;newest to oldest&#39;</span>
+<span class="sd">        </span>
+<span class="sd">        if not all entries are wanted, see self.range()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#print order</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="s">&quot;original&quot;</span><span class="p">:</span>            
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span>
+        
+        <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="s">&quot;reverse&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">entry_times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="s">&quot;reverse-chronological&quot;</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">==</span> <span class="s">&#39;newest to oldest&#39;</span><span class="p">:</span>
+                <span class="n">entry_times</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                <span class="n">entry_times</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="s">&quot;chronological&quot;</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">==</span> <span class="s">&#39;oldest to newest&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;oldest to newest&quot;</span>
+                <span class="n">entry_times</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="n">entry_times</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&quot;Unknown sort option supplied: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">order</span>
+
+            <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">et</span> <span class="ow">in</span> <span class="n">entry_times</span><span class="p">:</span>
+                <span class="n">elist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="p">[</span><span class="n">et</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">elist</span><span class="p">:</span>
+                    <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">entry</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">entries</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span> <span class="o">=</span> <span class="n">entries</span>
+
+            <span class="k">return</span> <span class="n">entries</span>
+
+    <span class="c">#aka limit, timerange, mindstream.time_range</span></div>
+<div class="viewcode-block" id="Journal.range"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.range">[docs]</a>    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if no start *and* end specified</span>
+<span class="sd">        return the time range for the entries in the currently loaded journal</span>
+
+<span class="sd">        if only start</span>
+<span class="sd">        return the entries in range for the accuracy of the start (e.g. 1 day)</span>
+
+<span class="sd">        if start and end</span>
+<span class="sd">        return all entries in the journal that fall in that range</span>
+
+<span class="sd">        should accept a string, a datetime object, or a Timestamp object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">end</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">dates</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">dates</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c">#might have entries with no timestamp first:</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="n">dates</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">print</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span>
+            <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">end</span><span class="p">:</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">relative</span> <span class="o">=</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="n">relative</span><span class="o">.</span><span class="n">end</span>
+
+            <span class="n">times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+            <span class="n">matches</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">times</span><span class="p">:</span>
+                <span class="c">#not sure why we&#39;re using just time here</span>
+                <span class="c">#seems like we would want to use the date too?</span>
+                <span class="c">#pytime = Timestamp(t).time</span>
+
+                <span class="c">#sometimes t is None... those don&#39;t fit in a range.</span>
+                <span class="k">if</span> <span class="n">t</span><span class="p">:</span>
+                    <span class="n">pytime</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">datetime</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">pytime</span> <span class="o">&gt;=</span> <span class="n">start</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">pytime</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="o">.</span><span class="n">datetime</span><span class="p">):</span>
+                        <span class="n">matches</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dates</span><span class="p">[</span><span class="n">t</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">matches</span>
+</div>
+<div class="viewcode-block" id="Journal.clear"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        clear mind</span>
+<span class="sd">        start fresh</span>
+
+<span class="sd">        in practice it&#39;s probably easier to just create a new journal</span>
+<span class="sd">        but reload might need this</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dates</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+        <span class="c">#todo</span>
+        <span class="c">#way to see how much memory is consumed by current process?</span>
+        <span class="c">#should show before and after if so</span>
+
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Journal.associate_data"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.associate_data">[docs]</a>    <span class="k">def</span> <span class="nf">associate_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        add a new property to the Journal: datas</span>
+<span class="sd">        at one point this was generated automaticaly,</span>
+<span class="sd">        but that slowed things down</span>
+
+<span class="sd">        this allows it to be generated when it is needed</span>
+<span class="sd">        which so far is only when then node.directory object</span>
+<span class="sd">        is looking for a default image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datas</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datas</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Journal.associate_files"><a class="viewcode-back" href="../../api/journal.html#moments.journal.Journal.associate_files">[docs]</a>    <span class="k">def</span> <span class="nf">associate_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        add a new property to the Journal: files</span>
+<span class="sd">        similar to associate_datas</span>
+
+<span class="sd">        but checks each entry&#39;s data for path information</span>
+<span class="sd">        if path is found</span>
+<span class="sd">        just take the filename portion</span>
+<span class="sd">        and associate the entry with that portion</span>
+
+<span class="sd">        otherwise associate each line of the entry&#39;s data (as is)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_files</span> <span class="o">=</span> <span class="n">Association</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_entries</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;/&#39;</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_files</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_files</span><span class="o">.</span><span class="n">associate</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c">#must be a blank line</span>
+                    <span class="k">pass</span>
+
+
+
+
+
+
+
+
+
+
+
+
+</div></div>
+<div class="viewcode-block" id="RemoteJournal"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal">[docs]</a><span class="k">class</span> <span class="nc">RemoteJournal</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a drop in replacement for Journal</span>
+<span class="sd">    but rather than load and store the data in an internal data structure</span>
+<span class="sd">    all information is retrieved from a journal_server using json</span>
+
+<span class="sd">    ultimately this avoids needing to reload a large journal set</span>
+<span class="sd">    when working on applications to leverage information in a journal.</span>
+
+<span class="sd">    </span>
+<span class="sd">    wraps calls to a journal_server to make the object interaction</span>
+<span class="sd">    behave the same as a local Journal object</span>
+
+<span class="sd">    Uses the following calls for GET and POST requests:</span>
+<span class="sd">    </span>
+<span class="sd">    POST:</span>
+<span class="sd">    req = urllib2.urlopen(url, params)</span>
+<span class="sd">    GET:</span>
+<span class="sd">    req = urllib2.urlopen(url)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+        <span class="c">#source should be the base url to connect to</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
+
+        <span class="c">#*2011.10.11 08:25:35 </span>
+        <span class="c"># I think something here is causing connections to be lost</span>
+        <span class="c"># over time less data is returned from moments server</span>
+        <span class="c"># restarting a server with a RemoteJournal instance fixes it</span>
+        
+        <span class="c">#make sure we can handle cookies, if used in the future</span>
+        <span class="c">#self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor())</span>
+        <span class="c">#self.opener = urllib2.build_opener(urllib2.HTTPHandler())</span>
+        <span class="c">#urllib2.install_opener(self.opener)</span>
+        
+<div class="viewcode-block" id="RemoteJournal.save"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        call the save option on server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/save/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="RemoteJournal.save_post"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.save_post">[docs]</a>    <span class="k">def</span> <span class="nf">save_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        call the save option on server</span>
+<span class="sd">        using POST</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;destination&#39;</span><span class="p">:</span> <span class="n">path</span> <span class="p">}</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="c">#url = &#39;%s/save/%s&#39; % (self.source, path)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/save&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="c">#POST:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="c">#json_raw = req.read()</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="RemoteJournal.load"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        call the load option on server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/load/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="RemoteJournal.load_post"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.load_post">[docs]</a>    <span class="k">def</span> <span class="nf">load_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        call the load option on server</span>
+<span class="sd">        using POST</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;source&#39;</span><span class="p">:</span> <span class="n">path</span> <span class="p">}</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="c">#url = &#39;%s/load/%s&#39; % (self.source, path)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/load&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="c">#POST:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="c">#json_raw = req.read()</span>
+        <span class="k">return</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="RemoteJournal.update"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        with a remote journal, we can&#39;t really have an update..</span>
+<span class="sd">        it&#39;s just a make behind the scenes</span>
+<span class="sd">        so we&#39;ll call that</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">source</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">source</span>
+
+        <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="p">:</span>
+            <span class="n">created</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">created</span> <span class="o">=</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span> <span class="n">created</span><span class="o">=</span><span class="n">created</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="n">source</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">)</span>
+        </div>
+    <span class="k">def</span> <span class="nf">make</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[],</span> <span class="n">created</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;data&#39;</span> <span class="p">:</span> <span class="n">data</span><span class="p">,</span>
+                   <span class="s">&#39;tags&#39;</span> <span class="p">:</span> <span class="n">tags</span><span class="p">,</span>
+                   <span class="s">&#39;created&#39;</span> <span class="p">:</span> <span class="n">created</span><span class="p">,</span>
+                   <span class="s">&#39;source&#39;</span> <span class="p">:</span> <span class="n">source</span><span class="p">,</span>
+                   <span class="s">&#39;position&#39;</span> <span class="p">:</span> <span class="n">position</span><span class="p">,</span>
+                   <span class="p">}</span>
+        <span class="k">print</span> <span class="n">values</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">params</span>
+        <span class="c">#url = &#39;%s/load/%s&#39; % (self.source, path)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/make&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="k">print</span> <span class="n">url</span>
+        <span class="c">#POST:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&#39;data&#39;</span> <span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                   <span class="s">&#39;tags&#39;</span> <span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">tags</span><span class="p">,</span>
+                   <span class="s">&#39;created&#39;</span> <span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">created</span><span class="p">,</span>
+                   <span class="s">&#39;source&#39;</span> <span class="p">:</span> <span class="n">entry</span><span class="o">.</span><span class="n">source</span><span class="p">,</span>
+                   <span class="p">}</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="c">#print params</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/remove&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="c">#POST:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="c">#for debugging:</span>
+        <span class="c">#print req.read()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        
+
+<div class="viewcode-block" id="RemoteJournal.tags"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.tags">[docs]</a>    <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        returns a dictionary of tags (with count) if no item specified</span>
+<span class="sd">        otherwise returns a list of moments for item specified</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/tags/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="c">#POST:</span>
+        <span class="c">#req = urllib2.urlopen(url, params)</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">item</span><span class="p">:</span>
+            <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">entry_strings</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">item</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">entry_strings</span><span class="p">:</span>
+                <span class="n">log</span> <span class="o">=</span> <span class="n">Log</span><span class="p">()</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">log_entries</span> <span class="o">=</span> <span class="n">log</span><span class="o">.</span><span class="n">to_entries</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">log_entries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;WARNING: expected one entry string, found more...&quot;</span>
+                <span class="n">entries</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">log_entries</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">entries</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+</div>
+    <span class="k">def</span> <span class="nf">tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag_key</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/tag/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">tag_key</span><span class="p">)</span>
+        <span class="c">#print url</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="c">#print &quot;json from server: %s&quot; % json_raw</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="n">elist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">tag_key</span><span class="p">]:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">],</span> <span class="n">tags</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">],</span> <span class="n">created</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+            <span class="c">#m = Moment(data=e[&#39;data&#39;], tags=e[&#39;tags&#39;], created=e[&#39;created&#39;])</span>
+            <span class="n">elist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="c">#return { tag_key:elist }</span>
+        <span class="k">return</span> <span class="n">elist</span>
+
+    <span class="k">def</span> <span class="nf">dates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/dates&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date_key</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">urlencode</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">date_key</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
+            <span class="n">ts</span> <span class="o">=</span> <span class="n">date_key</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ts</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">date_key</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/date/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">ts</span><span class="o">.</span><span class="n">compact</span><span class="p">())</span>
+        <span class="c">#print url</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="c">#print &quot;json from server: %s&quot; % json_raw</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="n">elist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="n">ts</span><span class="o">.</span><span class="n">compact</span><span class="p">()]:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">],</span> <span class="n">tags</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">],</span> <span class="n">created</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+            <span class="n">elist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span> <span class="n">ts</span><span class="o">.</span><span class="n">compact</span><span class="p">():</span><span class="n">elist</span> <span class="p">}</span>
+        <span class="c">#return json.loads(json_raw)</span>
+
+    <span class="k">def</span> <span class="nf">entry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/entry/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="c">#print json_raw</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="c">#print e</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">],</span> <span class="n">tags</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">],</span> <span class="n">created</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+        <span class="c">#print m</span>
+        <span class="k">return</span> <span class="n">m</span>
+
+    <span class="k">def</span> <span class="nf">entries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/entries&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="n">elist</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;entries&#39;</span><span class="p">]:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">],</span> <span class="n">tags</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">],</span> <span class="n">created</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+            <span class="c">#m = Moment(data=e[&#39;data&#39;], tags=e[&#39;tags&#39;], created=e[&#39;created&#39;])</span>
+            <span class="n">elist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">elist</span>
+
+    <span class="k">def</span> <span class="nf">search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">look_for</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/search/data/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">look_for</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/search/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">look_for</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+            <span class="c">#url = &#39;%s/search/%s&#39; % (self.source, look_for)</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="n">found</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c">#for e in result[&#39;matches&#39;]:</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">],</span> <span class="n">tags</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">],</span> <span class="n">created</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+                <span class="c">#m = Moment(data=e[&#39;data&#39;], tags=e[&#39;tags&#39;], created=e[&#39;created&#39;])</span>
+                <span class="n">found</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#this should be a list of tags</span>
+            <span class="c">#found = result[&#39;matches&#39;]</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">found</span>
+
+    <span class="k">def</span> <span class="nf">related</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/related/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="c">#GET:</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">json_raw</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_raw</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">tags</span>
+        <span class="c">## elist = []</span>
+        <span class="c">## for e in result[&#39;entries&#39;]:</span>
+        <span class="c">##     m = Moment(data=e[&#39;data&#39;], tags=e[&#39;tags&#39;], created=e[&#39;created&#39;])</span>
+        <span class="c">##     elist.append(m)</span>
+        <span class="c">## return elist</span>
+
+    <span class="k">def</span> <span class="nf">sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="s">&#39;original&#39;</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/sort/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>        
+        
+<div class="viewcode-block" id="RemoteJournal.range"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.range">[docs]</a>    <span class="k">def</span> <span class="nf">range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">expect_entries</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">end</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/range/</span><span class="si">%s</span><span class="s">/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">start</span><span class="o">.</span><span class="n">compact</span><span class="p">(),</span> <span class="n">end</span><span class="o">.</span><span class="n">compact</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">start</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/range/</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">,</span> <span class="n">start</span><span class="o">.</span><span class="n">compact</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/range&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+            <span class="n">expect_entries</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="c">#print url</span>
+            
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">expect_entries</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="n">elist</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;entries&#39;</span><span class="p">]:</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">],</span> <span class="n">tags</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">],</span> <span class="n">created</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">],</span> <span class="n">path</span><span class="o">=</span><span class="n">e</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">])</span>
+                <span class="c">#m = Moment(data=e[&#39;data&#39;], tags=e[&#39;tags&#39;], created=e[&#39;created&#39;])</span>
+                <span class="n">elist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">elist</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+</div>
+<div class="viewcode-block" id="RemoteJournal.clear"><a class="viewcode-back" href="../../api/journal.html#moments.journal.RemoteJournal.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        call the load option on server</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">/clear&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">req</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+
+</div></div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

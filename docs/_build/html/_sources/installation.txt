@@ -1,0 +1,42 @@
+Installation
+====================
+
+The best way to get moments is to clone the mercurial repository:
+::
+
+  hg clone http://bitbucket.org/cbrandt/moments
+  cd moments
+  sudo python setup.py install
+
+Another way to get moments is via easy_install. This version is not always the latest and greatest:
+::
+
+  sudo easy_install moments
+
+
+Editors
+----------
+
+See the editors/ directory for different configurations for adding a time stamp command to your editor.  
+
+Currently there are notes for Emacs, VI, and Gedit.  Evernote conversions are in the works. 
+
+
+Requirements
+----------------
+
+Make sure you have the following items available on your computer:
+
+- Python: (currently using versions 2.5 and up)
+  http://www.python.org
+
+- Image manipulations are an optional part of the path.py module and require:
+
+  - Python Image Library (or Pillow)
+  - jhead command line utility
+
+- Mercurial is useful for staying in sync with the source distribution, and also for synchronizing your own notes across different machines. 
+
+Notes for installing and configuring a computer system that runs python are beyond the scope of this document.  For details and recommendations on this process, please see:
+charlesbrandt.com
+

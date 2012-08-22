@@ -1,0 +1,472 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The timestamp Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The tag Module" href="tag.html" />
+    <link rel="prev" title="The path Module" href="path.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tag.html" title="The tag Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="path.html" title="The path Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.timestamp">
+<span id="the-timestamp-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">timestamp</span></tt> Module<a class="headerlink" href="#module-moments.timestamp" title="Permalink to this headline">¶</a></h1>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>2010.10.24 11:49:23
+much of this functionality exists in the dateutil included with python
+<a class="reference external" href="http://labix.org/python-dateutil">http://labix.org/python-dateutil</a>
+I didn&#8217;t know about that module at the time
+Its parse function is really nice.</p>
+<p><a href="#id3"><span class="problematic" id="id4">*</span></a>2010.03.16 10:56:36 todo
+would be nice if format was more generalized
+it is difficult when there are different versions of a string
+depending on the degree of accuracy. (seconds, no seconds, etc)</p>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>2009.07.17 07:36:52
+considering that timestamps have different formats
+might be nice to associate that format with the object instance
+and make it settable/configurable.</p>
+<p>depending on format
+could have different output for date, time, accuracies, etc.</p>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>2010.03.16 10:20:38
+some time ago...
+moved time to be the first keyword argument
+that way Timestamp objects can be initialized from a standard python
+datetime object, without specifying the time keyword</p>
+<p><a href="#id9"><span class="problematic" id="id10">*</span></a>2009.03.14 18:23:13 subclass datetime why_not
+would be nice if this were a subclass of datetime
+with special formatters built in
+tried this last week with ill effects, because...</p>
+<p>datetime objects in python are immutable
+class attributes like year, month, and day are read-only</p>
+<p>subclassing requires overriding __new__, not __init___
+<a class="reference external" href="http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date">http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date</a>
+<a class="reference external" href="http://www.python.org/doc/current/reference/datamodel.html#object.__new__">http://www.python.org/doc/current/reference/datamodel.html#object.__new__</a></p>
+<p>due to multiple ways of initializing, we don&#8217;t want to require that
+year, month, day
+be passed in, like datetime does</p>
+<p>could add those arguments to the init function if that was needed
+by those using Timestamp objects in place of datetime objects</p>
+<dl class="class">
+<dt id="moments.timestamp.Day">
+<em class="property">class </em><tt class="descclassname">moments.timestamp.</tt><tt class="descname">Day</tt><big>(</big><em>tstamp=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Day"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Day" title="Permalink to this definition">¶</a></dt>
+<dd><p>days are a 24 hour period
+starting at midnight (00:00) and ending at 23:59...
+have a number within a month
+and a name and number within a week
+have a number within a year</p>
+<p>These are a time range too</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.timestamp.Month">
+<em class="property">class </em><tt class="descclassname">moments.timestamp.</tt><tt class="descname">Month</tt><big>(</big><em>tstamp=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Month" title="Permalink to this definition">¶</a></dt>
+<dd><p>using this to hold a collection of days (or weeks?)
+to ultimately render those days, and their content (summary)
+to some other representation (HTML, areaui, etc)</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.timestamp.Timerange">
+<em class="property">class </em><tt class="descclassname">moments.timestamp.</tt><tt class="descname">Timerange</tt><big>(</big><em>start</em>, <em>end=None</em>, <em>name=''</em>, <em>end_is_now=False</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timerange holds a start and end python datetime</p>
+<p>trange can either be a string representing two timestamps separated
+by a &#8216;-&#8216;
+or just a simple tstamp string
+in which case it will be evaluated as a range based on accuracy</p>
+<p><a href="#id11"><span class="problematic" id="id12">*</span></a>2011.07.06 19:21:53
+start can be either a text based string range &#8220;start-end&#8221;
+or a timestamp object representing the start of the range</p>
+<p><a href="#id13"><span class="problematic" id="id14">*</span></a>2011.07.06 22:15:06
+merging in RelativeRange functions</p>
+<p>Relative range was a 
+class to quickly get ranges relative to &#8216;now&#8217; (or start)
+sometimes these are more complex than just &#8216;future&#8217; and &#8216;past&#8217; on Timestamp</p>
+<p>results in timeranges from specific functions</p>
+<dl class="method">
+<dt id="moments.timestamp.Timerange.biggest_cycle">
+<tt class="descname">biggest_cycle</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.biggest_cycle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.biggest_cycle" title="Permalink to this definition">¶</a></dt>
+<dd><p>determine what the biggest cycle is in our range...
+i.e. year, month, day</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.day">
+<tt class="descname">day</tt><big>(</big><em>timestamp=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.day"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.day" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a range for the day that timestamp falls in</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.days">
+<tt class="descname">days</tt><big>(</big><em>overlap_edges=True</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.days"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.days" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list of all days contained in self
+(this could also be an iterator)</p>
+<p>if overlap_edges is set, may extend beyond the current range
+rounding to the nearest full day on each end</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.default">
+<tt class="descname">default</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.default" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks the accuracy of the start timestamp
+calls correct method automatically to generate a range
+based on that accuracy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.from_text">
+<tt class="descname">from_text</tt><big>(</big><em>trange</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.from_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.from_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>will work with either a simple timestamp string
+or a string with a - separating two timestamp strings</p>
+<p>check the tstamp for a range of times
+split if found
+return the range start and end</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.has">
+<tt class="descname">has</tt><big>(</big><em>timestamp</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.has"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.has" title="Permalink to this definition">¶</a></dt>
+<dd><p>return true if timestamp is in our range</p>
+<p>see also Timestamp.is_in(Timerange)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.hour">
+<tt class="descname">hour</tt><big>(</big><em>timestamp=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.hour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.hour" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a range for the day that timestamp falls in</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.minute">
+<tt class="descname">minute</tt><big>(</big><em>timestamp=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.minute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.minute" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a range for the minute that timestamp falls in</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.month">
+<tt class="descname">month</tt><big>(</big><em>timestamp=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.month" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a range for the month that timestamp falls in</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.months">
+<tt class="descname">months</tt><big>(</big><em>overlap_edges=True</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.months"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.months" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list of all months contained in self
+(this could also be an iterator)</p>
+<p>if overlap_edges is set, may extend beyond the current range
+rounding to the nearest full month on each end</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.week">
+<tt class="descname">week</tt><big>(</big><em>timestamp=None</em>, <em>week_start=0</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.week"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.week" title="Permalink to this definition">¶</a></dt>
+<dd><p>uses date.weekday() to determine position in the week
+Monday is 0, (default week_start)
+if another day should be used, specify in week_start</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.year">
+<tt class="descname">year</tt><big>(</big><em>timestamp=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.year"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.year" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a range for the year that timestamp falls in</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timerange.year_past">
+<tt class="descname">year_past</tt><big>(</big><em>timestamp=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timerange.year_past"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timerange.year_past" title="Permalink to this definition">¶</a></dt>
+<dd><p>the last 12 months</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.timestamp.Timestamp">
+<em class="property">class </em><tt class="descclassname">moments.timestamp.</tt><tt class="descname">Timestamp</tt><big>(</big><em>auto=None</em>, <em>tstamp=None</em>, <em>cstamp=None</em>, <em>compact=None</em>, <em>now=True</em>, <em>format=None</em>, <em>accuracy=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timestamps have different ways of being formatted, and 
+this object is a common place to store these.</p>
+<p>compact and cstamp are the same thing.</p>
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.apple_compact">
+<tt class="descname">apple_compact</tt><big>(</big><em>accuracy=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.apple_compact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.apple_compact" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a python datetime object
+return a string representation of that time
+YYYYMMDDTHHMMSS</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.compact">
+<tt class="descname">compact</tt><big>(</big><em>accuracy=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.compact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.compact" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a string representation of our internal datetime object
+with a format like:
+YYYYMMDDHHMMSS
+controlled by &#8216;accuracy&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.epoch">
+<tt class="descname">epoch</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert Timestamps to a &#8216;seconds since epoc&#8217; format</p>
+<p>return the current timestamp object as the number of seconds since the
+epoch.  aka POSIX timestamp
+aka utime (?)
+<a href="#id15"><span class="problematic" id="id16">*</span></a>2009.11.04 13:57:55
+<a class="reference external" href="http://stackoverflow.com/questions/255035/converting-datetime-to-posix-time">http://stackoverflow.com/questions/255035/converting-datetime-to-posix-time</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.filename">
+<tt class="descname">filename</tt><big>(</big><em>suffix='.txt'</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>often need to generate a filename from a timestamp
+this makes it easy!</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_apple_compact">
+<tt class="descname">from_apple_compact</tt><big>(</big><em>text_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_apple_compact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_apple_compact" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string of the format:
+YYYYMMDDTHHMMSS  (where T is the character &#8216;T&#8217;)
+return a python datetime object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_compact">
+<tt class="descname">from_compact</tt><big>(</big><em>text_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_compact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_compact" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string of the format:
+YYYYMMDDHHMMSS
+return a python datetime object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_epoch">
+<tt class="descname">from_epoch</tt><big>(</big><em>posix_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_epoch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>accept a posix time and convert it to a local datetime
+(in current Timestamp)
+<a class="reference external" href="http://docs.python.org/library/datetime.html#datetime.datetime.fromtimestamp">http://docs.python.org/library/datetime.html#datetime.datetime.fromtimestamp</a>
+see also datetime.utcfromtimestamp()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_google_calendar">
+<tt class="descname">from_google_calendar</tt><big>(</big><em>text_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_google_calendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_google_calendar" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string of the format:
+YYYY-MM-DDTHH:MM:SS.000-04:00  (where T is the character &#8216;T&#8217;)
+return a python datetime object</p>
+<p>Note that timezone feature is not yet working</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_gps">
+<tt class="descname">from_gps</tt><big>(</big><em>text_time</em>, <em>offset=-4</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_gps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_gps" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string of the gps format:
+apply a delta for local time zone
+return a python datetime object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_text">
+<tt class="descname">from_text</tt><big>(</big><em>text_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string of the format:
+YYYY.MM.DD HH:MM
+return a python datetime object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.from_text2">
+<tt class="descname">from_text2</tt><big>(</big><em>text_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.from_text2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.from_text2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Month DD, YYYY</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.future">
+<tt class="descname">future</tt><big>(</big><em>years=0</em>, <em>weeks=0</em>, <em>days=0</em>, <em>hours=0</em>, <em>minutes=0</em>, <em>seconds=0</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.future"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.future" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a new Timestamp object that is in the future
+according to parameters</p>
+<p>months are not included since it is tricky to convert those into days
+(months are not consistent in length)
+and days are what we need to boil the distance down to.</p>
+<p>could revisit that in the future (hehe)
+the tricky cases will be when the function is called
+on the 31st of a month,
+and told to go into the future to a month that does not have 31 days.
+Should it roll back to the 30th of that future month? (or 28th in Feb?)
+or should it go forward?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.future_month">
+<tt class="descname">future_month</tt><big>(</big><em>months=1</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.future_month"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.future_month" title="Permalink to this definition">¶</a></dt>
+<dd><p>because future and past does not handle months,
+handle this separately</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.google_calendar">
+<tt class="descname">google_calendar</tt><big>(</big><em>accuracy=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.google_calendar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.google_calendar" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a python datetime object
+return a string representation of that time
+YYYYMMDDTHHMMSS</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.is_in">
+<tt class="descname">is_in</tt><big>(</big><em>timerange</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.is_in"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.is_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if we are contained in the given timerange</p>
+<p>this should be equivalent to:
+timerange.has(timestamp)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.now">
+<tt class="descname">now</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.now"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.now" title="Permalink to this definition">¶</a></dt>
+<dd><p>update the timestamp to be the current time (when now() is called)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.parse">
+<tt class="descname">parse</tt><big>(</big><em>text_time</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to automatically determine the time format in use</p>
+<p>similar to dateutil.parser parse</p>
+<p>but no timezones</p>
+<p>note:
+TypeError: can&#8217;t compare offset-naive and offset-aware datetimes
+from dateutil.parser import parse
+self.dt = parse(text_time)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.past">
+<tt class="descname">past</tt><big>(</big><em>years=0</em>, <em>weeks=0</em>, <em>days=0</em>, <em>hours=0</em>, <em>minutes=0</em>, <em>seconds=0</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.past"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.past" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a new Timestamp object that is in the past
+according to parameters</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.round">
+<tt class="descname">round</tt><big>(</big><em>accuracy=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.round"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.round" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a new timestamp object with the desired accuracy</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.timestamp.Timestamp.text">
+<tt class="descname">text</tt><big>(</big><em>accuracy=None</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#Timestamp.text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.Timestamp.text" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a string representation of our internal datetime object
+with a format like:
+YYYYMMDDHHMMSS
+controlled by &#8216;accuracy&#8217;</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.timestamp.parse_line_for_time">
+<tt class="descclassname">moments.timestamp.</tt><tt class="descname">parse_line_for_time</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="../_modules/moments/timestamp.html#parse_line_for_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.timestamp.parse_line_for_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>look at the line, determine if there is a timestamp
+return the timestamp, and the remainder if so</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="path.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">path</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tag.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">tag</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/timestamp.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tag.html" title="The tag Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="path.html" title="The path Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

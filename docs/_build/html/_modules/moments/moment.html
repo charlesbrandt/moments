@@ -1,0 +1,307 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>moments.moment &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for moments.moment</h1><div class="highlight"><pre>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="c"># moments</span>
+<span class="c"># Copyright (c) 2009-2010, Charles Brandt</span>
+<span class="c"># </span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c"># in the Software without restriction, including without limitation the rights</span>
+<span class="c"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c"># furnished to do so, subject to the following conditions:</span>
+<span class="c"># </span>
+<span class="c"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c"># all copies or substantial portions of the Software.</span>
+<span class="c"># </span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c"># THE SOFTWARE.</span>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">An Moment is the foundation for a journal.</span>
+<span class="sd">It does not require a timestamp, but most moments use one. </span>
+
+<span class="sd">In its most simple (text based) form, a moment consists of:</span>
+<span class="sd">::</span>
+
+<span class="sd">  * tags</span>
+<span class="sd">  data</span>
+<span class="sd">  \\n</span>
+
+<span class="sd">With a timestamp:</span>
+<span class="sd">::</span>
+
+<span class="sd">  *timestamp tags</span>
+<span class="sd">  data</span>
+<span class="sd">  \\n</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">string</span><span class="o">,</span> <span class="nn">re</span>
+
+<span class="kn">from</span> <span class="nn">timestamp</span> <span class="kn">import</span> <span class="n">Timestamp</span>
+<span class="kn">from</span> <span class="nn">tag</span> <span class="kn">import</span> <span class="n">Tags</span>
+
+
+<div class="viewcode-block" id="Moment"><a class="viewcode-back" href="../../api/moment.html#moments.moment.Moment">[docs]</a><span class="k">class</span> <span class="nc">Moment</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Object to hold a unique Moment</span>
+
+<span class="sd">    #*2011.07.03 09:16:58</span>
+<span class="sd">    #by not having a separate moment and entry (no-timestamp)</span>
+<span class="sd">    #we lose the ability to automatically assign a default timestamp</span>
+<span class="sd">    #within the moment object itself</span>
+<span class="sd">    #shouldn&#39;t be that big of a deal, since in practice we&#39;re often</span>
+<span class="sd">    #creating moments withing the context of a journal</span>
+<span class="sd">    #</span>
+<span class="sd">    #if not, just pass in the timestamp on init</span>
+
+<span class="sd">    also adding a parameter &#39;now&#39; to set the timestamp automatically on init</span>
+<span class="sd">    default is false</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#def __init__(self, data=u&#39;&#39;, tags=[], created=None, closed=None, placeholder=False, path=u&#39;&#39;):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s">u&#39;&#39;</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="p">[],</span> <span class="n">created</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s">u&#39;&#39;</span><span class="p">,</span> <span class="n">now</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="n">Tags</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        
+        <span class="c">#could rename this to path potentially</span>
+        <span class="c">#self.source_file = None</span>
+        <span class="c">#*2011.06.21 09:59:10</span>
+        <span class="c">#now wishing it was just self.source</span>
+        <span class="c">#maybe both should be available?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="c">#*2011.08.14 18:56:17 </span>
+        <span class="c">#path implies a source and destination</span>
+        
+        <span class="c">#self.created = &#39;&#39;</span>
+        
+        <span class="c">#*2011.07.06 08:24:43</span>
+        <span class="c">#this may closely mimic the way Timestamp initializes</span>
+        <span class="c">#may want to leverage that</span>
+        <span class="c">#or just pass created and now values in to there</span>
+        
+        <span class="k">if</span> <span class="n">now</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">()</span>
+
+        <span class="c">#elif type(created) == type(now):</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">created</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">created</span><span class="p">)</span>
+
+        <span class="c">#passed in an actual Timestamp here:</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">created</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">created</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">created</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">created</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">created</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">created</span>
+                
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="s">&quot;Unknown time format for moment created value: </span><span class="si">%s</span><span class="s"> type: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">created</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">created</span><span class="p">))</span>
+        
+        <span class="c">#self.closed = closed</span>
+        
+        <span class="c">#should not be stored in any database</span>
+        <span class="c">#self.placeholder = placeholder</span>
+
+<div class="viewcode-block" id="Moment.as_dict"><a class="viewcode-back" href="../../api/moment.html#moments.moment.Moment.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return self as a dictionary suitable for JSON use</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">item</span><span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+        <span class="n">item</span><span class="p">[</span><span class="s">&#39;created&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">)</span>
+        <span class="n">item</span><span class="p">[</span><span class="s">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
+        <span class="n">item</span><span class="p">[</span><span class="s">&#39;path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="c">#TODO</span>
+        <span class="c">#is item equivalent to a json.loads(json.dumps(self)) ???</span>
+
+        <span class="k">return</span> <span class="n">item</span>
+</div>
+<div class="viewcode-block" id="Moment.is_equal"><a class="viewcode-back" href="../../api/moment.html#moments.moment.Moment.is_equal">[docs]</a>    <span class="k">def</span> <span class="nf">is_equal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take another entry/moment</span>
+<span class="sd">        see if our contents are equal</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">equal</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">is_equal</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">tags</span><span class="p">):</span>
+            <span class="n">equal</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Tags: </span><span class="si">%s</span><span class="s"> (self) != </span><span class="si">%s</span><span class="s"> (other)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">tags</span><span class="p">))</span>
+            
+        <span class="c">#elif self.data != other.data:</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_data</span><span class="p">()</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="n">render_data</span><span class="p">():</span>
+            <span class="n">equal</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Data: </span><span class="si">%s</span><span class="s"> (self) != </span><span class="si">%s</span><span class="s"> (other)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">equal</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">created</span><span class="p">):</span>
+            <span class="n">equal</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="k">if</span> <span class="n">debug</span><span class="p">:</span> <span class="k">print</span> <span class="s">&quot;Created: </span><span class="si">%s</span><span class="s"> (self) != </span><span class="si">%s</span><span class="s"> (other)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">created</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">equal</span>
+</div>
+<div class="viewcode-block" id="Moment.render_first_line"><a class="viewcode-back" href="../../api/moment.html#moments.moment.Moment.render_first_line">[docs]</a>    <span class="k">def</span> <span class="nf">render_first_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        render the date and the tags for the entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">comment</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s">&#39;#&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s">&#39;*&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">created</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+        <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">has_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Moment.render_data"><a class="viewcode-back" href="../../api/moment.html#moments.moment.Moment.render_data">[docs]</a>    <span class="k">def</span> <span class="nf">render_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a textual representation of the entry data only</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="c">#print &quot;ENTRY DATA: %s&quot; % type(self.data)</span>
+            <span class="c">#make sure that data is buffered with a blank line at the end</span>
+            <span class="c">#makes the resulting log easier to read.</span>
+            <span class="c">#if there are more than one blanklines, can leave them</span>
+            <span class="n">last_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c">#not re.match(&#39;\s&#39;, last_line) and</span>
+            
+            <span class="c">#are there characters in the last line?  need to adjust if so:</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;\S&#39;</span><span class="p">,</span> <span class="n">last_line</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">$&#39;</span><span class="p">,</span> <span class="n">last_line</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c">#self.data += &quot;\n&quot;</span>
+                    <span class="c">#web entries added will end up with 3 newlines somehow</span>
+                    <span class="c">#but other entries created with a single string</span>
+                    <span class="c">#won&#39;t have enough new lines...</span>
+                    <span class="c">#should troubleshoot web entries</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n\n</span><span class="s">&quot;</span>
+
+            <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#*2011.11.17 16:44:15</span>
+            <span class="c">#if loaded from a file, data almost always has newlines in it</span>
+            <span class="c">#shouldn&#39;t ever get here in that case</span>
+            
+            <span class="c">#print &quot;no data in this entry! : %s&quot; % self.render_first_line()</span>
+            <span class="k">return</span> <span class="nb">unicode</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Moment.render"><a class="viewcode-back" href="../../api/moment.html#moments.moment.Moment.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_path</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a textual representation of the entry</span>
+
+<span class="sd">        include_path assumed to be false in some places</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entry</span> <span class="o">=</span> <span class="s">u&#39;&#39;</span>
+        <span class="n">entry</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_first_line</span><span class="p">()</span>
+
+        <span class="c">#in most cases we do not want to show the source path,</span>
+        <span class="c">#(it can change easily and frequently, and is determined on read)</span>
+        <span class="c">#but when merging and reviewing (summarize)</span>
+        <span class="c">#it could be useful to see in a temporary file</span>
+        <span class="k">if</span> <span class="n">include_path</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+            
+        <span class="n">entry</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">entry</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

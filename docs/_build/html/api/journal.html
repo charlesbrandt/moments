@@ -1,0 +1,463 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The journal Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The path Module" href="path.html" />
+    <link rel="prev" title="The moment Module" href="moment.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="path.html" title="The path Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="moment.html" title="The moment Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.journal">
+<span id="the-journal-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">journal</span></tt> Module<a class="headerlink" href="#module-moments.journal" title="Permalink to this headline">¶</a></h1>
+<p>Moments Journal object and functions related to using journals</p>
+<p>A journal holds a collection of Moments
+(and Entries, for moments with no timestamps)</p>
+<dl class="class">
+<dt id="moments.journal.Journal">
+<em class="property">class </em><tt class="descclassname">moments.journal.</tt><tt class="descname">Journal</tt><big>(</big><em>path=None</em>, <em>items=</em><span class="optional">[</span><span class="optional">]</span>, <em>title=None</em>, <em>debug=False</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main Moments module for collecting Moment entries in one place</p>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>2011.06.26 13:50:20
+not sure that it even makes sense to base this on a standard list
+should use a list internally
+but we really don&#8217;t use any of the methods for a list to interact
+with a Journal object</p>
+<p>so we could have
+self._entries
+self._tags
+self._dates</p>
+<p>to store everything internally
+and then use custom methods for interacting with the Journal
+these methods should be the same
+whether the Journal is a local, native, instance,
+or if it is remote.</p>
+<p>i.e.
+using journal object attributes directly in code is discouraged
+to ensure that local and remote journal objects work identically</p>
+<dl class="method">
+<dt id="moments.journal.Journal.associate_data">
+<tt class="descname">associate_data</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.associate_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.associate_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a new property to the Journal: datas
+at one point this was generated automaticaly,
+but that slowed things down</p>
+<p>this allows it to be generated when it is needed
+which so far is only when then node.directory object
+is looking for a default image</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.associate_files">
+<tt class="descname">associate_files</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.associate_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.associate_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a new property to the Journal: files
+similar to associate_datas</p>
+<p>but checks each entry&#8217;s data for path information
+if path is found
+just take the filename portion
+and associate the entry with that portion</p>
+<p>otherwise associate each line of the entry&#8217;s data (as is)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>clear mind
+start fresh</p>
+<p>in practice it&#8217;s probably easier to just create a new journal
+but reload might need this</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.date">
+<tt class="descname">date</tt><big>(</big><em>date_key=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.date" title="Permalink to this definition">¶</a></dt>
+<dd><p>lookup date_key in self._dates
+date_key should be compact stamp</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.dates">
+<tt class="descname">dates</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.dates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.dates" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a dictionary with:
+all dates as keys, and
+number of entries for each date as values</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.entries">
+<tt class="descname">entries</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.entries" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list of entries
+making a function call rather than an attribute
+to make consistent between local and remote calls</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.entry">
+<tt class="descname">entry</tt><big>(</big><em>index=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.entry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.entry" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the item at index point in list
+is this already defined on a list object? should be consistent</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.load">
+<tt class="descname">load</tt><big>(</big><em>log_name</em>, <em>add_tags=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>adds a log file to the journal object currently in memory</p>
+<p>this can be called multiple times with different filenames
+to merge those files/entries into the journal</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">journal</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span> <span class="o">=</span> <span class="n">Journal</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;sample_log.txt&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<p>return True if the file was able to be loaded
+False if it was not a journal/Log file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.load_instance">
+<tt class="descname">load_instance</tt><big>(</big><em>instance_name</em>, <em>instance_file</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.load_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.load_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>load the first entry tagged instance_name from the instance file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.make">
+<tt class="descname">make</tt><big>(</big><em>data</em>, <em>tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>created=None</em>, <em>source=''</em>, <em>position=0</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.make"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.make" title="Permalink to this definition">¶</a></dt>
+<dd><p>helper for making a new entry right in a journal object
+this way should not need to import moments.entry.Entry elsewhere</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.range">
+<tt class="descname">range</tt><big>(</big><em>start=None</em>, <em>end=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.range" title="Permalink to this definition">¶</a></dt>
+<dd><p>if no start <em>and</em> end specified
+return the time range for the entries in the currently loaded journal</p>
+<p>if only start
+return the entries in range for the accuracy of the start (e.g. 1 day)</p>
+<p>if start and end
+return all entries in the journal that fall in that range</p>
+<p>should accept a string, a datetime object, or a Timestamp object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.related">
+<tt class="descname">related</tt><big>(</big><em>key</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.related"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.related" title="Permalink to this definition">¶</a></dt>
+<dd><p>look for tags
+if no matching tags
+see if it is a date string  (get range, find entries there)</p>
+<p>either way return tags that are related
+(maybe as a dictionary {&#8216;tag&#8217;:number_of_items} ...</p>
+<blockquote>
+<div>same as self._tags)</div></blockquote>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.reload">
+<tt class="descname">reload</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.reload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a new instance of a journal
+based on the paths we have previously loaded
+(self.loaded)</p>
+<p>load everything that was previously loaded
+then swap out the contents old journal for the new one</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.remove">
+<tt class="descname">remove</tt><big>(</big><em>entry</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove associations from self._dates and self._tags
+then remove the entry from the journal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.remove_many">
+<tt class="descname">remove_many</tt><big>(</big><em>entries</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.remove_many"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.remove_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a list of entry objects,
+remove each one</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.save">
+<tt class="descname">save</tt><big>(</big><em>filename=None</em>, <em>order='original'</em>, <em>include_path=False</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.save" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">entry</span> <span class="kn">import</span> <span class="n">Entry</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">e</span> <span class="o">=</span> <span class="n">Entry</span><span class="p">(</span><span class="s">&quot;test entry&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="o">.</span><span class="n">add_entry</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">j</span><span class="o">.</span><span class="n">to_file</span><span class="p">(</span><span class="s">&quot;sample_log2.txt&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span> <span class="o">=</span> <span class="n">Journal</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">k</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;sample_log2.txt&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="o">.</span><span class="n">entries</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.save_instance">
+<tt class="descname">save_instance</tt><big>(</big><em>instance_file</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.save_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.save_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>save the currently loaded sources to an instance file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.save_originals">
+<tt class="descname">save_originals</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.save_originals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.save_originals" title="Permalink to this definition">¶</a></dt>
+<dd><p>loop through all self.sources or self.loaded
+and save the corresponding entries back
+(only if there is an actual change???)</p>
+<p>might want to return any entries that don&#8217;t have a destination
+or would it be better to return an error?
+or not save if entries don&#8217;t have a destination</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.search">
+<tt class="descname">search</tt><big>(</big><em>look_for</em>, <em>data=False</em>, <em>limit=0</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.search"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>scan tags for tags matching (searching) look_for
+if data is True, look in entry.data too</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.sort">
+<tt class="descname">sort</tt><big>(</big><em>order='original'</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sorts the items in our Journal&#8217;s ._entries list</p>
+<p>returns a list of  the rearranged order of the entries in the journal</p>
+<p>can specify order:</p>
+<p>&#8216;original&#8217;
+to keep the original order that the entries were added to the journal</p>
+<p>&#8216;reverse&#8217;</p>
+<p>&#8216;chronological&#8217; or &#8216;oldest to newest&#8217;
+oldest entries first in the list</p>
+<p>&#8216;reverse-chronological&#8217;  or &#8216;newest to oldest&#8217;</p>
+<p>if not all entries are wanted, see self.range()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.tag">
+<tt class="descname">tag</tt><big>(</big><em>tag_key=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>lookup tag_key in self._tags</p>
+<p>should only return a list of entries associated with that tag
+not a dict
+with the tag name
+server can do that
+but server needs to be a little different</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.tags">
+<tt class="descname">tags</tt><big>(</big><em>tags=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a dictionary with:
+all tags as keys, and
+number of entries for each tag as values</p>
+<p><a href="#id3"><span class="problematic" id="id4">*</span></a>2011.07.10 10:38:07
+also
+could use mindstream.entries_tagged
+to accept a list of tags
+and combine all of those entries into a single list
+and return that</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.update">
+<tt class="descname">update</tt><big>(</big><em>entry</em>, <em>position=None</em>, <em>source=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>checks if an entry already exists in the journal
+if other entries in with that time stamp are similar, 
+see if they can be merged easily (i.e. only tags differ)</p>
+<p>otherwise just add it as a separate entry
+no longer attempting to choose which one to keep here
+since journal can hold multiple entries with the same timestamp</p>
+<p>can merge later as needed using dedicated script for that purpose</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.Journal.update_many">
+<tt class="descname">update_many</tt><big>(</big><em>entries</em>, <em>source=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#Journal.update_many"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.Journal.update_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>loop over a list of entries to add/update each one to the journal</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.journal.RemoteJournal">
+<em class="property">class </em><tt class="descclassname">moments.journal.</tt><tt class="descname">RemoteJournal</tt><big>(</big><em>source</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a drop in replacement for Journal
+but rather than load and store the data in an internal data structure
+all information is retrieved from a journal_server using json</p>
+<p>ultimately this avoids needing to reload a large journal set
+when working on applications to leverage information in a journal.</p>
+<p>wraps calls to a journal_server to make the object interaction
+behave the same as a local Journal object</p>
+<p>Uses the following calls for GET and POST requests:</p>
+<p>POST:
+req = urllib2.urlopen(url, params)
+GET:
+req = urllib2.urlopen(url)</p>
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>call the load option on server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.load">
+<tt class="descname">load</tt><big>(</big><em>path=''</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>call the load option on server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.load_post">
+<tt class="descname">load_post</tt><big>(</big><em>path=''</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.load_post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.load_post" title="Permalink to this definition">¶</a></dt>
+<dd><p>call the load option on server
+using POST</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.range">
+<tt class="descname">range</tt><big>(</big><em>start=None</em>, <em>end=None</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.range" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.save">
+<tt class="descname">save</tt><big>(</big><em>path=''</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>call the save option on server</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.save_post">
+<tt class="descname">save_post</tt><big>(</big><em>path=''</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.save_post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.save_post" title="Permalink to this definition">¶</a></dt>
+<dd><p>call the save option on server
+using POST</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.tags">
+<tt class="descname">tags</tt><big>(</big><em>item=''</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a dictionary of tags (with count) if no item specified
+otherwise returns a list of moments for item specified</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.journal.RemoteJournal.update">
+<tt class="descname">update</tt><big>(</big><em>entry</em>, <em>source=None</em>, <em>position=0</em><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#RemoteJournal.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.RemoteJournal.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>with a remote journal, we can&#8217;t really have an update..
+it&#8217;s just a make behind the scenes
+so we&#8217;ll call that</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.journal.log_action">
+<tt class="descclassname">moments.journal.</tt><tt class="descname">log_action</tt><big>(</big><em>destination</em>, <em>message</em>, <em>tags=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/moments/journal.html#log_action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.journal.log_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>this is a common need...
+open a journal
+create a new entry (now)
+and save the journal/log</p>
+<p>this returns the entry created.</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="moment.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">moment</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="path.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">path</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/journal.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="path.html" title="The path Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="moment.html" title="The moment Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

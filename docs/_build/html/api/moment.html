@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The moment Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The journal Module" href="journal.html" />
+    <link rel="prev" title="API Documentation" href="../api.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="journal.html" title="The journal Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="API Documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.moment">
+<span id="the-moment-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">moment</span></tt> Module<a class="headerlink" href="#module-moments.moment" title="Permalink to this headline">¶</a></h1>
+<p>An Moment is the foundation for a journal.
+It does not require a timestamp, but most moments use one.</p>
+<p>In its most simple (text based) form, a moment consists of:</p>
+<div class="highlight-python"><pre>* tags
+data
+\n</pre>
+</div>
+<p>With a timestamp:</p>
+<div class="highlight-python"><pre>*timestamp tags
+data
+\n</pre>
+</div>
+<dl class="class">
+<dt id="moments.moment.Moment">
+<em class="property">class </em><tt class="descclassname">moments.moment.</tt><tt class="descname">Moment</tt><big>(</big><em>data=u''</em>, <em>tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>created=''</em>, <em>path=u''</em>, <em>now=False</em><big>)</big><a class="reference internal" href="../_modules/moments/moment.html#Moment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.moment.Moment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object to hold a unique Moment</p>
+<p>#*2011.07.03 09:16:58
+#by not having a separate moment and entry (no-timestamp)
+#we lose the ability to automatically assign a default timestamp
+#within the moment object itself
+#shouldn&#8217;t be that big of a deal, since in practice we&#8217;re often
+#creating moments withing the context of a journal
+#
+#if not, just pass in the timestamp on init</p>
+<p>also adding a parameter &#8216;now&#8217; to set the timestamp automatically on init
+default is false</p>
+<dl class="method">
+<dt id="moments.moment.Moment.as_dict">
+<tt class="descname">as_dict</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/moment.html#Moment.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.moment.Moment.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>return self as a dictionary suitable for JSON use</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.moment.Moment.is_equal">
+<tt class="descname">is_equal</tt><big>(</big><em>other</em>, <em>debug=False</em><big>)</big><a class="reference internal" href="../_modules/moments/moment.html#Moment.is_equal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.moment.Moment.is_equal" title="Permalink to this definition">¶</a></dt>
+<dd><p>take another entry/moment
+see if our contents are equal</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.moment.Moment.render">
+<tt class="descname">render</tt><big>(</big><em>include_path=False</em><big>)</big><a class="reference internal" href="../_modules/moments/moment.html#Moment.render"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.moment.Moment.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a textual representation of the entry</p>
+<p>include_path assumed to be false in some places</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.moment.Moment.render_data">
+<tt class="descname">render_data</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/moment.html#Moment.render_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.moment.Moment.render_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a textual representation of the entry data only</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.moment.Moment.render_first_line">
+<tt class="descname">render_first_line</tt><big>(</big><em>comment=False</em><big>)</big><a class="reference internal" href="../_modules/moments/moment.html#Moment.render_first_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.moment.Moment.render_first_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>render the date and the tags for the entry</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../api.html"
+                        title="previous chapter">API Documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="journal.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal"><span class="pre">journal</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/moment.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="journal.html" title="The journal Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../api.html" title="API Documentation"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

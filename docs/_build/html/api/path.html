@@ -1,0 +1,617 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The path Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The timestamp Module" href="timestamp.html" />
+    <link rel="prev" title="The journal Module" href="journal.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="timestamp.html" title="The timestamp Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="journal.html" title="The journal Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.path">
+<span id="the-path-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">path</span></tt> Module<a class="headerlink" href="#module-moments.path" title="Permalink to this headline">¶</a></h1>
+<p>This module helps in interacting with the filesystem.
+The main focus is on abstracting files and directories and paths.</p>
+<p>Path loads Files, Directories, etc.
+Files have a path associated with them.
+Directories are a collection of Paths (that link to other files and directories).</p>
+<p>There is a circular dependency with these objects, so they need to be kept in one file.</p>
+<dl class="class">
+<dt id="moments.path.Directory">
+<em class="property">class </em><tt class="descclassname">moments.path.</tt><tt class="descname">Directory</tt><big>(</big><em>path=''</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>This object holds a summary of a single directory.
+(no recursion.  one level only)</p>
+<p>A Directory is a collection of Path objects. 
+They can be sortable based on types, dates, etc.
+Each of the Paths can handle loading and types.</p>
+<p>Directories on the filesystem share many properties with Files,
+so the Directory class is a subclass of the File class.</p>
+<dl class="method">
+<dt id="moments.path.Directory.adjust_time">
+<tt class="descname">adjust_time</tt><big>(</big><em>hours=0</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.adjust_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.adjust_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>adjust the modified time of all files in the directory by the number
+of hours specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.auto_rotate_images">
+<tt class="descname">auto_rotate_images</tt><big>(</big><em>update_thumbs=True</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.auto_rotate_images"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.auto_rotate_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>#it&#8217;s best to just use:
+jhead -autorot <a href="#id1"><span class="problematic" id="id2">*</span></a>.JPG</p>
+<p>this resets the last modified timestamp to now()
+not what we want, so go through and reset all timestamps
+to original times</p>
+<p><a class="reference external" href="http://www.sentex.net/~mwandel/jhead/">http://www.sentex.net/~mwandel/jhead/</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.check_size">
+<tt class="descname">check_size</tt><big>(</big><em>recurse=False</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.check_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.check_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Go through all files and add up the size.</p>
+<p>It is possible to recursively add up sizes of subdirectories,
+but this can be a resource intensive operation.
+Be careful when setting recurse=True.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.create_journal">
+<tt class="descname">create_journal</tt><big>(</big><em>journal='action.txt'</em>, <em>items='Images'</em>, <em>full_path=False</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.create_journal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.create_journal" title="Permalink to this definition">¶</a></dt>
+<dd><p>if we don&#8217;t have a journal
+create one using the items of type items</p>
+<p>adapted from moments/scripts/images_to_journal.py</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.default_file">
+<tt class="descname">default_file</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.default_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.default_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>usually just want an image
+but if there are no images, we may want to look for other file types</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.default_image">
+<tt class="descname">default_image</tt><big>(</big><em>pick_by='random'</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.default_image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.default_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>if we have an action log, use that regardless of pick_by</p>
+<p>Not currently configured to work with RemoteJournal</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.file_date_range">
+<tt class="descname">file_date_range</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.file_date_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.file_date_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate a name based on the range of dates for files in this directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.files_to_journal">
+<tt class="descname">files_to_journal</tt><big>(</big><em>filetype='Image'</em>, <em>journal_file='action.txt'</em>, <em>full_path=False</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.files_to_journal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.files_to_journal" title="Permalink to this definition">¶</a></dt>
+<dd><p><a href="#id3"><span class="problematic" id="id4">*</span></a>2010.12.22 06:49:41
+seems similar in function to create_journal
+this is a bit easier to understand from the name though</p>
+<p>this is used by
+/c/moments/scripts/import_usb.py</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.make_thumbs">
+<tt class="descname">make_thumbs</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.make_thumbs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.make_thumbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>generate thumbnails for all images in this directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.reset">
+<tt class="descname">reset</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>if we&#8217;ve already scanned something once, and a subsequent scan is called,
+we&#8217;ll want to reset ourself so duplicates are not added (common mistake)
+this is the same thing that happens during initialization,
+so breaking it out here</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.scan_directory">
+<tt class="descname">scan_directory</tt><big>(</big><em>recurse=False</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.scan_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.scan_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>only load paths</p>
+<p>this will clear out any previous scans to avoid duplication
+reset includes filetypes and sorts</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.scan_filetypes">
+<tt class="descname">scan_filetypes</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.scan_filetypes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.scan_filetypes" title="Permalink to this definition">¶</a></dt>
+<dd><p>look in the directory&#8217;s list of files for different types of files
+put them in the right list type in the directory</p>
+<p>should have already scanned the directory for files</p>
+<p>we will look through the list of files
+for files that are likely images
+then populate that list</p>
+<p>not sure if this should always happen at scan time
+what if we don&#8217;t need to use images, sounds, movies?  extra step
+maybe only create special node types if they&#8217;re needed.</p>
+<p>depending on the file extension, should create an object
+with the appropriate type
+and add it to the correct list in the Directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Directory.summary">
+<tt class="descname">summary</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Directory.summary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Directory.summary" title="Permalink to this definition">¶</a></dt>
+<dd><p>standard way of representing the directory concisely?</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.path.File">
+<em class="property">class </em><tt class="descclassname">moments.path.</tt><tt class="descname">File</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File" title="Permalink to this definition">¶</a></dt>
+<dd><p>files are Nodes with sizes
+also leafs in tree structure</p>
+<p>could be a file or a directory</p>
+<p>one thing connected to other things on the filesystem</p>
+<p>structure to hold the meta data of a node on a filesystem
+should hold the common attributes of files and directories</p>
+<p>Node paths are the paths on the local system...
+i.e. how python would find them</p>
+<p>operations common to both files and directories</p>
+<dl class="method">
+<dt id="moments.path.File.adjust_time">
+<tt class="descname">adjust_time</tt><big>(</big><em>hours=0</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.adjust_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.adjust_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrap change stats in a more user friendly function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.change_stats">
+<tt class="descname">change_stats</tt><big>(</big><em>accessed=None</em>, <em>modified=None</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.change_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.change_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>take new values for the accessed and modified times and update the file&#8217;s properties
+should only accept Timestamp values.
+Timestamp can be used for conversions as needed.
+then use Timestamp.epoch() to get right values here:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.check_size">
+<tt class="descname">check_size</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.check_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.check_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps os.path.getsize() to return the file&#8217;s size.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.check_stats">
+<tt class="descname">check_stats</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.check_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.check_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>check and see what the operating system is reporting for
+this node&#8217;s stats
+update our copy of the stats</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.day">
+<tt class="descname">day</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.day"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.day" title="Permalink to this definition">¶</a></dt>
+<dd><p>print creation time in a specific format</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.make_md5">
+<tt class="descname">make_md5</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.make_md5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.make_md5" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate the md5 hash for ourself</p>
+<p>could store this in metadata at some point</p>
+<p><a class="reference external" href="http://docs.python.org/library/hashlib.html#module-hashlib">http://docs.python.org/library/hashlib.html#module-hashlib</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.move">
+<tt class="descname">move</tt><big>(</big><em>rel_destination</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>this utilizes the os.rename function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.reset_stats">
+<tt class="descname">reset_stats</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.reset_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.reset_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>some actions (like image rotate) may update the file&#8217;s modified times
+but we might want to keep the original time
+this resets them to what they were when originally initialized</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.File.timestamp">
+<tt class="descname">timestamp</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#File.timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.File.timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a corresponding moments Timestamp object for the file&#8217;s mtime</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.path.Image">
+<em class="property">class </em><tt class="descclassname">moments.path.</tt><tt class="descname">Image</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>object to hold Image specific meta data for an image locally available</p>
+<p>and rendering thumbnails</p>
+<dl class="method">
+<dt id="moments.path.Image.copy">
+<tt class="descname">copy</tt><big>(</big><em>destination</em>, <em>relative=True</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>copy the original image, along with all thumbs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.dimensions">
+<tt class="descname">dimensions</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.dimensions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.dimensions" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the dimensions of this image</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.make_thumb_dirs">
+<tt class="descname">make_thumb_dirs</tt><big>(</big><em>base=None</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.make_thumb_dirs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.make_thumb_dirs" title="Permalink to this definition">¶</a></dt>
+<dd><p>if they don&#8217;t already exist, create them</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.make_thumbs">
+<tt class="descname">make_thumbs</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.make_thumbs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.make_thumbs" title="Permalink to this definition">¶</a></dt>
+<dd><p>regenerate all thumbnails from original</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.move">
+<tt class="descname">move</tt><big>(</big><em>destination</em>, <em>relative=False</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>this utilizes the os.rename function
+but should also move thumbnails</p>
+<p>if relative is true, will expect a relative path that is
+joined with the local path
+otherwise destination is assumed to be full local path</p>
+<p>very similar functionality as minstream.import_media._move_image_and_thumbs()
+import_media uses subprocess system level move commands
+which is not as cross platform</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.rotate">
+<tt class="descname">rotate</tt><big>(</big><em>degrees=90</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>rotate image by number of degrees (clockwise!!)</p>
+<p>need to reset file timestamp to be original
+especially if not keeping track of that elsewhere</p>
+<p>see also Directory.auto_rotate_images()</p>
+<p>but if you need to tune individually, better to call jpegtrans here</p>
+<p>jhead -cmd &#8220;jpegtran -progressive -rotate 90 &amp;i &gt; &amp;o&#8221; IMG_4965.JPG</p>
+<p><a class="reference external" href="http://www.sentex.net/~mwandel/jhead/usage.html">http://www.sentex.net/~mwandel/jhead/usage.html</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.rotate_pil">
+<tt class="descname">rotate_pil</tt><big>(</big><em>degrees=90</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.rotate_pil"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.rotate_pil" title="Permalink to this definition">¶</a></dt>
+<dd><p>rotate image by number of degrees (clockwise!!)</p>
+<p>use Python Image Library</p>
+<p>PIL is very LOSSY!!</p>
+<p>will also lose original EXIF data</p>
+<p>(but it does work if you don&#8217;t have access to jhead/jpegtran)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Image.size_path">
+<tt class="descname">size_path</tt><big>(</big><em>size</em>, <em>square=True</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Image.size_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Image.size_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a size and create the corresponding thumbnail (local) path</p>
+<p><a href="#id5"><span class="problematic" id="id6">*</span></a>2012.08.18 11:28:13 
+also, decide if a squared version of the image is requested</p>
+<p>seems like this is something that should be done here
+(and maybe both should be available)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.path.Path">
+<em class="property">class </em><tt class="descclassname">moments.path.</tt><tt class="descname">Path</tt><big>(</big><em>path=None</em>, <em>parts=None</em>, <em>relative=False</em>, <em>relative_prefix=''</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path" title="Permalink to this definition">¶</a></dt>
+<dd><p>a path to a specific destination</p>
+<p>represented as a string with separators</p>
+<p>very similar in purpose to os.path</p>
+<p>is not involved with what is contained at the path destination</p>
+<p>this is a collection of common operations needed for manipulating paths,
+in some cases wrapping the standard library os.path module</p>
+<dl class="method">
+<dt id="moments.path.Path.copy">
+<tt class="descname">copy</tt><big>(</big><em>destination</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapping os call
+seems like there was trouble doing this if it crossed devices
+needed a system call in that case
+<a class="reference external" href="http://docs.python.org/library/shutil.html">http://docs.python.org/library/shutil.html</a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.create">
+<tt class="descname">create</tt><big>(</big><em>mode=None</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>see if we have an extension
+create a blank file if so</p>
+<p>otherwise make a new directory</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.created">
+<tt class="descname">created</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.created"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.created" title="Permalink to this definition">¶</a></dt>
+<dd><p>wrapper shortcut for getting the modified timestamp of the path</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.custom_relative_path">
+<tt class="descname">custom_relative_path</tt><big>(</big><em>prefix=None</em>, <em>path=None</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.custom_relative_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.custom_relative_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>method to change system path to viewer path</p>
+<p>if path on file system is different than path displayed by viewer
+generate it here</p>
+<p>ideally would just use routes here... heavy overlap</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.distance">
+<tt class="descname">distance</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>the shortest number of nodes between self and path</p>
+<p>find common prefix
+then count from there</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.exists">
+<tt class="descname">exists</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if the actual path exists.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.expand">
+<tt class="descname">expand</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.expand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.expand" title="Permalink to this definition">¶</a></dt>
+<dd><p>check if we start with a &#8216;.&#8217; something
+expand and reparse</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.load">
+<tt class="descname">load</tt><big>(</big><em>node_type=None</em>, <em>create=True</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a storage.Node of the destination</p>
+<p>can look at types here
+and return the appropriate type</p>
+<p>looks at the path,
+determines the right kind of storage object to associate with that path
+returns the storage object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.load_journal">
+<tt class="descname">load_journal</tt><big>(</big><em>add_tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>subtract_tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>include_path_tags=True</em>, <em>create=False</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.load_journal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.load_journal" title="Permalink to this definition">¶</a></dt>
+<dd><p>walk the given path and
+create a journal object from all logs encountered in the path</p>
+<p>create a temporary, in memory, journal from logs</p>
+<p>this works for both directories and log files</p>
+<p><a href="#id7"><span class="problematic" id="id8">*</span></a>2009.06.18 12:38:45</p>
+<p>this was started to be abstracted from osbrowser in player.py.  
+By moving here, we minimize dependencies outside of Moments module</p>
+<p>load_journal cannot guarantee that the returned Journal item will have a
+filename (self.path) associated with it for later saving.</p>
+<p>in that case should use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">j</span> <span class="o">=</span> <span class="n">Journal</span><span class="p">()</span>
+<span class="n">j</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">add_tags</span><span class="o">=</span><span class="n">these_tags</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>-or-</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">j</span> <span class="o">=</span> <span class="n">load_journal</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="n">j</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">destination</span>
+</pre></div>
+</div>
+<p>of course you can always pass the path in explicitly to save:
+save(filename=path)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.log_action">
+<tt class="descname">log_action</tt><big>(</big><em>actions=['view']</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.log_action"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.log_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>this is closely related to journal.log_action
+(don&#8217;t forget to use that if it&#8217;s easier)</p>
+<p>but sometimes it is inconvenient to think in terms of a journal
+when you are working with paths</p>
+<p>this assumes the journal to log into is &#8220;action.txt&#8221;
+if the path is a directory, look for it in the directory
+if the path is a file (more common)
+look for action.txt in the parent directory</p>
+<p>if logs need to be added anywhere else, use this concept, or journal.log_action</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.make_tree">
+<tt class="descname">make_tree</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.make_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.make_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>go through all parts and make a node for each of them
+return the root node</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.parent">
+<tt class="descname">parent</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a Path object to our parent
+don&#8217;t want to do this on initialization,
+since it would recursively call</p>
+<p>Similar in concept to:
+os.path.dirname(self.path)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.parts">
+<tt class="descname">parts</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.parts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.parts" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list of all parts of the path
+(os.path.split only splits into two parts, this does all)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.relative_path_parts">
+<tt class="descname">relative_path_parts</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.relative_path_parts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.relative_path_parts" title="Permalink to this definition">¶</a></dt>
+<dd><p>split the pieces up so that they can be navigated</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.to_relative">
+<tt class="descname">to_relative</tt><big>(</big><em>path=''</em>, <em>extension=None</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.to_relative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.to_relative" title="Permalink to this definition">¶</a></dt>
+<dd><p>should work either way...
+returns the difference between the two paths (self.path and path)
+return value is just a string representation</p>
+<p>accept a path (either Path or path... will get resolved down to str)
+return the relative part
+by removing the path sent from our prefix</p>
+<p>convert a local file path into one acceptable for use as a relative path in a URL</p>
+<p>if node is a file, this will include the filename at the end</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.to_tags">
+<tt class="descname">to_tags</tt><big>(</big><em>include_name=True</em>, <em>include_parent=True</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.to_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.to_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>looks at the specified path to generate a list of tags
+based on the file name and location</p>
+<p>check if the last item in the path is a file with an extension
+get rid of the extension if so</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.path.Path.type">
+<tt class="descname">type</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/path.html#Path.type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.Path.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>determine the subclass that should be associated with this Path
+this gives us a central place to track this</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.path.check_ignore">
+<tt class="descclassname">moments.path.</tt><tt class="descname">check_ignore</tt><big>(</big><em>item</em>, <em>ignores=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/moments/path.html#check_ignore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.check_ignore" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a string (item)
+and see if any of the strings in ignores list are in the item
+if so ignore it.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.path.extension">
+<tt class="descclassname">moments.path.</tt><tt class="descname">extension</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#extension"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.extension" title="Permalink to this definition">¶</a></dt>
+<dd><p>turns out that this is similar to os.path.splitext()
+but will only return the extension (not both parts)</p>
+<p>find a file&#8217;s file extension (part of filename after last &#8216;.&#8217;)</p>
+<p>splitting into a list with two items:
+prefix, extension = f.name.split(&#8221;.&#8221;)
+will not work with file names with multiple &#8216;.&#8217;s in them</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.path.load_instance">
+<tt class="descclassname">moments.path.</tt><tt class="descname">load_instance</tt><big>(</big><em>instances='/c/instances.txt'</em>, <em>tag=None</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#load_instance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.load_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>load instances.txt journal
+look for the newest entry with tag 
+return the data of the entry as a list of each file/line</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.path.load_journal">
+<tt class="descclassname">moments.path.</tt><tt class="descname">load_journal</tt><big>(</big><em>path</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#load_journal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.load_journal" title="Permalink to this definition">¶</a></dt>
+<dd><p>helper to simplify call</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.path.name_only">
+<tt class="descclassname">moments.path.</tt><tt class="descname">name_only</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="../_modules/moments/path.html#name_only"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.path.name_only" title="Permalink to this definition">¶</a></dt>
+<dd><p>opposite of extension()
+return the filename without any extension</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="journal.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">journal</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="timestamp.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">timestamp</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/path.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="timestamp.html" title="The timestamp Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="journal.html" title="The journal Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

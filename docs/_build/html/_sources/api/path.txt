@@ -1,0 +1,6 @@
+The :mod:`path` Module
+-----------------------------
+
+.. automodule:: moments.path
+   :members:
+

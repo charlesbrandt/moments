@@ -1,0 +1,1402 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>moments.timestamp &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for moments.timestamp</h1><div class="highlight"><pre>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="c"># moments</span>
+<span class="c"># Copyright (c) 2009-2010, Charles Brandt</span>
+<span class="c"># </span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c"># in the Software without restriction, including without limitation the rights</span>
+<span class="c"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c"># furnished to do so, subject to the following conditions:</span>
+<span class="c"># </span>
+<span class="c"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c"># all copies or substantial portions of the Software.</span>
+<span class="c"># </span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c"># THE SOFTWARE.</span>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">*2010.10.24 11:49:23</span>
+<span class="sd">much of this functionality exists in the dateutil included with python</span>
+<span class="sd">http://labix.org/python-dateutil</span>
+<span class="sd">I didn&#39;t know about that module at the time</span>
+<span class="sd">Its parse function is really nice.</span>
+
+<span class="sd">*2010.03.16 10:56:36 todo</span>
+<span class="sd">would be nice if format was more generalized</span>
+<span class="sd">it is difficult when there are different versions of a string</span>
+<span class="sd">depending on the degree of accuracy. (seconds, no seconds, etc)</span>
+
+<span class="sd">*2009.07.17 07:36:52</span>
+<span class="sd">considering that timestamps have different formats</span>
+<span class="sd">might be nice to associate that format with the object instance</span>
+<span class="sd">and make it settable/configurable.</span>
+
+<span class="sd">depending on format</span>
+<span class="sd">could have different output for date, time, accuracies, etc.</span>
+
+<span class="sd">*2010.03.16 10:20:38</span>
+<span class="sd">some time ago...</span>
+<span class="sd">moved time to be the first keyword argument</span>
+<span class="sd">that way Timestamp objects can be initialized from a standard python</span>
+<span class="sd">datetime object, without specifying the time keyword</span>
+
+<span class="sd">*2009.03.14 18:23:13 subclass datetime why_not</span>
+<span class="sd">would be nice if this were a subclass of datetime</span>
+<span class="sd">with special formatters built in</span>
+<span class="sd">tried this last week with ill effects, because...</span>
+
+<span class="sd">datetime objects in python are immutable</span>
+<span class="sd">class attributes like year, month, and day are read-only</span>
+
+<span class="sd">subclassing requires overriding __new__, not __init___</span>
+<span class="sd">http://stackoverflow.com/questions/399022/why-cant-i-subclass-datetime-date</span>
+<span class="sd">http://www.python.org/doc/current/reference/datamodel.html#object.__new__</span>
+
+<span class="sd">due to multiple ways of initializing, we don&#39;t want to require that</span>
+<span class="sd">year, month, day</span>
+<span class="sd">be passed in, like datetime does</span>
+
+<span class="sd">could add those arguments to the init function if that was needed</span>
+<span class="sd">by those using Timestamp objects in place of datetime objects</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">date</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">time</span> <span class="k">as</span> <span class="n">dttime</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">strptime</span>
+<span class="kn">import</span> <span class="nn">time</span> <span class="kn">as</span> <span class="nn">pytime</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">time_format</span> <span class="o">=</span> <span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H:%M&quot;</span>
+
+<span class="k">def</span> <span class="nf">has_timestamp</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">remainder</span><span class="p">)</span> <span class="o">=</span> <span class="n">parse_line_for_time</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ts</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">False</span>
+
+<span class="k">def</span> <span class="nf">get_timestamp</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="c">#original way:</span>
+    <span class="c">#removes the leading &quot;*&quot;</span>
+    <span class="c">#return line[1:17]</span>
+    
+    <span class="n">ts</span><span class="p">,</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">parse_line_for_time</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ts</span>
+
+<div class="viewcode-block" id="parse_line_for_time"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.parse_line_for_time">[docs]</a><span class="k">def</span> <span class="nf">parse_line_for_time</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    look at the line, determine if there is a timestamp</span>
+<span class="sd">    return the timestamp, and the remainder if so</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">#most specific</span>
+    <span class="n">second_regex</span> <span class="o">=</span> <span class="s">&quot;[-\*](19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01]) \d\d:\d\d:\d\d&quot;</span>
+    <span class="n">second_search</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">second_regex</span><span class="p">)</span>
+
+    <span class="n">minute_regex</span> <span class="o">=</span> <span class="s">&quot;[-\*](19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01]) \d\d:\d\d&quot;</span>
+    <span class="c">#time_search = &quot;\*\d\d\d\d.\d\d.\d\d \d\d:\d\d&quot;</span>
+    <span class="n">minute_search</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">minute_regex</span><span class="p">)</span>
+
+    <span class="c">#hopefully optionally match a leading &#39;-&#39; or &#39;*&#39;</span>
+    <span class="c">#day_regex = &quot;[-\*]*(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])&quot;</span>
+    <span class="c">#*2009.03.03 14:38:58</span>
+    <span class="c">#requiring the leading &#39;*&#39; now...</span>
+    <span class="c">#old logs should be converted manually if not updated at this point</span>
+    <span class="n">day_regex</span> <span class="o">=</span> <span class="s">&quot;[-\*](19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])&quot;</span>
+    <span class="n">day_search</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">day_regex</span><span class="p">)</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">second_search</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">minute_search</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">day_search</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="c">#print s.span()</span>
+    <span class="k">if</span> <span class="n">s</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span><span class="n">s</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">1</span><span class="p">]]</span> <span class="c">#s.expand()</span>
+    <span class="k">elif</span> <span class="n">m</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span><span class="n">m</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">1</span><span class="p">]]</span> <span class="c">#s.expand()</span>
+        <span class="c">#ts = m.expand()</span>
+    <span class="k">elif</span> <span class="n">d</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span><span class="n">d</span><span class="o">.</span><span class="n">span</span><span class="p">()[</span><span class="mi">1</span><span class="p">]]</span> <span class="c">#s.expand()</span>
+        <span class="c">#ts = d.expand()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">if</span> <span class="n">ts</span><span class="p">:</span>
+        <span class="n">remainder</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">):]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">entry_regex</span> <span class="o">=</span> <span class="s">&quot;\*&quot;</span>
+        <span class="n">entry_search</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">entry_regex</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">entry_search</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="n">remainder</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;*&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">remainder</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">ts</span><span class="p">,</span> <span class="n">remainder</span><span class="p">]</span>
+</div>
+<div class="viewcode-block" id="Timestamp"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp">[docs]</a><span class="k">class</span> <span class="nc">Timestamp</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timestamps have different ways of being formatted, and </span>
+<span class="sd">    this object is a common place to store these. </span>
+
+<span class="sd">    compact and cstamp are the same thing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">auto</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tstamp</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">cstamp</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">compact</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">now</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="c">#this is the internal datetime object:</span>
+        <span class="c">#it is available externally via self.datetime</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">None</span>
+        
+        <span class="c">#might be handy to know what we determined</span>
+        <span class="c">#after parsing line</span>
+        <span class="c">#or remembering if it gets set elsewhere</span>
+        <span class="c">#</span>
+        <span class="c">#NOTE: if it gets passed in, it will get overwritten if</span>
+        <span class="c">#string conversion accurracy is different.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">accuracy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">format</span>
+
+        <span class="k">if</span> <span class="n">auto</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auto</span><span class="p">,</span> <span class="n">datetime</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">auto</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auto</span><span class="p">,</span> <span class="n">Timestamp</span><span class="p">):</span>
+                <span class="c">#this doesn&#39;t seem to work:</span>
+                <span class="c">#self = auto</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">auto</span><span class="o">.</span><span class="n">dt</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auto</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">auto</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+                <span class="c">#self.from_text(auto)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">auto</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c">#print &quot;Unknown auto item: %s (type: %s)&quot; % (auto, type(auto))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&quot;Unknown Timestamp start value: </span><span class="si">%s</span><span class="s"> of type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">auto</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">auto</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">tstamp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">tstamp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cstamp</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_compact</span><span class="p">(</span><span class="n">cstamp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">compact</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_compact</span><span class="p">(</span><span class="n">compact</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">now</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+        
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if the Timestamp class doesn&#39;t have the attribute,</span>
+<span class="sd">        check if the associated datetime object does have the attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;datetime&#39;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;time&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="s">&#39;dt&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;datetime&#39;</span> <span class="ow">or</span> <span class="n">name</span> <span class="o">==</span> <span class="s">&#39;dt&#39;</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s">&#39;dt&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="c">#get all of the typical assignments:</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">object</span><span class="o">.</span><span class="n">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">text_time</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%S&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&quot;00&quot;</span><span class="p">:</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%H:%M&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s">&quot;00:00&quot;</span><span class="p">:</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H:%M&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text_time</span>
+
+    <span class="c">#aka auto_text</span>
+<div class="viewcode-block" id="Timestamp.parse"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Attempt to automatically determine the time format in use</span>
+
+<span class="sd">        similar to dateutil.parser parse</span>
+
+<span class="sd">        but no timezones</span>
+
+<span class="sd">        note:</span>
+<span class="sd">        TypeError: can&#39;t compare offset-naive and offset-aware datetimes</span>
+<span class="sd">        from dateutil.parser import parse</span>
+<span class="sd">        self.dt = parse(text_time)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">)</span> <span class="ow">and</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;:&#39;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;Z&#39;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">from_gps</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">from_google_calendar</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span>
+                
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;T&#39;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_apple_compact</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">)</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">)</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;\.&quot;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_compact</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timestamp.round"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.round">[docs]</a>    <span class="k">def</span> <span class="nf">round</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a new timestamp object with the desired accuracy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compact</span><span class="p">(</span><span class="n">accuracy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timestamp.text"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.text">[docs]</a>    <span class="k">def</span> <span class="nf">text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a string representation of our internal datetime object</span>
+<span class="sd">        with a format like:</span>
+<span class="sd">        YYYYMMDDHHMMSS</span>
+<span class="sd">        controlled by &#39;accuracy&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#if it was not passed in, see if it has been set elsewhere</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">accuracy</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">:</span>
+            <span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span>
+
+        <span class="k">if</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;year&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;month&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;day&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">minute</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">second</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;hour&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;minute&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">second</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H:%M&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span><span class="p">)</span>
+
+    <span class="c">#was time_to_tstamp</span></div>
+<div class="viewcode-block" id="Timestamp.compact"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.compact">[docs]</a>    <span class="k">def</span> <span class="nf">compact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a string representation of our internal datetime object</span>
+<span class="sd">        with a format like:</span>
+<span class="sd">        YYYYMMDDHHMMSS</span>
+<span class="sd">        controlled by &#39;accuracy&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#if it was not passed in, see if it has been set elsewhere</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">accuracy</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">:</span>
+            <span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span>
+
+        <span class="k">if</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;year&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;month&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;day&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">hour</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">minute</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">second</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;hour&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">%H&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">accuracy</span> <span class="o">==</span> <span class="s">&#39;minute&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">second</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">%H%M&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">%H%M%S&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timestamp.filename"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.filename">[docs]</a>    <span class="k">def</span> <span class="nf">filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s">&quot;.txt&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        often need to generate a filename from a timestamp</span>
+<span class="sd">        this makes it easy!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compact</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="s">&#39;day&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">suffix</span>
+</div>
+<div class="viewcode-block" id="Timestamp.epoch"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.epoch">[docs]</a>    <span class="k">def</span> <span class="nf">epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        convert Timestamps to a &#39;seconds since epoc&#39; format</span>
+<span class="sd">        </span>
+<span class="sd">        return the current timestamp object as the number of seconds since the</span>
+<span class="sd">        epoch.  aka POSIX timestamp</span>
+<span class="sd">        aka utime (?)</span>
+<span class="sd">        *2009.11.04 13:57:55</span>
+<span class="sd">        http://stackoverflow.com/questions/255035/converting-datetime-to-posix-time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#import time, datetime</span>
+
+        <span class="k">return</span> <span class="n">pytime</span><span class="o">.</span><span class="n">mktime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">timetuple</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="Timestamp.from_epoch"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_epoch">[docs]</a>    <span class="k">def</span> <span class="nf">from_epoch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">posix_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        accept a posix time and convert it to a local datetime</span>
+<span class="sd">        (in current Timestamp)</span>
+<span class="sd">        http://docs.python.org/library/datetime.html#datetime.datetime.fromtimestamp</span>
+<span class="sd">        see also datetime.utcfromtimestamp()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">posix_time</span><span class="p">)</span>
+
+    <span class="c">#was tstamp_to_time</span></div>
+<div class="viewcode-block" id="Timestamp.from_compact"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_compact">[docs]</a>    <span class="k">def</span> <span class="nf">from_compact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a string of the format:</span>
+<span class="sd">        YYYYMMDDHHMMSS</span>
+<span class="sd">        return a python datetime object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">14</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">%H%M%S&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;second&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">%H%M&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;minute&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">%H&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;hour&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;day&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;month&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;year&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#some other format</span>
+            <span class="c">#self.dt = None</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">,</span> <span class="s">&quot;Unknown compact time format: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">text_time</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+
+    <span class="c">#was log.text_to_time</span>
+    <span class="c">#in ruby: parse</span></div>
+<div class="viewcode-block" id="Timestamp.from_text"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_text">[docs]</a>    <span class="k">def</span> <span class="nf">from_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a string of the format:</span>
+<span class="sd">        YYYY.MM.DD HH:MM</span>
+<span class="sd">        return a python datetime object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#removed leading char if needed</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&quot;[-\*]&quot;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="n">text_time</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;-&quot;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+            <span class="n">format</span> <span class="o">=</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span>
+        <span class="k">elif</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+            <span class="n">format</span> <span class="o">=</span> <span class="s">&quot;%Y/%m/</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">format</span> <span class="o">=</span> <span class="s">&quot;%Y.%m.</span><span class="si">%d</span><span class="s"> %H:%M:%S&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">19</span><span class="p">:</span>
+            <span class="c">#2007-05-03T15:56:05-04:00</span>
+            <span class="c">#</span>
+            <span class="c">#but what about 2009-07-17 07:14:17.003537?</span>
+            <span class="c">#truncating for now</span>
+            <span class="c">#TODO: accept micro seconds</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="n">text_time</span><span class="p">[:</span><span class="mi">19</span><span class="p">]</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;second&#39;</span>
+            
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">19</span><span class="p">:</span>
+            <span class="c"># this only works with python 2.5</span>
+            <span class="c"># (current default is 2.4.4 for zope)</span>
+            <span class="c">#return datetime.strptime(text_time, self.text_time_format)</span>
+            <span class="c"># e.g. &quot;%Y.%m.%d %H:%M:%S&quot;</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="n">format</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;second&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
+            <span class="c"># e.g. &quot;%Y.%m.%d %H:%M&quot;</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="n">format</span><span class="p">[:</span><span class="mi">14</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;minute&#39;</span>
+            
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="c"># e.g. &quot;%Y.%m.%d&quot;</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="n">format</span><span class="p">[:</span><span class="mi">8</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;day&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#some other format</span>
+            <span class="c">#time = None</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="s">&quot;Unknown time string format passed to Timestamp.from_text: </span><span class="si">%s</span><span class="s"> (type: </span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">text_time</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="k">return</span> <span class="n">time</span>
+</div>
+<div class="viewcode-block" id="Timestamp.from_text2"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_text2">[docs]</a>    <span class="k">def</span> <span class="nf">from_text2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Month DD, YYYY</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">months</span> <span class="o">=</span> <span class="p">[</span> <span class="s">&quot;January&quot;</span><span class="p">,</span> <span class="s">&quot;February&quot;</span><span class="p">,</span> <span class="s">&quot;March&quot;</span><span class="p">,</span> <span class="s">&quot;April&quot;</span><span class="p">,</span> <span class="s">&quot;May&quot;</span><span class="p">,</span> <span class="s">&quot;June&quot;</span><span class="p">,</span> <span class="s">&quot;July&quot;</span><span class="p">,</span> <span class="s">&quot;August&quot;</span><span class="p">,</span> <span class="s">&quot;September&quot;</span><span class="p">,</span> <span class="s">&quot;October&quot;</span><span class="p">,</span> <span class="s">&quot;November&quot;</span><span class="p">,</span> <span class="s">&quot;December&quot;</span> <span class="p">]</span>
+        <span class="c">#get rid of double spacing, if it exists</span>
+        <span class="n">text_time</span> <span class="o">=</span> <span class="n">text_time</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&quot;  &quot;</span><span class="p">,</span> <span class="s">&quot; &quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">month_s</span><span class="p">,</span> <span class="n">day_s</span><span class="p">,</span> <span class="n">year_s</span><span class="p">)</span> <span class="o">=</span> <span class="n">text_time</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">month_s</span> <span class="ow">in</span> <span class="n">months</span><span class="p">:</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="n">months</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">month_s</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="c">#print month</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Couldn&#39;t find: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">month_s</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="c">#get rid of &#39;,&#39; after date</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;,&#39;</span><span class="p">,</span> <span class="n">day_s</span><span class="p">):</span>
+            <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">day_s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">day_s</span><span class="p">)</span>
+            
+        <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">year_s</span><span class="p">)</span>
+        <span class="c">#print &quot;Day: %s, Year: %s&quot; % (day, year)</span>
+        <span class="n">compact</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s%02d%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
+        <span class="c">#try:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">compact</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;day&#39;</span>
+        <span class="c">#stamp = Timestamp(compact=compact)</span>
+        <span class="c">#except:</span>
+        <span class="c">#    print &quot;error making Timestamp from: %s&quot; % compact</span>
+        
+</div>
+<div class="viewcode-block" id="Timestamp.from_gps"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_gps">[docs]</a>    <span class="k">def</span> <span class="nf">from_gps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">4</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a string of the gps format:</span>
+<span class="sd">        apply a delta for local time zone</span>
+<span class="sd">        return a python datetime object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">20</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%SZ&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;second&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#some other format</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">None</span>
+            <span class="k">print</span> <span class="s">&quot;Unknown gps date format: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">text_time</span>
+            <span class="nb">exit</span><span class="p">()</span>
+
+        <span class="n">off</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">offset</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">+=</span> <span class="n">off</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+
+    <span class="c">#was tstamp_to_time</span></div>
+<div class="viewcode-block" id="Timestamp.from_apple_compact"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_apple_compact">[docs]</a>    <span class="k">def</span> <span class="nf">from_apple_compact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a string of the format:</span>
+<span class="sd">        YYYYMMDDTHHMMSS  (where T is the character &#39;T&#39;)</span>
+<span class="sd">        return a python datetime object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#get rid of trailing Z</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="n">text_time</span><span class="p">[:</span><span class="mi">15</span><span class="p">]</span>
+            
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">15</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">T%H%M%S&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;second&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">T%H%M&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;minute&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">T%H&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;hour&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;day&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y%m&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;month&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;year&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#some other format</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+</div>
+<div class="viewcode-block" id="Timestamp.apple_compact"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.apple_compact">[docs]</a>    <span class="k">def</span> <span class="nf">apple_compact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a python datetime object</span>
+<span class="sd">        return a string representation of that time</span>
+<span class="sd">        YYYYMMDDTHHMMSS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y%m</span><span class="si">%d</span><span class="s">T%H%M%S&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timestamp.from_google_calendar"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.from_google_calendar">[docs]</a>    <span class="k">def</span> <span class="nf">from_google_calendar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text_time</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a string of the format:</span>
+<span class="sd">        YYYY-MM-DDTHH:MM:SS.000-04:00  (where T is the character &#39;T&#39;)</span>
+<span class="sd">        return a python datetime object</span>
+
+<span class="sd">        Note that timezone feature is not yet working</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">## if len(text_time) == 29:</span>
+        <span class="c">##     #TODO: incorporate time zone when available</span>
+        <span class="c">##     #self.dt = datetime(*(strptime(text_time, &quot;%Y-%m-%dT%H:%M:%S.000-0.:00&quot;)[0:6]))</span>
+
+        <span class="c">##     #note:</span>
+        <span class="c">##     #TypeError: can&#39;t compare offset-naive and offset-aware datetimes</span>
+        <span class="c">##     from dateutil.parser import parse</span>
+        <span class="c">##     self.dt = parse(text_time)</span>
+        <span class="c">## elif len(text_time) == 19:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">29</span><span class="p">:</span>
+            <span class="c">#discarding timezone in this case:</span>
+            <span class="n">text_time</span> <span class="o">=</span> <span class="n">text_time</span><span class="p">[:</span><span class="mi">19</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">19</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;second&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;minute&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;hour&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;day&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y-%m&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;month&#39;</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">text_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="n">strptime</span><span class="p">(</span><span class="n">text_time</span><span class="p">,</span> <span class="s">&quot;%Y&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">6</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span> <span class="o">=</span> <span class="s">&#39;year&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#some other format</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+</div>
+<div class="viewcode-block" id="Timestamp.google_calendar"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.google_calendar">[docs]</a>    <span class="k">def</span> <span class="nf">google_calendar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accuracy</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a python datetime object</span>
+<span class="sd">        return a string representation of that time</span>
+<span class="sd">        YYYYMMDDTHHMMSS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">T%H:%M:%S&quot;</span><span class="p">)</span>
+
+    <span class="c">## def from_blog(self, text):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     the following format is often used in blogs</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     pass</span>
+
+    <span class="c">## def from_format(self, text, format):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     use the supplied format to parse the text</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     pass</span>
+
+    </div>
+<div class="viewcode-block" id="Timestamp.now"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.now">[docs]</a>    <span class="k">def</span> <span class="nf">now</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        update the timestamp to be the current time (when now() is called)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="Timestamp.future"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.future">[docs]</a>    <span class="k">def</span> <span class="nf">future</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weeks</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+               <span class="n">hours</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a new Timestamp object that is in the future</span>
+<span class="sd">        according to parameters</span>
+
+<span class="sd">        months are not included since it is tricky to convert those into days</span>
+<span class="sd">        (months are not consistent in length)</span>
+<span class="sd">        and days are what we need to boil the distance down to.</span>
+<span class="sd">        </span>
+<span class="sd">        could revisit that in the future (hehe)</span>
+<span class="sd">        the tricky cases will be when the function is called</span>
+<span class="sd">        on the 31st of a month,</span>
+<span class="sd">        and told to go into the future to a month that does not have 31 days.</span>
+<span class="sd">        Should it roll back to the 30th of that future month? (or 28th in Feb?)</span>
+<span class="sd">        or should it go forward?</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">future</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="k">if</span> <span class="n">years</span><span class="p">:</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">365</span><span class="p">)</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">future</span> <span class="o">+</span> <span class="p">(</span><span class="n">years</span> <span class="o">*</span> <span class="n">year</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weeks</span><span class="p">:</span>
+            <span class="n">week</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">future</span> <span class="o">+</span> <span class="p">(</span><span class="n">weeks</span> <span class="o">*</span> <span class="n">week</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">days</span><span class="p">:</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">future</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">hours</span><span class="p">:</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">future</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">hours</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">minutes</span><span class="p">:</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">future</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">minutes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">seconds</span><span class="p">:</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">future</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">future</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timestamp.past"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.past">[docs]</a>    <span class="k">def</span> <span class="nf">past</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weeks</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">days</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+               <span class="n">hours</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">minutes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a new Timestamp object that is in the past</span>
+<span class="sd">        according to parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">past</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="k">if</span> <span class="n">years</span><span class="p">:</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">365</span><span class="p">)</span>
+            <span class="n">past</span> <span class="o">=</span> <span class="n">past</span> <span class="o">-</span> <span class="p">(</span><span class="n">years</span> <span class="o">*</span> <span class="n">year</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">weeks</span><span class="p">:</span>
+            <span class="n">week</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+            <span class="n">past</span> <span class="o">=</span> <span class="n">past</span> <span class="o">-</span> <span class="p">(</span><span class="n">weeks</span> <span class="o">*</span> <span class="n">week</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">days</span><span class="p">:</span>
+            <span class="n">past</span> <span class="o">=</span> <span class="n">past</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">hours</span><span class="p">:</span>
+            <span class="n">past</span> <span class="o">=</span> <span class="n">past</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">hours</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">minutes</span><span class="p">:</span>
+            <span class="n">past</span> <span class="o">=</span> <span class="n">past</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="n">minutes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">seconds</span><span class="p">:</span>
+            <span class="n">past</span> <span class="o">=</span> <span class="n">past</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="n">seconds</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">past</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timestamp.future_month"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.future_month">[docs]</a>    <span class="k">def</span> <span class="nf">future_month</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        because future and past does not handle months,</span>
+<span class="sd">        handle this separately</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">next_month</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span> <span class="o">+</span> <span class="n">months</span>
+        <span class="k">if</span> <span class="n">next_month</span> <span class="o">&gt;=</span> <span class="mi">13</span><span class="p">:</span>
+            <span class="n">years</span> <span class="o">=</span> <span class="n">next_month</span> <span class="o">/</span> <span class="mi">12</span>
+            <span class="n">next_month</span> <span class="o">=</span> <span class="n">next_month</span> <span class="o">%</span> <span class="mi">12</span>
+            <span class="c">#next_month = 1</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">+</span> <span class="n">years</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span>
+            
+        <span class="n">next_compact</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">next_month</span><span class="p">)</span>
+        <span class="n">next_month_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">next_compact</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">next_month_stamp</span>
+</div>
+    <span class="k">def</span> <span class="nf">past_month</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">prior_month</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span> <span class="o">-</span> <span class="n">months</span>
+        <span class="k">if</span> <span class="n">prior_month</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">years</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">prior_month</span><span class="p">)</span> <span class="o">/</span> <span class="mi">12</span><span class="p">)</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span> <span class="o">-</span> <span class="n">years</span>
+            <span class="n">prior_month</span> <span class="o">=</span> <span class="mi">12</span> <span class="o">-</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">prior_month</span><span class="p">)</span> <span class="o">%</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span>
+
+        <span class="n">prior_compact</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">prior_month</span><span class="p">)</span>
+        <span class="n">prior_month_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">prior_compact</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">prior_month_stamp</span>
+
+<div class="viewcode-block" id="Timestamp.is_in"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timestamp.is_in">[docs]</a>    <span class="k">def</span> <span class="nf">is_in</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timerange</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        check if we are contained in the given timerange</span>
+
+<span class="sd">        this should be equivalent to:</span>
+<span class="sd">        timerange.has(timestamp)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#print &quot;Datetime: %s&quot; % self.datetime</span>
+        <span class="c">#print &quot;Start Datetime: %s&quot; % timerange.start.datetime</span>
+        <span class="c">#print &quot;End Datetime: %s&quot; % timerange.end.datetime</span>
+
+        <span class="c">#print type(self.datetime)</span>
+        <span class="c">#print type(self.dt)</span>
+        <span class="c">#print type(timerange.start.datetime)</span>
+
+        <span class="k">if</span> <span class="p">(</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datetime</span> <span class="o">&gt;</span> <span class="n">timerange</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="ow">and</span>
+             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datetime</span> <span class="o">&lt;</span> <span class="n">timerange</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">datetime</span><span class="p">)</span> <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        
+
+    <span class="c"># the following are picked up by __getattr__()</span>
+    <span class="c"># which pulls them from the self.dt (datetime)</span>
+
+    <span class="c">## def year(self):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return a string for our year (YYYY)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return self.dt.strftime(&quot;%Y&quot;)</span>
+        
+    <span class="c">## def month(self):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return a string for our month (MM)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return self.dt.strftime(&quot;%m&quot;)</span>
+
+    <span class="c">## def day(self):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return a string for our day (DD)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return self.dt.strftime(&quot;%d&quot;)</span>
+
+    <span class="c">## def hour(self):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return a string for our hour (HH) (24 hour)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return self.dt.strftime(&quot;%H&quot;)</span>
+
+    <span class="c">## def minute(self):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return a string for our minute (MM)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return self.dt.strftime(&quot;%M&quot;)</span>
+
+    <span class="c">## def second(self):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return a string for our second (SS)</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     return self.dt.strftime(&quot;%S&quot;)</span>
+</div></div>
+<div class="viewcode-block" id="Timerange"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange">[docs]</a><span class="k">class</span> <span class="nc">Timerange</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Timerange holds a start and end python datetime</span>
+
+<span class="sd">    trange can either be a string representing two timestamps separated</span>
+<span class="sd">    by a &#39;-&#39;</span>
+<span class="sd">    or just a simple tstamp string</span>
+<span class="sd">    in which case it will be evaluated as a range based on accuracy</span>
+
+<span class="sd">    *2011.07.06 19:21:53</span>
+<span class="sd">    start can be either a text based string range &quot;start-end&quot;</span>
+<span class="sd">    or a timestamp object representing the start of the range</span>
+
+<span class="sd">    *2011.07.06 22:15:06</span>
+<span class="sd">    merging in RelativeRange functions</span>
+
+<span class="sd">    Relative range was a </span>
+<span class="sd">    class to quickly get ranges relative to &#39;now&#39; (or start)</span>
+<span class="sd">    sometimes these are more complex than just &#39;future&#39; and &#39;past&#39; on Timestamp</span>
+
+<span class="sd">    results in timeranges from specific functions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">end_is_now</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        remember that start can be a string based range value:</span>
+<span class="sd">        &#39;YYYYMMDD-YYYYMMDD&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#this may get set in a number of different places</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">unicode</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">from_text</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#this should handle all different cases</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">end</span><span class="p">:</span>
+            <span class="c">#this should handle</span>
+            <span class="c">#all of the different conditions / formats / types</span>
+            <span class="c">#that end could be in</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">end_is_now</span><span class="p">:</span>
+            <span class="c">#end = datetime.now()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">:</span>
+            <span class="c">#default should set self.end now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+            <span class="c">#temp = self.default()</span>
+            <span class="c">#self.end = temp.end</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#end was not passed in,</span>
+            <span class="c">#but self.end must have been set elsewhere (from_text())</span>
+            <span class="c">#all should be ok then</span>
+            <span class="k">pass</span>
+
+
+        <span class="c">#print type(self)</span>
+        <span class="c">#print &quot;Name: -&gt;%s&lt;-&quot; % name</span>
+        <span class="c">#name could be a string indicating the type of relation</span>
+        <span class="c">#e.g.</span>
+        <span class="c">#last month, this month, next_month</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="c">#name is a property on the cycle.Month</span>
+    <span class="c">#can&#39;t set a property in parent class in that case</span>
+    <span class="k">def</span> <span class="nf">_get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+    
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_name</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;-&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">compact</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">compact</span><span class="p">()]</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">as_tuple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Timerange.has"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.has">[docs]</a>    <span class="k">def</span> <span class="nf">has</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return true if timestamp is in our range</span>
+
+<span class="sd">        see also Timestamp.is_in(Timerange)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+</div>
+<div class="viewcode-block" id="Timerange.from_text"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.from_text">[docs]</a>    <span class="k">def</span> <span class="nf">from_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trange</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        will work with either a simple timestamp string</span>
+<span class="sd">        or a string with a - separating two timestamp strings</span>
+<span class="sd">        </span>
+<span class="sd">        check the tstamp for a range of times</span>
+<span class="sd">        split if found</span>
+<span class="sd">        return the range start and end</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+        <span class="c">#check for a &#39;-&#39; indicating a YYYYMMDD-YYYYMMDD string</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="n">trange</span><span class="p">):</span>
+            <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span> <span class="o">=</span> <span class="n">trange</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">trange</span>
+
+        <span class="c">#(start, default_end) = self.from_tstamp(start)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">start</span><span class="p">)</span>
+
+        <span class="c">#if we found an explicit end in the string, use it</span>
+        <span class="k">if</span> <span class="n">end</span><span class="p">:</span>
+            <span class="c">#end = Timestamp().from_compact(end)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
+            <span class="c">#end = ts.time</span>
+            <span class="c">#end = tstamp_to_time(end)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+            <span class="c">#end = self.end</span>
+
+        <span class="c">#self.start = start</span>
+        <span class="c">#self.end = end</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Timerange.biggest_cycle"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.biggest_cycle">[docs]</a>    <span class="k">def</span> <span class="nf">biggest_cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        determine what the biggest cycle is in our range...</span>
+<span class="sd">        i.e. year, month, day</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#can&#39;t do anything if there is no end in the range</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">datetime</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span>
+            <span class="k">if</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;=</span> <span class="mi">365</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;YEAR&quot;</span>
+                <span class="k">return</span> <span class="s">&quot;year&quot;</span>
+            <span class="k">elif</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;=</span> <span class="mi">31</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;MONTH&quot;</span>
+                <span class="k">return</span> <span class="s">&quot;month&quot;</span>
+            <span class="k">elif</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;=</span> <span class="mi">28</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;MONTH (maybe)&quot;</span>
+                <span class="n">diff_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">month</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">month</span>
+                <span class="c">#should check here if the month and days increment accordingly</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">diff_m</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">day</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">day</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="s">&quot;month&quot;</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">diff_m</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="s">&quot;month&quot;</span>
+            <span class="k">elif</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;=</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;WEEK&quot;</span>
+                <span class="k">return</span> <span class="s">&quot;week&quot;</span>
+            <span class="k">elif</span> <span class="n">diff</span><span class="o">.</span><span class="n">days</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;DAY&quot;</span>
+                <span class="k">return</span> <span class="s">&quot;day&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s">&quot;hour&quot;</span>
+</div>
+<div class="viewcode-block" id="Timerange.months"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.months">[docs]</a>    <span class="k">def</span> <span class="nf">months</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overlap_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a list of all months contained in self</span>
+<span class="sd">        (this could also be an iterator)</span>
+
+<span class="sd">        if overlap_edges is set, may extend beyond the current range</span>
+<span class="sd">        rounding to the nearest full month on each end</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#rr = RelativeRange()</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="s">&quot;month&quot;</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="s">&quot;month&quot;</span><span class="p">)</span>
+        <span class="n">months</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="nb">str</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+            <span class="c">#month = rr.month(current)</span>
+            <span class="n">month</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">months</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">month</span><span class="p">)</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">future_month</span><span class="p">(</span><span class="n">months</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">months</span>
+                    </div>
+<div class="viewcode-block" id="Timerange.days"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.days">[docs]</a>    <span class="k">def</span> <span class="nf">days</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overlap_edges</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a list of all days contained in self</span>
+<span class="sd">        (this could also be an iterator)</span>
+
+<span class="sd">        if overlap_edges is set, may extend beyond the current range</span>
+<span class="sd">        rounding to the nearest full day on each end</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#rr = RelativeRange()</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="s">&quot;day&quot;</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="s">&quot;day&quot;</span><span class="p">)</span>
+        <span class="n">days</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="nb">str</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">end</span><span class="p">):</span>
+            <span class="c">#day = rr.day(current)</span>
+            <span class="n">day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            <span class="n">days</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">day</span><span class="p">)</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">future</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">days</span>
+
+    <span class="c">#Relative Range functions</span>
+    <span class="c">#the following functions could be used independent of a Timerange context</span>
+    <span class="c">#but keeping them here for easier access</span></div>
+<div class="viewcode-block" id="Timerange.default"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.default">[docs]</a>    <span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        checks the accuracy of the start timestamp</span>
+<span class="sd">        calls correct method automatically to generate a range</span>
+<span class="sd">        based on that accuracy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">accuracy</span>
+        <span class="k">if</span> <span class="n">accuracy</span> <span class="ow">and</span> <span class="n">accuracy</span> <span class="o">!=</span> <span class="s">&quot;second&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&quot;year&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&quot;month&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&quot;day&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&quot;hour&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">hour</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">accuracy</span> <span class="o">==</span> <span class="s">&quot;minute&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">minute</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#print &quot;Invalid accuracy for automatic Timerange: %s&quot; % self.start.accuracy</span>
+            <span class="c">#if we can&#39;t make an intelligent choice about the range</span>
+            <span class="c">#based on the accuracy of the start</span>
+            <span class="c">#then we can just default to now</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span>
+</div>
+<div class="viewcode-block" id="Timerange.year"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.year">[docs]</a>    <span class="k">def</span> <span class="nf">year</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a range for the year that timestamp falls in</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+        <span class="n">start_compact</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">timestamp</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">end_compact</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">1231235959&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">timestamp</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">compact</span><span class="o">=</span><span class="n">end_compact</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start_compact</span><span class="p">,</span> <span class="n">end_compact</span><span class="p">))</span>
+</div>
+<div class="viewcode-block" id="Timerange.month"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.month">[docs]</a>    <span class="k">def</span> <span class="nf">month</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a range for the month that timestamp falls in</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+        <span class="c">#start_compact = &quot;%s%02d&quot; % (timestamp.year, timestamp.month)</span>
+        <span class="c">#month_start_stamp = Timestamp(compact=start_compact)</span>
+
+        <span class="n">month_start_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="s">&quot;month&quot;</span><span class="p">)</span>
+        
+        <span class="n">next_month_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">future_month</span><span class="p">()</span>
+        <span class="c">#print &quot;Next month: %s&quot; % next_month</span>
+        <span class="c">#print &quot;Next month stamp: %s&quot; % next_month_stamp</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">month_end</span> <span class="o">=</span> <span class="n">next_month_stamp</span><span class="o">.</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">sec</span>
+        <span class="c">#print month_end</span>
+        <span class="n">month_end_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">month_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">month_end_stamp</span>
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">month_start_stamp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">month_end_stamp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timerange.week"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.week">[docs]</a>    <span class="k">def</span> <span class="nf">week</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">week_start</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        uses date.weekday() to determine position in the week</span>
+<span class="sd">        Monday is 0, (default week_start)</span>
+<span class="sd">        if another day should be used, specify in week_start</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+        <span class="c">#round timestamp to the beginning of the day:</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="s">&#39;day&#39;</span><span class="p">)</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">day</span>
+
+        <span class="n">date</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+        <span class="n">weekday</span> <span class="o">=</span> <span class="n">date</span><span class="o">.</span><span class="n">weekday</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">weekday</span> <span class="o">&gt;=</span> <span class="n">week_start</span><span class="p">:</span>
+            <span class="n">go_back</span> <span class="o">=</span> <span class="n">weekday</span> <span class="o">-</span> <span class="n">week_start</span>
+            <span class="n">go_forward</span> <span class="o">=</span> <span class="mi">6</span> <span class="o">-</span> <span class="n">weekday</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">go_back</span> <span class="o">=</span> <span class="n">weekday</span> <span class="o">-</span> <span class="n">week_start</span> <span class="o">+</span> <span class="mi">6</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">go_forward</span> <span class="o">=</span> <span class="n">week_start</span> <span class="o">-</span> <span class="n">weekday</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">go_forward</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c">#print &quot;back: %s, forward: %s&quot; % (go_back, go_forward)</span>
+        <span class="n">week_start_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">past</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">go_back</span><span class="p">)</span>
+        <span class="n">week_end_plus</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">future</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">go_forward</span><span class="p">)</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">week_end</span> <span class="o">=</span> <span class="n">week_end_plus</span><span class="o">.</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">sec</span>
+        <span class="c">#print month_end</span>
+        <span class="n">week_end_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">week_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">week_end_stamp</span>
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">week_start_stamp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">week_end_stamp</span><span class="p">)</span>
+        
+</div>
+<div class="viewcode-block" id="Timerange.day"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.day">[docs]</a>    <span class="k">def</span> <span class="nf">day</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a range for the day that timestamp falls in</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+        <span class="n">today_start_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="s">&quot;day&quot;</span><span class="p">)</span>
+        
+        <span class="n">tomorrow_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">future</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">today_end</span> <span class="o">=</span> <span class="n">tomorrow_stamp</span><span class="o">.</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">sec</span>
+        <span class="n">today_end_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">today_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">today_end_stamp</span>
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">today_start_stamp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">today_end_stamp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timerange.hour"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.hour">[docs]</a>    <span class="k">def</span> <span class="nf">hour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a range for the day that timestamp falls in</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+        <span class="n">start_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="s">&quot;hour&quot;</span><span class="p">)</span>
+        
+        <span class="n">next_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">future</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">hour_end</span> <span class="o">=</span> <span class="n">next_stamp</span><span class="o">.</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">sec</span>
+        <span class="n">end_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">hour_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end_stamp</span>        
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_stamp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_stamp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timerange.minute"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.minute">[docs]</a>    <span class="k">def</span> <span class="nf">minute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a range for the minute that timestamp falls in</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+        <span class="n">start_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">accuracy</span><span class="o">=</span><span class="s">&quot;minute&quot;</span><span class="p">)</span>
+        
+        <span class="n">next_stamp</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">future</span><span class="p">(</span><span class="n">minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">sec</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">minute_end</span> <span class="o">=</span> <span class="n">next_stamp</span><span class="o">.</span><span class="n">datetime</span> <span class="o">-</span> <span class="n">sec</span>
+        <span class="n">end_stamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">minute_end</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">end_stamp</span>
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_stamp</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_stamp</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Timerange.year_past"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Timerange.year_past">[docs]</a>    <span class="k">def</span> <span class="nf">year_past</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;the last 12 months&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span><span class="p">:</span>
+            <span class="c">#want to make sure we normalize to an acutal Timestamp object</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">Timestamp</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span>
+
+        <span class="n">end_compact</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+        <span class="n">last_year</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">past</span><span class="p">(</span><span class="n">years</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">start_compact</span> <span class="o">=</span> <span class="n">last_year</span><span class="o">.</span><span class="n">compact</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">start_compact</span><span class="p">,</span> <span class="n">end_compact</span><span class="p">))</span>
+</div>
+    <span class="k">def</span> <span class="nf">this_month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">last_month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#last_compact = &quot;%s%02d&quot; % (self.start.</span>
+        <span class="n">last_month_ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">past_month</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">(</span><span class="n">last_month_ts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">next_month</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#last_compact = &quot;%s%02d&quot; % (self.start.</span>
+        <span class="n">next_month_ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">future_month</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">(</span><span class="n">next_month_ts</span><span class="p">)</span>
+        
+    <span class="c">#should see future and past operations on Timestamp now</span>
+    <span class="c">#def this_week_last_year(today=date.today()):</span>
+    <span class="k">def</span> <span class="nf">this_week_last_year</span><span class="p">(</span><span class="n">today</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">today</span><span class="p">:</span>
+            <span class="n">today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">(),</span> <span class="n">dttime</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="c">#today = datetime.datetime.now()</span>
+
+        <span class="c">#could use date to same effect,</span>
+        <span class="c">#but that would require exceptions/checks in timestamp for type</span>
+        <span class="c">#today.hour = 0</span>
+        <span class="c">#today.minute = 0</span>
+        <span class="c">#today.second = 0</span>
+        <span class="c">#these are read-only attributes</span>
+
+        <span class="n">year</span> <span class="o">=</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">365</span><span class="p">)</span>
+        <span class="n">last_year</span> <span class="o">=</span> <span class="n">today</span> <span class="o">-</span> <span class="n">year</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">last_year</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">last_year</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="c">#stamp = start.strftime(&quot;%Y%m%d&quot;) + &#39;-&#39; + end.strftime(&quot;%Y%m%d&quot;)</span>
+
+        <span class="k">return</span> <span class="n">Timerange</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end</span><span class="p">)</span>
+        <span class="c">#stamp = str(tr)</span>
+        <span class="c">#return stamp</span>
+
+</div>
+<span class="k">class</span> <span class="nc">Year</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">months</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="Month"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Month">[docs]</a><span class="k">class</span> <span class="nc">Month</span><span class="p">(</span><span class="n">Timerange</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    using this to hold a collection of days (or weeks?)</span>
+<span class="sd">    to ultimately render those days, and their content (summary)</span>
+<span class="sd">    to some other representation (HTML, areaui, etc)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tstamp</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Timerange</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tstamp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c">#test to make sure we were sent an actual month,</span>
+        <span class="c">#rr = RelativeRange(self.start)</span>
+        <span class="c">#rr = Timerange(self.start, name=&quot;relative&quot;)</span>
+        <span class="c">#rr_month = rr.month()</span>
+        <span class="n">rr_month</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rr_month</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Moving start from: </span><span class="si">%s</span><span class="s"> to: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">rr_month</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">rr_month</span><span class="o">.</span><span class="n">start</span>
+            
+        <span class="k">if</span> <span class="n">rr_month</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">datetime</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Moving end from: </span><span class="si">%s</span><span class="s"> to: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">rr_month</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">rr_month</span><span class="o">.</span><span class="n">end</span>
+        
+        <span class="c">#start = timerange.start</span>
+        <span class="c">#end = timerange.end</span>
+
+        <span class="c">#timerange = timerange</span>
+
+        <span class="c">#using a dict for easier (more intuitive) access to the days</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">days</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c">#print range(start.day, end.day+1)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">day</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">day_stamp</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s%02d%02d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">i</span> <span class="p">)</span>
+            <span class="n">day</span> <span class="o">=</span> <span class="n">Day</span><span class="p">(</span><span class="n">day_stamp</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">days</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">day</span>
+            <span class="c">#print i</span>
+
+    <span class="k">def</span> <span class="nf">_get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c">#months = [ &quot;January&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%B&quot;</span><span class="p">)</span>
+    
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_name</span><span class="p">)</span>
+        
+        </div>
+<span class="k">class</span> <span class="nc">Week</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">days</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="Day"><a class="viewcode-back" href="../../api/timestamp.html#moments.timestamp.Day">[docs]</a><span class="k">class</span> <span class="nc">Day</span><span class="p">(</span><span class="n">Timerange</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    days are a 24 hour period</span>
+<span class="sd">    starting at midnight (00:00) and ending at 23:59...</span>
+<span class="sd">    have a number within a month</span>
+<span class="sd">    and a name and number within a week</span>
+<span class="sd">    have a number within a year</span>
+
+<span class="sd">    These are a time range too</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tstamp</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">Timerange</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tstamp</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c">#test to make sure we were sent an actual month,</span>
+        <span class="c">#rr = RelativeRange(self.start)</span>
+        <span class="n">rr</span> <span class="o">=</span> <span class="n">Timerange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+        <span class="n">rr_day</span> <span class="o">=</span> <span class="n">rr</span><span class="o">.</span><span class="n">day</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rr_day</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+            <span class="c">#print &quot;Moving start from: %s to: %s&quot; % (self.start, rr_day.start)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">rr_day</span><span class="o">.</span><span class="n">start</span>
+            
+        <span class="k">if</span> <span class="n">rr_day</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">datetime</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">end</span><span class="o">.</span><span class="n">datetime</span><span class="p">:</span>
+            <span class="c">#print &quot;Moving end from: %s to: %s&quot; % (self.end, rr_day.end)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="n">rr_day</span><span class="o">.</span><span class="n">end</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">day</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hours</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="c">## #was tstamp_to_timerange</span>
+    <span class="c">## def from_tstamp(self, text_time):</span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     take a string of the format:</span>
+    <span class="c">##     YYYYMMDDHHMMSS</span>
+    <span class="c">##     return a tuple of python datetime objects</span>
+    <span class="c">##     based on the format supplied</span>
+    <span class="c">##     can assume different ranges based on the degree of accuracy</span>
+
+    <span class="c">##     we want to assume the difference </span>
+    <span class="c">##     &quot;&quot;&quot;</span>
+    <span class="c">##     if len(text_time) == 14:</span>
+    <span class="c">##         start = datetime(*(strptime(text_time, &quot;%Y%m%d%H%M%S&quot;)[0:6]))</span>
+    <span class="c">##         end = start</span>
+
+    <span class="c">##     elif len(text_time) == 12:</span>
+    <span class="c">##         start = datetime(*(strptime(text_time, &quot;%Y%m%d%H%M&quot;)[0:6]))</span>
+    <span class="c">##         delta = timedelta(minutes=1)</span>
+    <span class="c">##         end = start+delta</span>
+
+    <span class="c">##     elif len(text_time) == 10:</span>
+    <span class="c">##         start = datetime(*(strptime(text_time, &quot;%Y%m%d%H&quot;)[0:6]))</span>
+    <span class="c">##         delta = timedelta(hours=1)</span>
+    <span class="c">##         end = start+delta</span>
+
+    <span class="c">##     elif len(text_time) == 8:</span>
+    <span class="c">##         start = datetime(*(strptime(text_time, &quot;%Y%m%d&quot;)[0:6]))</span>
+
+    <span class="c">##         #this differs from RelativeRange that uses same date, 23:59:59 instead</span>
+    <span class="c">##         delta = timedelta(days=1)</span>
+    <span class="c">##         end = start+delta</span>
+
+    <span class="c">##     elif len(text_time) == 6:</span>
+    <span class="c">##         start = datetime(*(strptime(text_time, &quot;%Y%m&quot;)[0:6]))</span>
+    <span class="c">##         month = start.month</span>
+    <span class="c">##         if month == 12:</span>
+    <span class="c">##             month = 1</span>
+    <span class="c">##         else:</span>
+    <span class="c">##             month += 1</span>
+                
+    <span class="c">##         #there is no concept of months in timedelta:</span>
+    <span class="c">##         #delta = timedelta(months=1)</span>
+    <span class="c">##         #end = start+delta</span>
+    <span class="c">##         end = datetime(start.year, month, 1)</span>
+
+    <span class="c">##     elif len(text_time) == 4:</span>
+    <span class="c">##         start = datetime(*(strptime(text_time, &quot;%Y&quot;)[0:6]))</span>
+    <span class="c">##         delta = timedelta(days=365)</span>
+    <span class="c">##         end = start+delta</span>
+
+    <span class="c">##     else:</span>
+    <span class="c">##         #some other format</span>
+    <span class="c">##         #start = None</span>
+    <span class="c">##         #end = None</span>
+    <span class="c">##         raise AttributeError, &quot;Unknown timerange format: %s&quot;  % text_time</span>
+        
+    <span class="c">##     self.start = Timestamp(start)</span>
+    <span class="c">##     self.end = Timestamp(end)</span>
+    <span class="c">##     return (self.start, self.end)</span>
+
+
+<span class="c">## #class RelativeRange(Timerange):</span>
+<span class="c">## class RelativeRange(object):</span>
+<span class="c">##     &quot;&quot;&quot;</span>
+<span class="c">##     class to quickly get ranges relative to &#39;now&#39;</span>
+<span class="c">##     sometimes these are more complex than just &#39;future&#39; and &#39;past&#39; on Timestamp</span>
+
+<span class="c">##     return timeranges from specific functions</span>
+<span class="c">##     &quot;&quot;&quot;</span>
+<span class="c">##     def __init__(self, timestamp=None, name=&#39;&#39;):</span>
+<span class="c">##         #Timerange.__init__(self)</span>
+
+<span class="c">##         #name should be a string indicating the type of relation</span>
+<span class="c">##         #e.g.</span>
+<span class="c">##         #last month, this month, next_month</span>
+<span class="c">##         self.name = name</span>
+<span class="c">##         if not timestamp:</span>
+<span class="c">##             self.ts = Timestamp()</span>
+<span class="c">##         else:</span>
+<span class="c">##             self.ts = timestamp</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

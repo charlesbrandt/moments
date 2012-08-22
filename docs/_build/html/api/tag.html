@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The tag Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The association Module" href="association.html" />
+    <link rel="prev" title="The timestamp Module" href="timestamp.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="association.html" title="The association Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="timestamp.html" title="The timestamp Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.tag">
+<span id="the-tag-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">tag</span></tt> Module<a class="headerlink" href="#module-moments.tag" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="moments.tag.Tags">
+<em class="property">class </em><tt class="descclassname">moments.tag.</tt><tt class="descname">Tags</tt><big>(</big><em>tags=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#Tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.Tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>tags are typically just stored as a list of strings
+strings can have alphanumeric characters in them and the underscore (&#8216;_&#8217;)</p>
+<p>individual tags should not have spaces</p>
+<p>this class collects methods
+to help convert to and from
+different formats of expressing tag collections</p>
+<dl class="method">
+<dt id="moments.tag.Tags.from_tag_string">
+<tt class="descname">from_tag_string</tt><big>(</big><em>tag_string</em><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#Tags.from_tag_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.Tags.from_tag_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>a tag string is a string of tags separated by a &#8216;-&#8216;
+easy to split with python,
+but for a consistent interface
+using this</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.tag.Tags.omit">
+<tt class="descname">omit</tt><big>(</big><em>tags=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#Tags.omit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.Tags.omit" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove tags from current set of tags if they exist</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.tag.Tags.to_tag_string">
+<tt class="descname">to_tag_string</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#Tags.to_tag_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.Tags.to_tag_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a list of tags, and return the corresponding tag string
+tag1-tag2</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.tag.Tags.union">
+<tt class="descname">union</tt><big>(</big><em>tag_list</em><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#Tags.union"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.Tags.union" title="Permalink to this definition">¶</a></dt>
+<dd><p>take the list of tags supplied
+and add any tags that we don&#8217;t have</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.tag.from_tag">
+<tt class="descclassname">moments.tag.</tt><tt class="descname">from_tag</tt><big>(</big><em>item</em><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#from_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.from_tag" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>*doesn&#8217;t work well in practice*</strong></p>
+<p>take any tag and attempt to make it more human readable</p>
+<p>should just keep them as tags usually</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.tag.to_tag">
+<tt class="descclassname">moments.tag.</tt><tt class="descname">to_tag</tt><big>(</big><em>item</em><big>)</big><a class="reference internal" href="../_modules/moments/tag.html#to_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.tag.to_tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>take any string and convert it to an acceptable tag</p>
+<p>tags should not contain spaces or special characters
+numbers, lowercase letters only
+underscores can be used, but they will be converted to spaces in some cases</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="timestamp.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">timestamp</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="association.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">association</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/tag.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="association.html" title="The association Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="timestamp.html" title="The timestamp Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

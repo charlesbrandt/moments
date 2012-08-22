@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>moments.log &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for moments.log</h1><div class="highlight"><pre>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="c"># moments</span>
+<span class="c"># Copyright (c) 2009-2010, Charles Brandt</span>
+<span class="c"># </span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c"># in the Software without restriction, including without limitation the rights</span>
+<span class="c"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c"># furnished to do so, subject to the following conditions:</span>
+<span class="c"># </span>
+<span class="c"># The above copyright notice and this permission notice shall be included in</span>
+<span class="c"># all copies or substantial portions of the Software.</span>
+<span class="c"># </span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN</span>
+<span class="c"># THE SOFTWARE.</span>
+<span class="c"># ----------------------------------------------------------------------------</span>
+<span class="kn">import</span> <span class="nn">StringIO</span><span class="o">,</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+
+<span class="kn">from</span> <span class="nn">moment</span> <span class="kn">import</span> <span class="n">Moment</span>
+
+<span class="kn">import</span> <span class="nn">timestamp</span>
+<span class="kn">from</span> <span class="nn">tag</span> <span class="kn">import</span> <span class="n">Tags</span>
+
+<div class="viewcode-block" id="Log"><a class="viewcode-back" href="../../api/log.html#moments.log.Log">[docs]</a><span class="k">class</span> <span class="nc">Log</span><span class="p">(</span><span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Log is an in memory buffer (StringIO) that holds</span>
+<span class="sd">    a text format for a list of entries / moments. </span>
+
+<span class="sd">    The goal for this format is to be easy to create and update in a text editor</span>
+
+<span class="sd">    For each entry:</span>
+<span class="sd">    </span>
+<span class="sd">       will create a Moment (with or without timestamp)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c"># until we have entries (from to_entries or from_entries), assume we don&#39;t:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_entries</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="Log.from_file"><a class="viewcode-back" href="../../api/log.html#moments.log.Log.from_file">[docs]</a>    <span class="k">def</span> <span class="nf">from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if the file exists, read in its contents</span>
+
+<span class="sd">        otherwise set our filename and stay empty</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="c">#we don&#39;t have a file associated with the EntryList:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="k">print</span> <span class="s">&quot;UNKNOWN FILE!&quot;</span>
+                <span class="nb">exit</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">filename</span>
+                
+        <span class="k">elif</span> <span class="n">filename</span> <span class="ow">and</span> <span class="n">filename</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="c">#ambiguous which file to use</span>
+            <span class="k">print</span> <span class="s">&quot;different file than what log was initialized with&quot;</span>
+            <span class="nb">exit</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c">#we have an original filename and none passed in</span>
+            <span class="c">#or the original filename equals the one passed in</span>
+            <span class="c">#should be good to go</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">):</span>
+
+            <span class="c">#f = open(self.name, &quot;U&quot;)</span>
+            <span class="c">#2009.04.02 20:44:31 </span>
+            <span class="c">#very strange behavior when opening up utf-8 files</span>
+            <span class="c">#characters get reincoded</span>
+            <span class="c">#this is especially prominent when using check_feed.py</span>
+            <span class="c">#was using latin_1... going back to utf-8</span>
+            <span class="c">#f = codecs.open(self.name, encoding=&#39;latin_1&#39;)</span>
+            <span class="c">#codecs.ignore_errors(UnicodeDecodeError)            </span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s">&#39;ignore&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;NO FILE ASSOCIATED WITH LOG: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+</div>
+<div class="viewcode-block" id="Log.to_file"><a class="viewcode-back" href="../../api/log.html#moments.log.Log.to_file">[docs]</a>    <span class="k">def</span> <span class="nf">to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        save our content to the file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">if</span> <span class="n">name</span><span class="p">:</span>
+            <span class="c">#f = open(self.name, &#39;w&#39;)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;No log_name for this log&quot;</span>
+</div>
+<div class="viewcode-block" id="Log.from_entries"><a class="viewcode-back" href="../../api/log.html#moments.log.Log.from_entries">[docs]</a>    <span class="k">def</span> <span class="nf">from_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entries</span><span class="p">,</span> <span class="n">omits</span><span class="o">=</span><span class="p">[],</span> <span class="n">include_path</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        take a collection of entries and put together a log buffer</span>
+
+<span class="sd">        omit tags allow us to omit a certain tag on export/extract</span>
+<span class="sd">        if omit tag is given,</span>
+<span class="sd">        do not print the tag for any of the entries.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c">#need to make an explicit decision on where to start writing</span>
+        <span class="c">#with out that it is completely dependent on where the last</span>
+        <span class="c">#seek operation left the pointer in the file</span>
+        <span class="c">#could be the beginning, could be the end</span>
+        <span class="c">#need to be explicit about how from_entries operates though</span>
+
+        <span class="c">#think the right idea is that from_entries should over write any</span>
+        <span class="c">#other data in the log.  that means it should be extracted first</span>
+        <span class="c">#if it should be kept</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">entries</span><span class="p">:</span>
+            <span class="n">entry</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">omit</span><span class="p">(</span><span class="n">omits</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">include_path</span><span class="o">=</span><span class="n">include_path</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entries</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">has_entries</span> <span class="o">=</span> <span class="bp">True</span>
+</div>
+<div class="viewcode-block" id="Log.to_entries"><a class="viewcode-back" href="../../api/log.html#moments.log.Log.to_entries">[docs]</a>    <span class="k">def</span> <span class="nf">to_entries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">add_tags</span><span class="o">=</span><span class="p">[],</span> <span class="n">add_time</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">moments_only</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        convert log to a list of entry objects (essentially what a log is)</span>
+
+<span class="sd">        if moments_only is true, only Moments will be created</span>
+<span class="sd">        </span>
+<span class="sd">        if add_time is false, and moments_only is true,</span>
+<span class="sd">        upon reaching an Entry only (*... ) (no timestamp)</span>
+<span class="sd">        that information will be added to the previous Moment</span>
+<span class="sd">        (this is useful when parsing data that was not originally intended to</span>
+<span class="sd">        be used as part of a moment... it may contain lines that start with &#39;*&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entries</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">entry_regex</span> <span class="o">=</span> <span class="s">&quot;\*&quot;</span>
+        <span class="n">entry_search</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">entry_regex</span><span class="p">)</span>
+
+        <span class="n">cur_entry</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">()</span>
+        <span class="n">cur_entry</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="n">new_entry</span> <span class="o">=</span> <span class="bp">None</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Problem reading file&quot;</span>
+            <span class="k">return</span> <span class="n">entries</span>
+
+        <span class="c">#first line of a log should have an entry... this is our check</span>
+        <span class="k">if</span> <span class="n">entry_search</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">has_entries</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">while</span> <span class="n">line</span><span class="p">:</span>
+                <span class="c">#we might have found a new entry...</span>
+                <span class="c">#see what kind, if any:</span>
+                <span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">line_tags</span><span class="p">)</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">parse_line_for_time</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ts</span><span class="p">:</span>
+                    <span class="n">new_entry</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">()</span>
+                    <span class="n">new_entry</span><span class="o">.</span><span class="n">created</span> <span class="o">=</span> <span class="n">timestamp</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">entry_search</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>            
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">moments_only</span><span class="p">:</span>
+                        <span class="n">new_entry</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">()</span>
+                    <span class="k">elif</span> <span class="n">add_time</span> <span class="ow">and</span> <span class="n">moments_only</span><span class="p">:</span>
+                        <span class="c">#ok to make a default time for the entry</span>
+                        <span class="n">new_entry</span> <span class="o">=</span> <span class="n">Moment</span><span class="p">()</span>
+                        <span class="k">print</span> <span class="s">&quot;no timestamp found in this entry&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c">#must be moments only,</span>
+                        <span class="c">#but we don&#39;t want to add a timestamp</span>
+                        <span class="c">#just include the data with the previous moment</span>
+                        <span class="n">new_entry</span> <span class="o">=</span> <span class="bp">None</span>
+
+                <span class="k">if</span> <span class="n">new_entry</span><span class="p">:</span>
+                    <span class="c">#finish up last entry...</span>
+                    <span class="c">#only need to add if it had information</span>
+                    <span class="k">if</span> <span class="n">cur_entry</span><span class="o">.</span><span class="n">data</span> <span class="ow">or</span> <span class="n">cur_entry</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                        <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_entry</span><span class="p">)</span>
+
+                    <span class="n">new_entry</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+                    <span class="n">current_tags</span> <span class="o">=</span> <span class="n">line_tags</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="n">add_tags</span><span class="p">:</span>
+                        <span class="n">temp_tags</span> <span class="o">=</span> <span class="n">add_tags</span><span class="p">[:]</span>
+                        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">current_tags</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">t</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">temp_tags</span><span class="p">:</span>
+                                <span class="n">temp_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+                        <span class="n">current_tags</span> <span class="o">=</span> <span class="n">temp_tags</span>
+
+                    <span class="n">new_entry</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">current_tags</span><span class="p">)</span>
+                    <span class="n">cur_entry</span> <span class="o">=</span> <span class="n">new_entry</span>
+                    <span class="n">new_entry</span> <span class="o">=</span> <span class="bp">None</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c"># only want to add the entry itself</span>
+                    <span class="n">cur_entry</span><span class="o">.</span><span class="n">data</span> <span class="o">+=</span> <span class="n">line</span>
+
+                <span class="n">line</span> <span class="o">=</span> <span class="nb">unicode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">readline</span><span class="p">())</span>
+                
+            <span class="c">#need to get the last entry from the file, if there is one.</span>
+            <span class="k">if</span> <span class="n">cur_entry</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+                <span class="n">entries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_entry</span><span class="p">)</span>
+
+        <span class="c">#if not, don&#39;t scan</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;File does not start with an entry: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+            
+        <span class="k">return</span> <span class="n">entries</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

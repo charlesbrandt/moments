@@ -1,0 +1,81 @@
+How-to
+============
+
+Make Moments
+------------------
+
+I find it most natural to use a text editor with a built in timestamping / 'make new moment' / 'notice' macro in the text editor itself.  
+
+I typically start with a new directory that contains a todo.txt and journal.txt file.  A more complete and detailed explanation of this process can be found here:
+https://bitbucket.org/context/context
+
+
+Manage Moments
+--------------------
+
+Moments are meant to be flexible enough to adapt to your way of organization. Since I use a text editor, I use different files for different contexts.  Over time, certain moments in a context become irrelevant, and other external moments are needed in that context.  This is where I find a tagging concept crucial.  With tags I am able to 'extract' tags from one set of moments ('Journal' in journal.py) and merge them in with another Journal.  If applicable, I'll add any relevant tags from the file's path in with the moment as they are extracted.  (sometimes the filename acts as a meta tag for all moments it holds). 
+
+I have quite a few scripts in the `mindstream <https://bitbucket.org/cbrandt/mindstream>`_ module for managing moments. They deal with different extract, merge, and splitting operations. 
+
+Everything else just gets rolled down to a daily log, sorted by time. 
+
+
+Summarize Moments
+-------------------
+
+With so many events in life, it can be tricky to document the important ones.  It can be even more difficult to go back and summarize what happened and add information to help find those thoughts later.  
+
+Meta data.  The information that describes the rest of the information.  How many times have you heard a song?  How would you classify what is in a photo? There are many programs that will help you create meta data, but they also tend to lock that information up into proprietary formats and rigid structures. 
+
+Keeping a journal (with Moments) is a way of creating that meta data for events in life.  Text is a powerful way to condense and distill the personally meaningful results of these events.  After a while, however, those entries pile up.  A system is needed to retrieve thoughts based on a certain topic or concept.  
+
+Summarizing looks at all of the different events over a certain period of time and either subjectively or objectively determines which ones are the most important ones to describe what happened in that time. 
+
+
+Process Details
+-----------------
+
+So far, much of this process is manual.  
+
+I try to back up and synchronize my personal collection of moments every month.  Any more than that, and I find the process itself gets in the way of the rest of life. (Thrashing).  Any less than that and I find requests get lost in the shuffle, or are not responded to quickly enough.  
+
+I have developed a process that works for me. This process gets very specific to personal organizational structures. 
+
+I start with basic synchronizing scripts:
+::
+
+  /c/moments/mercurial_sync.py
+
+  python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/
+
+The next part involves extracting items with currently active repositories. The rest of the moments are split into days:
+::
+
+  /c/mindstream/moments-scripts/split_logs_to_days.py /c/journal/incoming /c/journal
+
+  /c/mindstream/moments-scripts/sort_month.py /c/journal/2012/$MM
+
+So that gets everything in one place and sorted.  But that can still be a lot of information, even for just one month.  By convention, I tag entries that summarize blocks of time longer than a single moment with the tag 'summary'. 
+
+If you take a lot of pictures, and have a way to sort through them, they can help with outlining a month summary. 
+
+Pose can also help summarize:
+
+Start a moments server:
+::
+
+  python /c/moments/moments/server.py /c/journal 
+
+Then start a pose server:
+::
+
+  cd /c/mindstream/pose"
+  echo "python application-split.py -c /c/journal"
+
+In a browser, go:
+::
+
+  http://localhost:8088/range/201202/20120229235959
+
+Hope that helps!
+

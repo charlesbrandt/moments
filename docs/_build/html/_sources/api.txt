@@ -1,0 +1,27 @@
+API Documentation
+=================
+
+This page outlines the main modules provided by the Moments python package.
+
+Text files containing this format are referred to as moment logs (or just logs). There is an object to represent these in moments.log.Log.
+
+After parsing a log, an in memory python moments.journal.Journal object can be created. Journals allow multiple logs to be merged, and support different ways of splitting up the entries.
+
+For further details, please see below:
+
+.. toctree::
+   :maxdepth: 2
+
+   api/moment
+   api/journal
+   api/path
+   api/timestamp
+   api/tag
+   api/association
+   api/log
+   api/filters
+   api/server
+
+
+
+

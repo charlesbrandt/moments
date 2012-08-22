@@ -1,0 +1,6 @@
+The :mod:`moment` Module
+-----------------------------
+
+.. automodule:: moments.moment
+   :members:
+

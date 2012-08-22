@@ -1,0 +1,10 @@
+Thanks
+==================
+
+As mentioned in the README... 
+
+This software was made possible by the love of TCB, my family, my teachers and my friends.  
+
+Thank you!
+
+Thanks also to Ron Duplain (https://github.com/rduplain/notice) for showing interest in the project and discussing approaches. 

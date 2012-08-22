@@ -1,0 +1,6 @@
+The :mod:`journal` Module
+-----------------------------
+
+.. automodule:: moments.journal
+   :members:
+

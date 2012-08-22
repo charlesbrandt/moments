@@ -1,0 +1,6 @@
+The :mod:`timestamp` Module
+-----------------------------
+
+.. automodule:: moments.timestamp
+   :members:
+

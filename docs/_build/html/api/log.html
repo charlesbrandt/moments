@@ -1,0 +1,166 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The log Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The filters Module" href="filters.html" />
+    <link rel="prev" title="The association Module" href="association.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="filters.html" title="The filters Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="association.html" title="The association Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.log">
+<span id="the-log-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">log</span></tt> Module<a class="headerlink" href="#module-moments.log" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="moments.log.Log">
+<em class="property">class </em><tt class="descclassname">moments.log.</tt><tt class="descname">Log</tt><big>(</big><em>filename=None</em><big>)</big><a class="reference internal" href="../_modules/moments/log.html#Log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.log.Log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log is an in memory buffer (StringIO) that holds
+a text format for a list of entries / moments.</p>
+<p>The goal for this format is to be easy to create and update in a text editor</p>
+<p>For each entry:</p>
+<blockquote>
+<div>will create a Moment (with or without timestamp)</div></blockquote>
+<dl class="method">
+<dt id="moments.log.Log.from_entries">
+<tt class="descname">from_entries</tt><big>(</big><em>entries</em>, <em>omits=</em><span class="optional">[</span><span class="optional">]</span>, <em>include_path=False</em><big>)</big><a class="reference internal" href="../_modules/moments/log.html#Log.from_entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.log.Log.from_entries" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a collection of entries and put together a log buffer</p>
+<p>omit tags allow us to omit a certain tag on export/extract
+if omit tag is given,
+do not print the tag for any of the entries.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.log.Log.from_file">
+<tt class="descname">from_file</tt><big>(</big><em>filename=None</em><big>)</big><a class="reference internal" href="../_modules/moments/log.html#Log.from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.log.Log.from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>if the file exists, read in its contents</p>
+<p>otherwise set our filename and stay empty</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.log.Log.to_entries">
+<tt class="descname">to_entries</tt><big>(</big><em>add_tags=</em><span class="optional">[</span><span class="optional">]</span>, <em>add_time=False</em>, <em>moments_only=False</em><big>)</big><a class="reference internal" href="../_modules/moments/log.html#Log.to_entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.log.Log.to_entries" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert log to a list of entry objects (essentially what a log is)</p>
+<p>if moments_only is true, only Moments will be created</p>
+<p>if add_time is false, and moments_only is true,
+upon reaching an Entry only (<em>... ) (no timestamp)
+that information will be added to the previous Moment
+(this is useful when parsing data that was not originally intended to
+be used as part of a moment... it may contain lines that start with &#8216;</em>&#8216;)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="moments.log.Log.to_file">
+<tt class="descname">to_file</tt><big>(</big><em>filename=None</em><big>)</big><a class="reference internal" href="../_modules/moments/log.html#Log.to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.log.Log.to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>save our content to the file</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="association.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">association</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="filters.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal"><span class="pre">filters</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/log.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="filters.html" title="The filters Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="association.html" title="The association Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

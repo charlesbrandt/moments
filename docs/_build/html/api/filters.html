@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The filters Module &mdash; Moments 2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Moments 2.0 documentation" href="../index.html" />
+    <link rel="up" title="API Documentation" href="../api.html" />
+    <link rel="next" title="The server Module" href="server.html" />
+    <link rel="prev" title="The log Module" href="log.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="server.html" title="The server Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="log.html" title="The log Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" accesskey="U">API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-moments.filters">
+<span id="the-filters-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">filters</span></tt> Module<a class="headerlink" href="#module-moments.filters" title="Permalink to this headline">¶</a></h1>
+<p>functions useful for extracting moments from a group of log files
+based on the tags we want to extract</p>
+<dl class="class">
+<dt id="moments.filters.ExtractConfig">
+<em class="property">class </em><tt class="descclassname">moments.filters.</tt><tt class="descname">ExtractConfig</tt><a class="reference internal" href="../_modules/moments/filters.html#ExtractConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.ExtractConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>used in /c/mindstream/moments-scripts/extract.py</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.difference">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">difference</tt><big>(</big><em>set1</em>, <em>set2</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#difference"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.difference" title="Permalink to this definition">¶</a></dt>
+<dd><p>take two lists
+return the differences</p>
+<p>NOTE THAT ORDER MATTERS!
+if 1 is a superset of 2, there will be a difference
+but if 2 is a superset of 1, there won&#8217;t be a difference</p>
+<p>i.e.
+larger set first!
+larger = set1, smaller = set2</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.difference_journals">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">difference_journals</tt><big>(</big><em>journal</em>, <em>other</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#difference_journals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.difference_journals" title="Permalink to this definition">¶</a></dt>
+<dd><p>take another journal,
+return a new journal
+with the entries that are only in the other journal
+not in ourself</p>
+<p>NOTE:
+we may have entries in journal that are not in other...
+those will not be returned.
+this can be called in the opposite direction if those are wanted</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.extract">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">extract</tt><big>(</big><em>journal</em>, <em>tag_list</em>, <em>etype='intersect'</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#extract"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.extract" title="Permalink to this definition">¶</a></dt>
+<dd><p>remove any entries tagged with a/all tag in tag_list</p>
+<p>saving journal (with missing entries) left to caller (if desired)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.extract_many">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">extract_many</tt><big>(</big><em>path</em>, <em>extractions</em>, <em>ignores=</em><span class="optional">[</span><span class="optional">]</span>, <em>save=False</em>, <em>extract_type='intersect'</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#extract_many"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.extract_many" title="Permalink to this definition">¶</a></dt>
+<dd><p>rather than go through all files for every extraction
+it is nice to go through all extractions during each file</p>
+<p>save extractions for each file
+rather than accumulating until end</p>
+<p>will make it trickier for trial runs
+can print actions or make temp logs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.extract_tags">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">extract_tags</tt><big>(</big><em>path</em>, <em>extractions=</em><span class="optional">[</span><span class="optional">]</span>, <em>ignores=</em><span class="optional">[</span><span class="optional">]</span>, <em>save=False</em>, <em>extract_type='intersect'</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#extract_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.extract_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>accept a list of extractions
+where each extraction consists of a set of tags to look for
+(using extract_type)
+and a destination where matching entries should be extracted to</p>
+<p>ignores is a list of tags to leave out of the found entries
+(good for filtering tags generated from the original file path)</p>
+<p>this duplicates the logic for scanning all files from extract_tag
+it feels more readable to separate the two</p>
+<p><a href="#id1"><span class="problematic" id="id2">*</span></a>2009.08.29 13:20:46
+now part of the moments module itself</p>
+<p>not to be confused with the Journal.extract method
+these functions are higher level operations that utilize Journal.extract</p>
+<p>also:
+# take a list of tags,
+# and the directory or file that you want to use as the source of the tags
+# go through all files, and remove those tags
+# saving them in a new separate file (or specified existing file)</p>
+<p># adapted from pose.controllers.tags.extract</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.filter_entries">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">filter_entries</tt><big>(</big><em>journal</em>, <em>updates</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#filter_entries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.filter_entries" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply filters to the journal&#8217;s entries in place
+#normalize/filter all of the data first...
+#as the system changes, so do the paths</p>
+<p>adapted from medialist.from_journal</p>
+<p>could consider adding this as a method to entry or data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.filter_list">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">filter_list</tt><big>(</big><em>items</em>, <em>ignores</em>, <em>search=False</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#filter_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.filter_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>IF SEARCH IS NOT TRUE, IGNORES MUST BE AN EXACT MATCH</p>
+<p>take a list of items
+take a list of itmes to ignore
+return a new list of items based on first, original, with ignores removed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.filter_log">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">filter_log</tt><big>(</big><em>path</em>, <em>filters</em>, <em>save=False</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#filter_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.filter_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.filter_logs">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">filter_logs</tt><big>(</big><em>path</em>, <em>updates=</em><span class="optional">[</span><span class="optional">]</span>, <em>save=False</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#filter_logs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.filter_logs" title="Permalink to this definition">¶</a></dt>
+<dd><p>walk the path, looking for moment logs
+for each log
+scan entries
+for each entry
+apply filter</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.find_and_replace">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">find_and_replace</tt><big>(</big><em>items</em>, <em>updates</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#find_and_replace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.find_and_replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>aka find_and_replace</p>
+<p>apply all updates in updates list 
+to all items in items list</p>
+<p>updates consist of a list of lists
+where the sub lists contain:
+(search_string, replace_string)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.flatten">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">flatten</tt><big>(</big><em>journal</em>, <em>filename=None</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a flat version of the journal without timestamps (or tags?)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.flatten_first_lines">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">flatten_first_lines</tt><big>(</big><em>journal</em>, <em>separator=' '</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#flatten_first_lines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.flatten_first_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>only keep the first line of each journal entry
+useful for playlists</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.intersect">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">intersect</tt><big>(</big><em>set1</em>, <em>set2</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#intersect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>take two lists
+intersect the items in them</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.intersect_journal_entries_with_tags">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">intersect_journal_entries_with_tags</tt><big>(</big><em>journal</em>, <em>tag_list</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#intersect_journal_entries_with_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.intersect_journal_entries_with_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>look for all entries in the journal that have all tags in tag_list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.intersect_journals">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">intersect_journals</tt><big>(</big><em>journal</em>, <em>other</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#intersect_journals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.intersect_journals" title="Permalink to this definition">¶</a></dt>
+<dd><p>take another journal,
+return a new journal
+with only the entries that are in common to both</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.main">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.main" title="Permalink to this definition">¶</a></dt>
+<dd><p><a href="#id3"><span class="problematic" id="id4">*</span></a>2011.08.30 09:09:19 
+imported from filter_logs
+that might not be the main functionality of this module</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.omit_date_tags">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">omit_date_tags</tt><big>(</big><em>items</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#omit_date_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.omit_date_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>take a list of tags
+leave out any that are a timestamp</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.remove_dupes">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">remove_dupes</tt><big>(</big><em>items</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#remove_dupes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.remove_dupes" title="Permalink to this definition">¶</a></dt>
+<dd><p>make sure no item appears twice in list
+i.e. filter for any duplicates</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="moments.filters.unaccented_map">
+<em class="property">class </em><tt class="descclassname">moments.filters.</tt><tt class="descname">unaccented_map</tt><a class="reference internal" href="../_modules/moments/filters.html#unaccented_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.unaccented_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maps a unicode character code (the key) to a replacement code
+(either a character code or a unicode string).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.union">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">union</tt><big>(</big><em>set1</em>, <em>set2</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#union"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.union" title="Permalink to this definition">¶</a></dt>
+<dd><p>take two lists
+union the items in them</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.union_journal_entries_with_tags">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">union_journal_entries_with_tags</tt><big>(</big><em>journal</em>, <em>tag_list</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#union_journal_entries_with_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.union_journal_entries_with_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>look for all entries in the journal that have any tags in tag_list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="moments.filters.union_journals">
+<tt class="descclassname">moments.filters.</tt><tt class="descname">union_journals</tt><big>(</big><em>journal</em>, <em>other</em><big>)</big><a class="reference internal" href="../_modules/moments/filters.html#union_journals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#moments.filters.union_journals" title="Permalink to this definition">¶</a></dt>
+<dd><p>take another journal
+combine all entries in it and journal</p>
+<p>similar to merge_logs
+(to be consistent with intersect and difference behavior:
+return a new Journal with those entries)</p>
+<p>this is also what from_entries does</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="log.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">log</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="server.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">server</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/filters.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="server.html" title="The server Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="log.html" title="The log Module"
+             >previous</a> |</li>
+        <li><a href="../index.html">Moments 2.0 documentation</a> &raquo;</li>
+          <li><a href="../api.html" >API Documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Charles Brandt.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

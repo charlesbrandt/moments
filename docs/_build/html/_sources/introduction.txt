@@ -1,0 +1,19 @@
+Why Moments?
+===============
+
+Computers are at the heart of modern day record keeping.  There are a number of different systems and formats for organizing your information.  Unfortunately, there are drawbacks including:
+ - proprietary formats
+ - narrow focus of what type of information is stored
+ - difficult for humans to read/create
+
+This results in fragmentation of information across many different types of systems, both local and remote.  When we want to change solutions (or worse yet, the services disappear) we often must leave the information associated with that service behind.  If you trust these memories to a computer, this can result in big gaps in your digital history.  
+
+Enter Moments.
+
+*2009.09.17 09:49:18 
+- Keep meta data mixed in with binary files.  This allows you to organize and sort binary data without losing track of the meta data.  If meta data is stored in the database, links may be broken after moving binary data.  This is why programs like iTunes prefer to handle sorting for you. 
+
+- Split meta data into separate locations.  Related to previous point, but if you want to move part of the meta data to a different machine, it is easy to split it up accordingly. 
+
+These things are possible with databases, but databases add one more dependency into the equation.  They also require a potentially unintuitive process to split data.  
+
