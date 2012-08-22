@@ -15,7 +15,6 @@ index*
 
 # switch to regexp syntax.
 syntax: regexp
-^docs/_build*
 ^editors/emacs/.emacs.d/matlab-emacs/
 ^editors/emacs/.emacs.d/session*
 ^binaries*
@@ -25,3 +24,4 @@ syntax: regexp
 ^build/
 sized
 ^snapshots*
+docs/_build/doctrees/

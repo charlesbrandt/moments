@@ -8,73 +8,35 @@ The best way to get moments is to clone the mercurial repository:
   cd moments
   sudo python setup.py install
 
-This assumes you already have Python and Mercurial installed.  
+Another way to get moments is via easy_install. This version is not always the latest and greatest:
+::
+
+  sudo easy_install moments
+
 
 Editors
 ----------
+
 See the editors/ directory for different configurations for adding a time stamp command to your editor.  
 
-
-Python
---------
-
-Python is included with many operating systems.  
-
-An easy way to check if your system already has Python is to open up a terminal / command prompt and type:
-
-python -V
-
-for example:
-python -V
-Python 2.5.2
-
-If your operating system does not have Python installed, please visit:
-http://www.python.org
-For more information on downloading and installing Python for your system. 
-
-The other component that you will need to install is the Python Imaging Library (often abbreviated as PIL). 
-
-http://www.pythonware.com/products/pil/
-
-Binaries for windows are available at the main site.  Binary packages are much easier to install than from source.   
-
-For Mac OS X you can use ports, or find a binary package like the following:
-http://pythonmac.org/packages/py25-fat/index.html
-This also requires the 2.5 version of Python from python.org. (The one distributed with Leopard won't work)
-
-also [2009.06.26 13:19:06] 
-after installing the python from python.org, make sure that the python in the default path is using the latest python
-which python
-python -V
-should be 2.5.4
-
-sudo rm /usr/bin/python
-sudo ln -s /usr/local/bin/python /usr/bin/python
-
-sudo rm /usr/bin/pythonw
-sudo ln -s /usr/local/bin/pythonw /usr/bin/pythonw
+Currently there are notes for Emacs, VI, and Gedit.  Evernote conversions are in the works. 
 
 
-See also:
-http://code.google.com/appengine/docs/python/images/installingPIL.html
+Requirements
+----------------
 
-be sure to set up easy_install for the new python instance
-this can be done by running 
-ez_setup.py
-available at:
-http://peak.telecommunity.com/dist/ez_setup.py
+Make sure you have the following items available on your computer:
 
-If you are on a shared system, Virtual Env may help isolate your Python instance from other Python instances on the system.
+- Python: (currently using versions 2.5 and up)
+  http://www.python.org
 
-nosetests
-http://somethingaboutorange.com/mrl/projects/nose/
-sudo easy_install nose
+- Image manipulations are an optional part of the path.py module and require:
 
-notes for this are elsewhere
-but this is also a good time to install mercurial
-easy_install mercurial
+  - Python Image Library (or Pillow)
+  - jhead command line utility
 
-on Mac OS X this does require Xcode to be up to date
-(can still download an executable for mac)
+- Mercurial is useful for staying in sync with the source distribution, and also for synchronizing your own notes across different machines. 
 
+Notes for installing and configuring a computer system that runs python are beyond the scope of this document.  For details and recommendations on this process, please see:
+charlesbrandt.com
 

@@ -21,17 +21,15 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-*2009.10.21 16:07:53 
-module for interacting with the filesystem.
-Main focus is on abstracting files and directories and paths.
+This module helps in interacting with the filesystem.
+The main focus is on abstracting files and directories and paths.
 
-adapted from osbrowser package.
+Path loads Files, Directories, etc.
+Files have a path associated with them.
+Directories are a collection of Paths (that link to other files and directories).
 
-Path loads Files, Directories, etc
-Files have a path associated with them
-Directories are a collection of Paths (that link to other files and directories)
-circular dependency
-hence, one file
+There is a circular dependency with these objects, so they need to be kept in one file.
+
 """
 import os, re, random, subprocess, cPickle, shutil
 import urllib
@@ -903,6 +901,9 @@ class File(object):
     #consider making size a property
     #Directory uses this too
     def check_size(self):
+        """
+        Wraps os.path.getsize() to return the file's size.
+        """
         self.size = os.path.getsize(str(self.path))        
         return self.size
     
@@ -1363,13 +1364,15 @@ class Image(File):
 
 class Directory(File):
     """
-    object to hold a summary of a single directory
+    This object holds a summary of a single directory.
     (no recursion.  one level only)
 
-    Directory should just be a collection of Path objects
-    they can be sortable based on types, dates, etc
-    but other than that, shouldn't need anything else in it
-    path can handle loading and types
+    A Directory is a collection of Path objects. 
+    They can be sortable based on types, dates, etc.
+    Each of the Paths can handle loading and types.
+
+    Directories on the filesystem share many properties with Files,
+    so the Directory class is a subclass of the File class. 
     """
     def __init__(self, path='', **kwargs):
         File.__init__(self, path, **kwargs)
@@ -1577,10 +1580,11 @@ class Directory(File):
 
     def check_size(self, recurse=False):
         """
-        go through all files and find size
+        Go through all files and add up the size. 
 
-        might want a recursive option here
-        will be resource intensive though
+        It is possible to recursively add up sizes of subdirectories,
+        but this can be a resource intensive operation.
+        Be careful when setting recurse=True. 
         """
         if not self.size:
             for item_path in self.files:

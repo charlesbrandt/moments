@@ -23,11 +23,6 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-# By: Charles Brandt [code at contextiskey dot com]
-# On: *2010.12.01 11:08:25 
-# License:  MIT
-
-# Description:
 functions useful for extracting moments from a group of log files
 based on the tags we want to extract
 
@@ -352,7 +347,7 @@ def find_and_replace(items, updates):
 
 class ExtractConfig(object):
     """
-    used in /c/charles/system/extract_config.py
+    used in /c/mindstream/moments-scripts/extract.py
     """
     def __init__(self):
         self.sources = ''

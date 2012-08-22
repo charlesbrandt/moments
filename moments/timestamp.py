@@ -140,17 +140,15 @@ def parse_line_for_time(line):
     return [ts, remainder]
 
 class Timestamp(object):
+    """
+    Timestamps have different ways of being formatted, and 
+    this object is a common place to store these. 
+
+    compact and cstamp are the same thing.
+    """
+
     def __init__(self, auto=None, tstamp=None, cstamp=None, compact=None,
                  now=True, format=None, accuracy=None):
-        """
-        Timestamps have different ways of being formatted
-        this object is a common place to store these
-
-        compact and cstamp are the same thing
-
-        something in the class docstring was causing problems with autotab
-        see file docstring.
-        """
         #this is the internal datetime object:
         #it is available externally via self.datetime
         self.dt = None

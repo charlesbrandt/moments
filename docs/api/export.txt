@@ -1,6 +1,0 @@
-The :mod:`export` Module
------------------------------
-
-.. automodule:: moments.export
-   :members:
-

@@ -1,16 +1,29 @@
-Using Moments
-==================
+Usage
+================
 
-I find it most natural to use a text editor with a built in timestamping / 'make new moment' / 'notice' macro in the text editor itself.  
+This assumes you already have a text file with some moment entries in it.  See '`Make Moments <processes.html#make-moments>`_' if not.
 
-I typically start with a new directory that contains a todo.txt and journal.txt file.  A more complete and detailed explanation of this process can be found here:
-https://bitbucket.org/context/context
+I'll base these examples off of a demonstration context, available with:
+::
 
-Managing Moments
---------------------
+  hg clone https://bitbucket.org/context/context
 
-Moments are meant to be flexible enough to adapt to your way of organization. Since I use a text editor, I use different files for different contexts.  Over time, certain moments in a context become irrelevant, and other external moments are needed in that context.  This is where I find a tagging concept crucial.  With tags I am able to 'extract' tags from one set of moments ('Journal' in journal.py) and merge them in with another Journal.  If applicable, I'll add any relevant tags from the file's path in with the moment as they are extracted.  (sometimes the filename acts as a meta tag for all moments it holds). 
+Most interactions with the library involve loading a collection of moments from a log file into a Journal object:
+::
 
-I have quite a few scripts in the mindstream module (TODO: link) that are mostly utility scripts for managing moments. They deal with different extract, merge, and splitting operations. 
+  from moments.journal import Journal
+  j = Journal("context/todo.txt")
+  print len(j.entries())
+  # 18!
 
-Everything else just gets rolled down to a daily log, sorted by time. 
+If you want to load all moment log files contained in a directory, use load_journal():
+::
+
+  from moments.path import load_journal
+  j = load_journal("context/")
+  print len(j.entries())
+  # 51
+
+load_journal() will scan for text (.txt) files that start with a moment entry (*[date]).  It also looks for duplicate entries (based on the timestamp and entry data) and will try to merge tags automatically.  
+
+From here there are many operations you can perform on a :class:`moments.journal.Journal`.  See the `Mindstream <https://bitbucket.org/cbrandt/mindstream>`_ module in the moments-scripts directory for examples.
