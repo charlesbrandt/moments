@@ -12,7 +12,7 @@ Most interactions with the library involve loading a collection of moments from 
 ::
 
   from moments.journal import Journal
-  j = Journal("context/todo.txt")
+  j = Journal("sample/todo.txt")
   print len(j.entries())
   # 18!
 
@@ -20,9 +20,9 @@ If you want to load all moment log files contained in a directory, use load_jour
 ::
 
   from moments.path import load_journal
-  j = load_journal("context/")
+  j = load_journal("sample/")
   print len(j.entries())
-  # 51
+  # 18?
 
 load_journal() will scan for text (.txt) files that start with a moment entry (*[date]).  It also looks for duplicate entries (based on the timestamp and entry data) and will try to merge tags automatically.  
 
