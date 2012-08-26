@@ -47,18 +47,20 @@
 
 ;; this works, but will probably be global for all instances
 ;; unless frame-setup overrides
-(set-frame-height (selected-frame) 43)
-(set-frame-width (selected-frame) 97)
+;(set-frame-height (selected-frame) 43)
+;(set-frame-width (selected-frame) 80)
 
 ;(name height width font)
 ;where height and width are for the frame
 (frame-setup
  '(("blank" 29 98 '() ) ;; example
-   ("drishti" 34 125 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 97 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; my netbook
-   ("context" 30 98 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; my laptop
-   ("breathe" 43 97 '(:height 43 :width 97) )
+   ("drishti" 34 125 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 97 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; netbook
+   ("context" 30 98 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; laptop
+   ("breathe" 43 80 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :family "Monaco")))) )
    )
 )
+
+;:height 97 :width normal :foundry "unknown" 
 
 ;(color-theme-calm-forest)
 ;;set default color theme
@@ -78,15 +80,6 @@
 ;(color-theme-late-night)
 
 
-
-;http://www.delorie.com/gnu/docs/emacs/emacs_465.html
-;persistent buffers:
-;The first time you save the state of the Emacs session, you must do it manually, with the command M-x desktop-save
-;(desktop-load-default)
-;(desktop-read)
-
-;uncomment the following on windows:
-;(set-default-font "-outline-Consolas-normal-r-normal-normal-11-82-96-96-c-*-iso8859-1")
 
 ;*2012.02.05 14:25:26 
 ;looking for a way to switch to only one window (in the emacs sense) open

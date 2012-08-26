@@ -4,12 +4,22 @@
 
 (require 'color-theme)
 
+;(print "SYSTEM NAME:")
+;(print system-name)
+
+(message "SYSTEM NAME:")
+(setq hostname (car (split-string (system-name) "\\.")))
+(message hostname)
+
 ;; frame setup for different computers
-(defun setup-frame-for (name height width font)
-  (if (equal system-name name)
+(defun setup-frame-for (name h w font)
+  (if (equal hostname name)
       (progn
-        (set-frame-height (selected-frame) height)
-        (set-frame-width (selected-frame) width)
+        (set-frame-height (selected-frame) h)
+        (set-frame-width (selected-frame) w)
+	;; this applies the height to new frames too 
+	(add-to-list 'default-frame-alist (cons 'height h))
+	(add-to-list 'default-frame-alist (cons 'width w))
 	(custom-set-faces font)
 	)
     )
