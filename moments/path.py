@@ -1182,26 +1182,26 @@ class Image(File):
                 if not os.path.isdir(size_path):
                     os.mkdir(size_path)
 
-    def _square_image(self, small):
-        if small.size[0] != small.size[1]:
+    def _square_image(self, destination):
+        if destination.size[0] != destination.size[1]:
             #lets make it a square:
-            if small.size[0] > small.size[1]:
-                bigger = small.size[0]
-                smaller= small.size[1]
+            if destination.size[0] > destination.size[1]:
+                bigger = destination.size[0]
+                smaller= destination.size[1]
                 diff = bigger - smaller
                 first = diff/2
                 last = bigger - (diff - first)
                 box = (first, 0, last, smaller)
             else:
-                bigger = small.size[1]
-                smaller= small.size[0]
+                bigger = destination.size[1]
+                smaller= destination.size[0]
                 diff = bigger - smaller
                 first = diff/2
                 last = bigger - (diff - first)
                 box = (0, first, smaller, last)
-            region = small.crop(box)
-            small = region.copy()
-        return small
+            region = destination.crop(box)
+            destination = region.copy()
+        return destination
         
     def make_thumbs(self):
         """

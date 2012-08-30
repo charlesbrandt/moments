@@ -1,3 +1,22 @@
+;============================
+; Programming MODES
+;============================
+;PYTHON
+(setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
+(setq interpreter-mode-alist (cons '("python" . python-mode) interpreter-mode-alist))
+(autoload 'python-mode "python-mode" "Python editing mode." t)
+
+(add-to-list 'auto-mode-alist '("\\.zpt$" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.pt$" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.mako$" . html-mode))
+
+(add-to-list 'auto-mode-alist '("\\.sass$" . css-mode))
+(add-to-list 'auto-mode-alist '("\\.scss$" . css-mode))
+
+;call any other programming modes you need here:
+;(load-file "~/.emacs.d/programming.el")
+
 ;MATLAB
 ;(add-to-list 'load-path "~/.emacs.d/matlab-emacs")
 ;(require 'matlab-load)
