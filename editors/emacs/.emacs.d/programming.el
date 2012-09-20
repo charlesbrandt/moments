@@ -10,6 +10,7 @@
 (add-to-list 'auto-mode-alist '("\\.pt$" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.mako$" . html-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl$" . html-mode))
 
 ;SASS
 ;(load-file "~/.emacs.d/scss-mode.el")

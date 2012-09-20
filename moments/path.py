@@ -1362,6 +1362,17 @@ class Image(File):
         self.make_thumbs()
         self.reset_stats()
 
+    def auto_rotate(self):
+        result = ''
+        jhead = subprocess.Popen("jhead -autorot %s" % self.path, shell=True, stdout=subprocess.PIPE)
+        current = jhead.communicate()[0]
+        #print "Finished rotating: %s, %s" % (self.name, current)
+        if current: print current
+        result += current
+        #make sure timestamps stay the same
+        self.reset_stats()
+        return result
+
 class Directory(File):
     """
     This object holds a summary of a single directory.
@@ -1848,14 +1859,8 @@ class Directory(File):
         #print "rotating images:"
         result = ''
         for i in images:
-            jhead = subprocess.Popen("jhead -autorot %s" % i.path, shell=True, stdout=subprocess.PIPE)
-            current = jhead.communicate()[0]
-            #print "Finished rotating: %s, %s" % (i.name, current)
-            if current: print current
-            result += current
-            #make sure timestamps stay the same
-            i.reset_stats()
-
+            result += i.auto_rotate()
+            
         #similar issue with thumbnails... not updated
         #for these we only want to regenerate those that changed for speed
         #print "regenerating thumbnails:"
