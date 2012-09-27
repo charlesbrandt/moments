@@ -24,6 +24,9 @@ sudo easy_install sphinx
 cd docs/
 sphinx-build -b html . ./_build
 
+or
+make html
+
 INSTALL:
 ----------
 

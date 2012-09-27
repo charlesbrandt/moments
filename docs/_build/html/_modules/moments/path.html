@@ -1233,26 +1233,26 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">size_path</span><span class="p">):</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">size_path</span><span class="p">)</span>
 </div>
-    <span class="k">def</span> <span class="nf">_square_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">small</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+    <span class="k">def</span> <span class="nf">_square_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
             <span class="c">#lets make it a square:</span>
-            <span class="k">if</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-                <span class="n">bigger</span> <span class="o">=</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">smaller</span><span class="o">=</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">bigger</span> <span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">smaller</span><span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="n">bigger</span> <span class="o">-</span> <span class="n">smaller</span>
                 <span class="n">first</span> <span class="o">=</span> <span class="n">diff</span><span class="o">/</span><span class="mi">2</span>
                 <span class="n">last</span> <span class="o">=</span> <span class="n">bigger</span> <span class="o">-</span> <span class="p">(</span><span class="n">diff</span> <span class="o">-</span> <span class="n">first</span><span class="p">)</span>
                 <span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">smaller</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">bigger</span> <span class="o">=</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">smaller</span><span class="o">=</span> <span class="n">small</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">bigger</span> <span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">smaller</span><span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="n">bigger</span> <span class="o">-</span> <span class="n">smaller</span>
                 <span class="n">first</span> <span class="o">=</span> <span class="n">diff</span><span class="o">/</span><span class="mi">2</span>
                 <span class="n">last</span> <span class="o">=</span> <span class="n">bigger</span> <span class="o">-</span> <span class="p">(</span><span class="n">diff</span> <span class="o">-</span> <span class="n">first</span><span class="p">)</span>
                 <span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">smaller</span><span class="p">,</span> <span class="n">last</span><span class="p">)</span>
-            <span class="n">region</span> <span class="o">=</span> <span class="n">small</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
-            <span class="n">small</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">small</span>
+            <span class="n">region</span> <span class="o">=</span> <span class="n">destination</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">box</span><span class="p">)</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">destination</span>
         
 <div class="viewcode-block" id="Image.make_thumbs"><a class="viewcode-back" href="../../api/path.html#moments.path.Image.make_thumbs">[docs]</a>    <span class="k">def</span> <span class="nf">make_thumbs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1412,7 +1412,18 @@
         <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&quot;jhead -cmd </span><span class="se">\&quot;</span><span class="s">jpegtran -progressive -rotate </span><span class="si">%s</span><span class="s"> &amp;i &gt; &amp;o</span><span class="se">\&quot;</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">degrees</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">make_thumbs</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_stats</span><span class="p">()</span>
-</div></div>
+</div>
+    <span class="k">def</span> <span class="nf">auto_rotate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+        <span class="n">jhead</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="s">&quot;jhead -autorot </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">jhead</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c">#print &quot;Finished rotating: %s, %s&quot; % (self.name, current)</span>
+        <span class="k">if</span> <span class="n">current</span><span class="p">:</span> <span class="k">print</span> <span class="n">current</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="n">current</span>
+        <span class="c">#make sure timestamps stay the same</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_stats</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span>
+</div>
 <div class="viewcode-block" id="Directory"><a class="viewcode-back" href="../../api/path.html#moments.path.Directory">[docs]</a><span class="k">class</span> <span class="nc">Directory</span><span class="p">(</span><span class="n">File</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This object holds a summary of a single directory.</span>
@@ -1899,14 +1910,8 @@
         <span class="c">#print &quot;rotating images:&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
-            <span class="n">jhead</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="s">&quot;jhead -autorot </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
-            <span class="n">current</span> <span class="o">=</span> <span class="n">jhead</span><span class="o">.</span><span class="n">communicate</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="c">#print &quot;Finished rotating: %s, %s&quot; % (i.name, current)</span>
-            <span class="k">if</span> <span class="n">current</span><span class="p">:</span> <span class="k">print</span> <span class="n">current</span>
-            <span class="n">result</span> <span class="o">+=</span> <span class="n">current</span>
-            <span class="c">#make sure timestamps stay the same</span>
-            <span class="n">i</span><span class="o">.</span><span class="n">reset_stats</span><span class="p">()</span>
-
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">i</span><span class="o">.</span><span class="n">auto_rotate</span><span class="p">()</span>
+            
         <span class="c">#similar issue with thumbnails... not updated</span>
         <span class="c">#for these we only want to regenerate those that changed for speed</span>
         <span class="c">#print &quot;regenerating thumbnails:&quot;</span>

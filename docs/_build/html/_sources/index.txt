@@ -1,0 +1,38 @@
+Welcome to Moments!
+===================================
+
+Moments is a python package to process moments log files. 
+Moment log files are simple text documents with the format: 
+::
+
+        *YYYY.MM.DD hh:mm [tags]
+        [entry]
+        \n
+
+This simple format allows your notes to:
+
+- be sorted by time or tag
+- stay accessible (no proprietary formats)
+- easily synchronize across many machines using a distributed version control system
+
+
+Contents:
+
+.. toctree::
+   :maxdepth: 2
+
+   installation
+   using
+   api
+   processes
+   introduction
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
