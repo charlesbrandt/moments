@@ -22,8 +22,8 @@ If you want to load all moment log files contained in a directory, use load_jour
   from moments.path import load_journal
   j = load_journal("sample/")
   print len(j.entries())
-  # 18?
+  # 18
 
 load_journal() will scan for text (.txt) files that start with a moment entry (*[date]).  It also looks for duplicate entries (based on the timestamp and entry data) and will try to merge tags automatically.  
 
-From here there are many operations you can perform on a :class:`moments.journal.Journal`.  See the `Mindstream <https://bitbucket.org/cbrandt/mindstream>`_ module in the moments-scripts directory for examples.
+From here there are many operations you can perform on a :class:`moments.journal.Journal`.  See the `Mindstream <https://bitbucket.org/cbrandt/mindstream>`_ package and check the 'scripts' directory for examples.

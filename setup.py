@@ -10,11 +10,11 @@ import sys, os
 version = '2.0'
 
 setup(
-    name='moments',
+    name='Moments',
     version=version,
     description="Python package to process moments log files",
-    long_description="""Moment log files are simple text documents with the \
-        format: 
+    long_description="""Moment log files are simple text documents with the format:
+        
         *YYYY.MM.DD hh:mm [tags]
         [entry]
         \n
@@ -26,7 +26,7 @@ setup(
     """,
     # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[],
-    keywords='moments journal log self_tracking logging blog entry time quantified_self',
+    keywords='moments journal log self_tracking logging blog entry time quantified_self evernote emacs time time_management history',
     author='Charles Brandt',
     author_email='code@charlesbrandt.com',
     url='http://bitbucket.org/cbrandt/moments',

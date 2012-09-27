@@ -71,11 +71,11 @@
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">moments.path</span> <span class="kn">import</span> <span class="n">load_journal</span>
 <span class="n">j</span> <span class="o">=</span> <span class="n">load_journal</span><span class="p">(</span><span class="s">&quot;sample/&quot;</span><span class="p">)</span>
 <span class="k">print</span> <span class="nb">len</span><span class="p">(</span><span class="n">j</span><span class="o">.</span><span class="n">entries</span><span class="p">())</span>
-<span class="c"># 18?</span>
+<span class="c"># 18</span>
 </pre></div>
 </div>
 <p>load_journal() will scan for text (.txt) files that start with a moment entry (<a href="#id1"><span class="problematic" id="id2">*</span></a>[date]).  It also looks for duplicate entries (based on the timestamp and entry data) and will try to merge tags automatically.</p>
-<p>From here there are many operations you can perform on a <a class="reference internal" href="api/journal.html#moments.journal.Journal" title="moments.journal.Journal"><tt class="xref py py-class docutils literal"><span class="pre">moments.journal.Journal</span></tt></a>.  See the <a class="reference external" href="https://bitbucket.org/cbrandt/mindstream">Mindstream</a> module in the moments-scripts directory for examples.</p>
+<p>From here there are many operations you can perform on a <a class="reference internal" href="api/journal.html#moments.journal.Journal" title="moments.journal.Journal"><tt class="xref py py-class docutils literal"><span class="pre">moments.journal.Journal</span></tt></a>.  See the <a class="reference external" href="https://bitbucket.org/cbrandt/mindstream">Mindstream</a> package and check the &#8216;scripts&#8217; directory for examples.</p>
 </div>
 
 

@@ -15,6 +15,11 @@ This simple format allows your notes to:
 - stay accessible (no proprietary formats)
 - easily synchronize across many machines using a distributed version control system
 
+Moments includes the path module (formerly a separate osbrowser package) to help navigate and represent the local file system as objects. 
+
+Moments also includes a server to assist in serving moments to a separate process and then accessing them with a RemoteJournal object, just as you would with a normal Journal object.
+
+
 
 Contents:
 
@@ -25,7 +30,6 @@ Contents:
    using
    api
    processes
-   introduction
 
 
 
