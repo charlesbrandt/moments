@@ -10,7 +10,7 @@ import sys, os
 version = '2.0'
 
 setup(
-    name='Moments',
+    name='moments',
     version=version,
     description="Python package to process moments log files",
     long_description="""Moment log files are simple text documents with the format:
