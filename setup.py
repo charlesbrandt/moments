@@ -12,7 +12,7 @@ version = '2.0'
 setup(
     name='moments',
     version=version,
-    description="Python package to process moments log files",
+    description="Process personal notes stored as moments log files",
     long_description="""Moment log files are simple text documents with the format:
         
         *YYYY.MM.DD hh:mm [tags]
@@ -26,7 +26,7 @@ setup(
     """,
     # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[],
-    keywords='moments journal log self_tracking logging blog entry time quantified_self evernote emacs time time_management history',
+    keywords='moments journal log self_tracking logging blog entry time quantified_self evernote emacs time time_management history mind_map mental_map',
     author='Charles Brandt',
     author_email='code@charlesbrandt.com',
     url='http://bitbucket.org/cbrandt/moments',

@@ -21,7 +21,8 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-This module helps in interacting with the filesystem.
+This module helps in interacting with the filesystem.  It provides an object oriented interface to your computer's local filesystem. It leverages python's native os and os.path libraries to give a higher level interface to the system.  Starting at the level of Paths on a filesystem, it works up to higher level objects such as Images.
+
 The main focus is on abstracting files and directories and paths.
 
 Path loads Files, Directories, etc.
@@ -29,7 +30,6 @@ Files have a path associated with them.
 Directories are a collection of Paths (that link to other files and directories).
 
 There is a circular dependency with these objects, so they need to be kept in one file.
-
 """
 import os, re, random, subprocess, cPickle, shutil
 import urllib
