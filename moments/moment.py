@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
 """
-An Moment is the foundation for a journal.
+A Moment object is the foundation for a Journal object.
 It does not require a timestamp, but most moments use one. 
 
 In its most simple (text based) form, a moment consists of:

@@ -142,7 +142,7 @@ mini.ajax.submit=function(url,frm,elm){
 
 
 function Journal(source) {
-    function loads(result) {
+    function load(result) {
 	var json = eval(result);
 	return json;
     }
