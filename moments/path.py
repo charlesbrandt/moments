@@ -306,11 +306,11 @@ class Path(object):
         this gives us a central place to track this
         """
         #PCD image format seems to cause a lot of trouble
-        image_extensions = [ '.jpg', '.png', '.gif', '.jpeg', '.JPG', '.tif' ]
-        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.AVI', '.iso', '.asf', '.mp4' ]
+        image_extensions = [ '.jpg', '.jpeg', '.png', '.gif', '.tif' ]
+        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso', '.asf', '.mp4', '.m4v' ]
 
         #, 'm4p' are not playable by flash, should convert to use
-        sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg' ]
+        sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg', '.flac' ]
 
         journal_extensions = [ '.txt', '.log' ]
 
@@ -322,7 +322,7 @@ class Path(object):
         if (os.path.isfile(self.path)):
             #ext = extension(self.name)
             #print "Extension: %s" % self.extension
-            ext = self.extension
+            ext = self.extension.lower()
             if ext in image_extensions:
                 return "Image"
             elif ext in movie_extensions:
