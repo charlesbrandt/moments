@@ -112,6 +112,8 @@ def name_only(name):
     ## else:
     ##     new_name = name
     ## #print new_name
+
+    #this seems safer:
     parts = os.path.splitext(name)
     new_name = parts[0]
     
@@ -136,35 +138,6 @@ def extension(name):
     return extension
 
 
-#from paths import *
-#unless defined elsewhere, 
-#will assume all paths passed in to Node objects are relative to this dir:
-## relative_prefix = ''
-## local_path = u'./'
-## log_path = u'./'
-## sort_config = 'alpha'
-
-## config_log_in_outgoing = False
-## config_log_in_media = False
-## try:
-##     #if not using in pylons, can define manually above
-##     from pylons import config
-##     if config.has_key('local_path'):
-##         local_path = unicode(config['local_path'])
-##     if config.has_key('log_local_path'):
-##         log_path = unicode(config['log_local_path'])
-##         config_log_in_outgoing = True
-##     if config.has_key('log_in_media') and config['log_in_media'] == "True":
-##         config_log_in_media = True
-##     if config.has_key('sort_order'):
-##         sort_config = config['sort_order']
-##     if config.has_key('relative_prefix'):
-##         relative_prefix = config['relative_prefix']
-## except:
-##     config = {}
-
-
-
 class Path(object):
     """
     a path to a specific destination
@@ -179,7 +152,7 @@ class Path(object):
     in some cases wrapping the standard library os.path module
     """
     
-    def __init__(self, path=None, parts=None, relative=False, relative_prefix=''):
+    def __init__(self, path=None, parts=None, relative_prefix=''):
         """
         take either a relative or absolute path
         """
@@ -190,7 +163,7 @@ class Path(object):
 
         self.relative_prefix = relative_prefix
         
-        self.parse_path(path, parts, relative, self.relative_prefix)
+        self.parse_path(path, parts, self.relative_prefix)
 
         #file (local), http, smb, etc
         self.protocol = ''
@@ -254,7 +227,11 @@ class Path(object):
             self.parse_path(path)
         #otherwise must already be expanded... do nothing
         
-    def parse_path(self, path=None, parts=None, relative=False, local_path=''):
+    def parse_path(self, path=None, parts=None, local_path=''):
+        """
+        determine if it is a relative path based on if local_path has a value
+        """
+        
         #print "parsing path: %s" % path
         #print "->%s<-" % path
         if not path and not parts:
@@ -269,11 +246,15 @@ class Path(object):
                 #path = os.path.abspath()
             #self._dirname = path
             #could check if it is an actual path here
+
+            #*2012.12.06 05:25:14
+            #problems here with filesystem paths with special characters
+            #make sure not using str(path) anywhere else (walk, etc)
             self._dirname = unicode(path)
         else:
             self._dirname = self.from_parts(parts)
 
-        if relative:
+        if local_path:
             actual_path = os.path.join(unicode(local_path), self._dirname)
             actual_path = unicode(actual_path)
             actual_path = os.path.normpath(actual_path)
@@ -610,7 +591,8 @@ class Path(object):
             
             parent_path = os.path.dirname(self.path)
             #print parent_path
-            parent = Path(parent_path)
+            #keep relative_prefix among related items
+            parent = Path(parent_path, relative_prefix=self.relative_prefix)
             return parent
         else:
             #special case for root path
@@ -731,6 +713,13 @@ class Path(object):
             temp = Path(temp_path)
             temp.extension = extension
             temp_path = str(temp)
+
+        #sometimes self.relative_prefix does not include a trailing prefix
+        #this might make temp_path start with a '/'
+        #all relative paths should not start with a '/'
+        #remove it now:
+        if re.match('/', temp_path):
+            temp_path = temp_path[1:]
         
         return temp_path
 
