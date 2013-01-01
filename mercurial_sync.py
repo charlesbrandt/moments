@@ -161,7 +161,6 @@ def sync_repos(local_root='/c', remote_root='/media/CHARLES'):
 def usage():
     print ""
     print ""
-    print "sudo chmod 777 /c/outgoing/*"
     print "python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/"
 
     print "(reset any open journal buffers after export)"
