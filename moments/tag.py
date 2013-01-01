@@ -31,6 +31,7 @@ def to_tag(item):
     underscores can be used, but they will be converted to spaces in some cases
     """
     item = item.lower()
+    #get rid of trailing and leading blank spaces:
     item = item.strip()
     item = re.sub(' ', '_', item)
     item = re.sub("/", '_', item)
