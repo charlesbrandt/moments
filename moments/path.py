@@ -436,7 +436,9 @@ class Path(object):
                     if not log_check.search(f):
                         continue
 
-                    if not check_ignore(os.path.join(root, f), ignore_items):
+                    path_string = os.path.join(root, f)
+                    #print "checking: %s" % path_string
+                    if not check_ignore(path_string, ignore_items):
                         these_tags = add_tags[:]
                         #will need to abstract context_tags() too... move to Tags
                         if include_path_tags:
@@ -449,7 +451,7 @@ class Path(object):
                             #and only non-compact date tags
 
                             #find suffix:
-                            cur_path = Path(os.path.join(root, f))
+                            cur_path = Path(path_string)
 
                             relative_path = cur_path.to_relative(str(self.path))
                             #print relative_path
