@@ -1209,6 +1209,7 @@ class Image(File):
         #this is still big (maybe too big?)
         #but might shrink file size some?
         xl = 2880
+        #xl=1700
         l = 1280
         m = 800
         s = 400
@@ -1280,6 +1281,7 @@ class Image(File):
                 small.save(str(self.size_path('small', square=False)), "JPEG")
                 tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
 
+                #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
                 l_sq.save(str(self.size_path('large')), "JPEG")
                 m_sq.save(str(self.size_path('medium')), "JPEG")
                 s_sq.save(str(self.size_path('small')), "JPEG")
