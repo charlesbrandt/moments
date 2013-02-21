@@ -879,7 +879,8 @@ class File(object):
         update our copy of the stats
         """
         #http://docs.python.org/lib/os-file-dir.html
-        stat = os.stat(str(self.path))
+        #stat = os.stat(str(self.path))
+        stat = os.stat(unicode(self.path))
         #st_atime (time of most recent access)
         self.atime = stat.st_atime
         #st_mtime (time of most recent content modification)
@@ -1444,11 +1445,11 @@ class Directory(File):
                     item_path = os.path.normpath(os.path.join(unicode(self.path), item))
                 else:
                     #item_path = unicode(self.path) + u'/' + unicode(item)
-                    try:
-                        item_path = os.path.normpath(os.path.join(str(self.path), item))
-                    except:
-                        item_path = ''
-                        print "could not open: %s" % item
+                    #try:
+                    item_path = os.path.normpath(os.path.join(unicode(self.path), item))
+                    #except:
+                    #    item_path = ''
+                    #    print "could not open: %s" % item
 
                 item_path = unicode(item_path)
                 #propagate any relative settings passed to us
