@@ -324,7 +324,9 @@ class Path(object):
         elif (os.path.isdir(self.path)):
             return "Directory"
         else:
+            #this often occurs with broken symlinks
             print "Node... exists? %s Unknown filetype: %s" % (os.path.exists(self.path), self.path)
+            
             raise ValueError
             #return "Node"
 
