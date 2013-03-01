@@ -162,6 +162,7 @@ def usage():
     print ""
     print ""
     print "python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/"
+    print "python /c/moments/moments/export.py /c/outgoing/ /media/charles/CHARLES/outgoing/"
 
     print "(reset any open journal buffers after export)"
     print ""
