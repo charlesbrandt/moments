@@ -168,6 +168,8 @@ def usage():
     print "/c/moments/mercurial_sync.py /c/clients /media/CHARLES/clients"    
     print "/c/moments/mercurial_sync.py /c/clients /media/WORK/clients"    
     print "/c/moments/mercurial_sync.py /c /media/WORK/"
+    print ""
+    print "/c/moments/mercurial_sync.py /c /media/charles/CHARLES/"
 
 def main():
     if len(sys.argv) > 1:
