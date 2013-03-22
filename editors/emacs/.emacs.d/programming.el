@@ -12,6 +12,8 @@
 (add-to-list 'auto-mode-alist '("\\.mako$" . html-mode))
 (add-to-list 'auto-mode-alist '("\\.tpl$" . html-mode))
 
+(add-to-list 'auto-mode-alist '("\\.less$" . css-mode))
+
 ;SASS
 ;(load-file "~/.emacs.d/scss-mode.el")
 ;;; scss-mode.el --- Major mode for editing SCSS files
