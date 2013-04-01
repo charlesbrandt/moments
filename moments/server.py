@@ -406,6 +406,7 @@ if __name__ == '__main__':
                 
             load_journal(s)
             print "Loaded: %s entries" % len(j.entries())
+            print "Load finished: %s" % Timestamp()
             
     if source and not found_root:
         path_root = source
