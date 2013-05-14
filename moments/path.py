@@ -1277,23 +1277,23 @@ class Image(File):
                 #we want to fix the width at t, not concerned about height
                 #tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
 
-                ## try:
-                image.save(str(self.size_path('xlarge', square=False)), "JPEG")
-                large.save(str(self.size_path('large', square=False)), "JPEG")
-                medium.save(str(self.size_path('medium', square=False)), "JPEG")
-                small.save(str(self.size_path('small', square=False)), "JPEG")
-                tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
+                try:
+                    image.save(str(self.size_path('xlarge', square=False)), "JPEG")
+                    large.save(str(self.size_path('large', square=False)), "JPEG")
+                    medium.save(str(self.size_path('medium', square=False)), "JPEG")
+                    small.save(str(self.size_path('small', square=False)), "JPEG")
+                    tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
 
-                #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
-                l_sq.save(str(self.size_path('large')), "JPEG")
-                m_sq.save(str(self.size_path('medium')), "JPEG")
-                s_sq.save(str(self.size_path('small')), "JPEG")
-                t_sq.save(str(self.size_path('tiny')), "JPEG")
+                    #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
+                    l_sq.save(str(self.size_path('large')), "JPEG")
+                    m_sq.save(str(self.size_path('medium')), "JPEG")
+                    s_sq.save(str(self.size_path('small')), "JPEG")
+                    t_sq.save(str(self.size_path('tiny')), "JPEG")
 
                 
                 #tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
-                ## except:
-                ##     print "error generating thumbs for: %s" % self.path.name
+                except:
+                    print "error generating thumbs for: %s" % self.path.name
                 ##     #pass
 
     ## def reset_stats(self):
