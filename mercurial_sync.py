@@ -43,7 +43,7 @@ mercurial.error.Abort: no username supplied (see "hg help config")
 import os, re, sys
 from mercurial import ui, hg, commands
 
-def sync_repos(local_root='/c', remote_root='/media/CHARLES'):
+def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
     #local_root = '/c'
     #remote_root = '/media/CHARLES'
 
@@ -170,7 +170,7 @@ def usage():
     print "/c/moments/mercurial_sync.py /c/clients /media/WORK/clients"    
     print "/c/moments/mercurial_sync.py /c /media/WORK/"
     print ""
-    print "/c/moments/mercurial_sync.py /c /media/charles/CHARLES/"
+    print "/c/moments/mercurial_sync.py /c /media/CHARLES/"
 
 def main():
     if len(sys.argv) > 1:
