@@ -2,9 +2,6 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
-echo "Deep Breath... Inhale.... Exhale.... :)"
-export EDITOR=vi
-
 # Setting PATH for MacPython 2.5
 # The orginal version is saved in .bash_profile.pysave
 PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:/opt/local/bin:${PATH}"
@@ -12,6 +9,12 @@ export PATH
 
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
+
+#this needs to come after previous line, otherwise scp will have trouble
+#http://unix.stackexchange.com/questions/18231/scp-fails-without-error
+echo "Deep Breath... Inhale.... Exhale.... :)"
+export EDITOR=vi
+
 
 # don't put duplicate lines in the history. See bash(1) for more options
 export HISTCONTROL=ignoredups
@@ -59,4 +62,11 @@ alias l='ls -CF'
 # sources /etc/bash.bashrc).
 if [ -f /etc/bash_completion ]; then
     . /etc/bash_completion
+fi
+
+#settings for virtualenvwrapper:
+#http://virtualenvwrapper.readthedocs.org/en/latest/
+if [ -f /usr/local/bin/virtualenvwrapper.sh ]; then
+    source /usr/local/bin/virtualenvwrapper.sh
+    export WORKON_HOME=/c/virtualenvs
 fi
