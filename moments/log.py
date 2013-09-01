@@ -96,6 +96,23 @@ class Log(StringIO.StringIO):
         else:
             print "NO FILE ASSOCIATED WITH LOG: %s" % self.name
 
+    def from_string(self, text):
+        """
+        pretty simple case,
+        but just incase we have a string somewhere (instead of a separate file)
+        this is an easy way to apply the string
+        then use self.to_entries to break it up into entries
+        """
+        self.write(text)
+        self.seek(0)
+
+    def to_string(self, filename=None):
+        """
+        another simple case
+        """
+        self.seek(0)
+        return self.read()
+
     def to_file(self, filename=None):
         """
         save our content to the file
