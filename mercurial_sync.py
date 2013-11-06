@@ -159,19 +159,17 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
             pass
 
 def usage():
-    print ""
-    print ""
-    print "python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/"
-    print "python /c/moments/moments/export.py /c/outgoing/ /media/charles/CHARLES/outgoing/"
+    print """
+python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/
+python /c/moments/moments/export.py /c/outgoing/ /media/charles/CHARLES/outgoing/
+(reset any open journal buffers after export)
 
-    print "(reset any open journal buffers after export)"
-    print ""
-    print "/c/moments/mercurial_sync.py /c/clients /media/CHARLES/clients"    
-    print "/c/moments/mercurial_sync.py /c/clients /media/WORK/clients"    
-    print "/c/moments/mercurial_sync.py /c /media/WORK/"
-    print ""
-    print "/c/moments/mercurial_sync.py /c /media/CHARLES/"
+/c/moments/mercurial_sync.py /c/clients /media/charles/CHARLES/clients
+/c/moments/mercurial_sync.py /c/clients /media/charles/WORK/clients
 
+/c/moments/mercurial_sync.py /c /media/CHARLES/
+"""
+    
 def main():
     if len(sys.argv) > 1:
         helps = ['--help', 'help', '-h']
