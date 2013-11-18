@@ -1197,7 +1197,7 @@ class Image(File):
             destination = region.copy()
         return destination
         
-    def make_thumbs(self):
+    def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny']):
         """
         regenerate all thumbnails from original
         """
@@ -1278,17 +1278,26 @@ class Image(File):
                 #tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
 
                 try:
-                    image.save(str(self.size_path('xlarge', square=False)), "JPEG")
-                    large.save(str(self.size_path('large', square=False)), "JPEG")
-                    medium.save(str(self.size_path('medium', square=False)), "JPEG")
-                    small.save(str(self.size_path('small', square=False)), "JPEG")
-                    tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
+                    if 'xlarge' in save_sizes:
+                        image.save(str(self.size_path('xlarge', square=False)), "JPEG")
+
+                    if 'large' in save_sizes:
+                        large.save(str(self.size_path('large', square=False)), "JPEG")
+                        l_sq.save(str(self.size_path('large')), "JPEG")
+
+                    if 'medium' in save_sizes:
+                        medium.save(str(self.size_path('medium', square=False)), "JPEG")
+                        m_sq.save(str(self.size_path('medium')), "JPEG")
+
+                    if 'small' in save_sizes:
+                        small.save(str(self.size_path('small', square=False)), "JPEG")
+                        s_sq.save(str(self.size_path('small')), "JPEG")
+
+                    if 'tiny' in save_sizes:
+                        tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
+                        t_sq.save(str(self.size_path('tiny')), "JPEG")
 
                     #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
-                    l_sq.save(str(self.size_path('large')), "JPEG")
-                    m_sq.save(str(self.size_path('medium')), "JPEG")
-                    s_sq.save(str(self.size_path('small')), "JPEG")
-                    t_sq.save(str(self.size_path('tiny')), "JPEG")
 
                 
                 #tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
@@ -1742,7 +1751,7 @@ class Directory(File):
         return j
 
     #rename to generate_thumbnails?        
-    def make_thumbs(self):
+    def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny']):
         """
         generate thumbnails for all images in this directory
         """
@@ -1750,7 +1759,7 @@ class Directory(File):
             
         if len(self.images):
             for i in self.images:
-                i.load().make_thumbs()
+                i.load().make_thumbs(save_sizes)
 
     def default_file(self):
         """

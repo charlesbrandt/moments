@@ -430,9 +430,12 @@ class Timestamp(object):
             month = None
         #get rid of ',' after date
         if re.search(',', day_s):
-            day = int(day_s[:-1])
-        else:
-            day = int(day_s)
+            day_s = day_s[:-1]
+            
+        if re.search('(rd|st|th|nd)', day_s):
+            day_s = day_s[:-2]
+            
+        day = int(day_s)
             
         year = int(year_s)
         #print "Day: %s, Year: %s" % (day, year)
