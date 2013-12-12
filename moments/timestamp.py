@@ -915,6 +915,24 @@ class Timerange(object):
             current = current.future_month(months=1)
         return months
                     
+    ## def weeks(self, overlap_edges=True):
+    ##     """
+    ##     return a list of all weeks contained in self
+
+    ##     if overlap_edges is set, may extend beyond the current range
+    ##     rounding to the nearest full week on each end
+    ##     """
+    ##     #rr = RelativeRange()
+    ##     current = self.start.round("month")
+    ##     end = self.end.round("month")
+    ##     months = []
+    ##     while str(current) != str(end):
+    ##         #month = rr.month(current)
+    ##         month = self.month(current)
+    ##         months.append(month)
+    ##         current = current.future_month(months=1)
+    ##     return months
+                    
     def days(self, overlap_edges=True):
         """
         return a list of all days contained in self
@@ -1022,7 +1040,7 @@ class Timerange(object):
         weekday = date.weekday()
         if weekday >= week_start:
             go_back = weekday - week_start
-            go_forward = 6 - weekday
+            go_forward = 6 - (weekday - week_start)
         else:
             go_back = weekday - week_start + 6 + 1
             go_forward = week_start - weekday - 1
