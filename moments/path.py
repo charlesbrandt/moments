@@ -39,6 +39,18 @@ from timestamp import Timestamp
 from journal import Journal
 from tag import Tags
 
+#from image import Image
+try:
+    import Image as PILImage
+except:
+    try:
+        #also check for Pillow version of PIL:
+        import PIL.Image as PILImage
+    except:
+        print "WARNING: Python Image Library not intalled."
+        print "Image manipulation will not work"
+
+
 def check_ignore(item, ignores=[]):
     """
     take a string (item)
@@ -1025,17 +1037,6 @@ class File(object):
 ##     def __init__(self, path):
 ##         File.__init__(self, path)
 
-#from image import Image
-try:
-    import Image as PILImage
-except:
-    try:
-        #also check for Pillow version of PIL:
-        import PIL.Image as PILImage
-    except:
-        print "WARNING: Python Image Library not intalled."
-        print "Image manipulation will not work"
-
 class Image(File):
     """
     object to hold Image specific meta data for an image locally available
@@ -1197,9 +1198,12 @@ class Image(File):
             destination = region.copy()
         return destination
         
-    def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny']):
+    def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny'], save_square=True, save_original=True):
         """
-        regenerate all thumbnails from original
+        regenerate all specified thumbnails from original
+        can use save_sizes to limit what is generated
+        can use save_square and save_original
+        to determine if those dimensions are generated
         """
         ## if config.has_key('thumb.l'):
         ##     l = int(config['thumb.l'])
@@ -1232,77 +1236,93 @@ class Image(File):
         except:
             print "Error opening image: %s" % str(self.path)
         else:
-            #keep a copy of original for squaring
-            square = image.copy()
-            square = self._square_image(square)
-
             #made it this far... start resizing
-            try:
-                image.thumbnail((xl,xl), PILImage.ANTIALIAS)
-            except:
-                print "Error sizing image: %s" % str(self.path)
-                exit()
-            else:
-                large = image.copy()
-                large.thumbnail((l,l), PILImage.ANTIALIAS)
+            ## try:
 
-                medium = large.copy()
-                medium.thumbnail((m,m), PILImage.ANTIALIAS)
+            ## except:
+            ##     print "Error sizing image: %s" % str(self.path)
+            ##     exit()
+            ## else:
+            if True:
+                if save_square:
+                    #print "making square"
+                    #keep a copy of original for squaring
+                    square = image.copy()
+                    square = self._square_image(square)
+                    #print "square complete"
+                    
+                if 'xlarge' in save_sizes:
+                    image.thumbnail((xl,xl), PILImage.ANTIALIAS)                    #we've already resized to xl size:
+                    image.save(str(self.size_path('xlarge', square=False)), "JPEG")
 
-                small = medium.copy()
-                small.thumbnail((s,s), PILImage.ANTIALIAS)
+                    #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
 
-                tiny = small.copy()
-                tiny.thumbnail((t,t), PILImage.ANTIALIAS)
+                if 'large' in save_sizes:
+                    if save_original:
+                        large = image.copy()
+                        large.thumbnail((l,l), PILImage.ANTIALIAS)
+
+                        large.save(str(self.size_path('large', square=False)), "JPEG")
+
+                    if save_square:
+                        l_sq = square.copy()
+                        l_sq.thumbnail((l,l), PILImage.ANTIALIAS)
+
+                        l_sq.save(str(self.size_path('large')), "JPEG")
+
+                if 'medium' in save_sizes:
+                    if save_original:
+                        medium = image.copy()
+                        medium.thumbnail((m,m), PILImage.ANTIALIAS)
+                        medium.save(str(self.size_path('medium', square=False)), "JPEG")
+                    if save_square:
+                        m_sq = square.copy()
+                        m_sq.thumbnail((m,m), PILImage.ANTIALIAS)
+                        m_sq.save(str(self.size_path('medium')), "JPEG")
+
+                if 'small' in save_sizes:
+                    if save_original:
+                        small = image.copy()
+                        small.thumbnail((s,s), PILImage.ANTIALIAS)
+                        small.save(str(self.size_path('small', square=False)), "JPEG")
+
+                    if save_square:
+                        s_sq = square.copy()
+                        s_sq.thumbnail((s,s), PILImage.ANTIALIAS)
+                        s_sq.save(str(self.size_path('small')), "JPEG")
+
+                if 'tiny' in save_sizes:
+                    if save_original:
+                        tiny = image.copy()
+                        tiny.thumbnail((t,t), PILImage.ANTIALIAS)
+                        tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
+                        
+                    if save_square:
+                        t_sq = square.copy()
+                        t_sq.thumbnail((t,t), PILImage.ANTIALIAS)
+                        t_sq.save(str(self.size_path('tiny')), "JPEG")
+
+
+
 
                 #make squared versions
                 #xl_sq = square.copy()
                 #xl_sq.thumbnail((xl,xl), PILImage.ANTIALIAS)
 
                 #l_sq = xl_sq.copy()
-                l_sq = square.copy()
-                l_sq.thumbnail((l,l), PILImage.ANTIALIAS)
 
-                m_sq = l_sq.copy()
-                m_sq.thumbnail((m,m), PILImage.ANTIALIAS)
 
-                s_sq = m_sq.copy()
-                s_sq.thumbnail((s,s), PILImage.ANTIALIAS)
-
-                t_sq = s_sq.copy()
-                t_sq.thumbnail((t,t), PILImage.ANTIALIAS)
 
                 #o for original dimensions
                 #tiny_o = image.copy()
                 #we want to fix the width at t, not concerned about height
                 #tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
 
-                try:
-                    if 'xlarge' in save_sizes:
-                        image.save(str(self.size_path('xlarge', square=False)), "JPEG")
-
-                    if 'large' in save_sizes:
-                        large.save(str(self.size_path('large', square=False)), "JPEG")
-                        l_sq.save(str(self.size_path('large')), "JPEG")
-
-                    if 'medium' in save_sizes:
-                        medium.save(str(self.size_path('medium', square=False)), "JPEG")
-                        m_sq.save(str(self.size_path('medium')), "JPEG")
-
-                    if 'small' in save_sizes:
-                        small.save(str(self.size_path('small', square=False)), "JPEG")
-                        s_sq.save(str(self.size_path('small')), "JPEG")
-
-                    if 'tiny' in save_sizes:
-                        tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
-                        t_sq.save(str(self.size_path('tiny')), "JPEG")
-
-                    #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
-
+                #try:
                 
                 #tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
-                except:
-                    print "error generating thumbs for: %s" % self.path.name
+                #except:
+                #    print "error generating thumbs for: %s" % self.path.name
                 ##     #pass
 
     ## def reset_stats(self):
