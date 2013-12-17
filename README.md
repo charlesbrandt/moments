@@ -15,16 +15,21 @@ DOCS:
 ---------
 
 Full documentation is available here:
+
 http://pythonhosted.org/Moments/
 
 The documentation is generated from sources found in the 'docs/' directory. To generate the documentation, you will need Sphinx:
-sudo easy_install sphinx
 
-cd docs/
-sphinx-build -b html . ./_build
+   sudo easy_install sphinx
 
-or
-make html
+then:
+
+   cd docs/
+   sphinx-build -b html . ./_build
+
+or:
+
+   make html
 
 INSTALL:
 ----------
