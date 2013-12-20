@@ -126,7 +126,7 @@ class Journal(object):
             self.load(path)
 
         if items:
-            self.update_entries(items)
+            self.update_many(items)
 
 
 
