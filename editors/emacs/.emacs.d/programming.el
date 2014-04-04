@@ -1,6 +1,11 @@
 ;============================
 ; Programming MODES
 ;============================
+
+;use spaces instead of tabs:
+;http://stackoverflow.com/questions/45861/how-do-i-get-js2-mode-to-use-spaces-instead-of-tabs-in-emacs
+(setq-default indent-tabs-mode nil)
+
 ;PYTHON
 (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist (cons '("python" . python-mode) interpreter-mode-alist))
@@ -13,6 +18,12 @@
 (add-to-list 'auto-mode-alist '("\\.tpl$" . html-mode))
 
 (add-to-list 'auto-mode-alist '("\\.less$" . css-mode))
+
+;JAVASCRIPT
+;http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
+(setq js-indent-level 2)
+
+;call any other programming modes you need here:
 
 ;SASS
 ;(load-file "~/.emacs.d/scss-mode.el")
@@ -34,28 +45,26 @@
 ;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;; PURPOSE.  See the GNU General Public License for more details.
 
-(defconst scss-font-lock-keywords
-  ;; Variables
-  '(("$[a-z_-][a-z-_0-9]*" . font-lock-constant-face)))
+;; (defconst scss-font-lock-keywords
+;;   ;; Variables
+;;   '(("$[a-z_-][a-z-_0-9]*" . font-lock-constant-face)))
 
-(define-derived-mode scss-mode css-mode "SCSS"
-  "Major mode for editing SCSS files, http://sass-lang.com/
-Special commands:
-\\{scss-mode-map}"
-  (font-lock-add-keywords nil scss-font-lock-keywords)
-  ;; Add the single-line comment syntax ('//', ends with newline)
-  ;; as comment style 'b' (see "Syntax Flags" in elisp manual)
-  (modify-syntax-entry ?/ ". 124" css-mode-syntax-table)
-  (modify-syntax-entry ?* ". 23b" css-mode-syntax-table)
-  (modify-syntax-entry ?\n ">" css-mode-syntax-table)
-  ;(add-to-list 'compilation-error-regexp-alist scss-compile-error-regex)
-  ;(add-hook 'after-save-hook 'scss-compile-maybe nil t)
-  )
+;; (define-derived-mode scss-mode css-mode "SCSS"
+;;   "Major mode for editing SCSS files, http://sass-lang.com/
+;; Special commands:
+;; \\{scss-mode-map}"
+;;   (font-lock-add-keywords nil scss-font-lock-keywords)
+;;   ;; Add the single-line comment syntax ('//', ends with newline)
+;;   ;; as comment style 'b' (see "Syntax Flags" in elisp manual)
+;;   (modify-syntax-entry ?/ ". 124" css-mode-syntax-table)
+;;   (modify-syntax-entry ?* ". 23b" css-mode-syntax-table)
+;;   (modify-syntax-entry ?\n ">" css-mode-syntax-table)
+;;   ;(add-to-list 'compilation-error-regexp-alist scss-compile-error-regex)
+;;   ;(add-hook 'after-save-hook 'scss-compile-maybe nil t)
+;;   )
 
-(add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
-(add-to-list 'auto-mode-alist '("\\.sass$" . scss-mode))
-
-;call any other programming modes you need here:
+;; (add-to-list 'auto-mode-alist '("\\.scss$" . scss-mode))
+;; (add-to-list 'auto-mode-alist '("\\.sass$" . scss-mode))
 
 ;MATLAB
 ;(add-to-list 'load-path "~/.emacs.d/matlab-emacs")
