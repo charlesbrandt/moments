@@ -23,6 +23,11 @@
 ;http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
 (setq js-indent-level 2)
 
+;C/ARDUINO
+(add-to-list 'auto-mode-alist '("\\.ino$" . c-mode)) 
+
+
+
 ;call any other programming modes you need here:
 
 ;SASS
