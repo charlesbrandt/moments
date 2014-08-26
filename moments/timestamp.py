@@ -419,11 +419,15 @@ class Timestamp(object):
         Month DD, YYYY
         """
         months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ]
+        months_abr = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ]
         #get rid of double spacing, if it exists
         text_time = text_time.replace("  ", " ")
         (month_s, day_s, year_s) = text_time.split(' ')
         if month_s in months:
             month = months.index(month_s) + 1
+            #print month
+        elif month_s in months_abr:
+            month = months_abr.index(month_s) + 1
             #print month
         else:
             print "Couldn't find: %s" % month_s
