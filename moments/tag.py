@@ -38,6 +38,8 @@ def to_tag(item):
     item = re.sub("\\\\'", '', item)
     item = re.sub("\\'", '', item)
     item = re.sub("'", '', item)
+    #too many sources of problems with this sequence
+    item = re.sub("&amp;", 'and', item)
     
     #todo:
     # filter any non alphanumeric characters
