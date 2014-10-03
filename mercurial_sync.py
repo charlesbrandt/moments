@@ -160,8 +160,8 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
 
 def usage():
     print """
-python /c/moments/moments/export.py /c/outgoing/ /media/CHARLES/outgoing/
-python /c/moments/moments/export.py /c/outgoing/ /media/charles/CHARLES/outgoing/
+python /c/moments/moments/export.py /c/out/ /media/CHARLES/out/
+python /c/moments/moments/export.py /c/out/ /media/charles/CHARLES/out/
 (reset any open journal buffers after export)
 
 /c/moments/mercurial_sync.py /c/clients /media/charles/CHARLES/clients
