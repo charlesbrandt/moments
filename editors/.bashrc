@@ -4,7 +4,7 @@
 
 # Setting PATH for MacPython 2.5
 # The orginal version is saved in .bash_profile.pysave
-PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:/opt/local/bin:${PATH}"
+PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:/opt/local/bin:/c/downloads/android/tools:/c/downloads/android/platform-tools:${PATH}"
 export PATH
 
 # If not running interactively, don't do anything
@@ -14,7 +14,6 @@ export PATH
 #http://unix.stackexchange.com/questions/18231/scp-fails-without-error
 echo "Deep Breath... Inhale.... Exhale.... :)"
 export EDITOR=vi
-
 
 # don't put duplicate lines in the history. See bash(1) for more options
 export HISTCONTROL=ignoredups
