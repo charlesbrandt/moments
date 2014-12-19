@@ -656,6 +656,12 @@ class Timestamp(object):
         """
         because future and past does not handle months,
         handle this separately
+
+        also [2014.10.14 11:17:51]
+        this is a better way to handle this:
+        http://stackoverflow.com/questions/9724906/python-date-of-the-previous-month
+        datetime.utcnow().replace(day=1) - timedelta(days=1)
+        
         """
         next_month = self.month + months
         if next_month >= 13:

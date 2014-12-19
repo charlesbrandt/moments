@@ -4,6 +4,13 @@
 ; that are updated as various processes are refined
 ; should go in ~/.emacs.d/context.el
 ;
+
+;Invoke Custom:
+;M-x customize
+;Then, choose "Programming," and then "Languages," and then select a language/mode to customize. Edit the options as you see fit. When done, choose either "Save for current session" or "Save for future sessions."
+;via: http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
+
+;
 ; these can then be easily reloaded in the editor without restarting the editor
 ; there is a "M-x reload" function for that.
 ; reloading can also be accomplished by selecting the region below,

@@ -169,7 +169,7 @@ python /c/moments/moments/export.py /c/out/ /media/charles/CHARLES/out/
 
 /c/moments/mercurial_sync.py /c /media/CHARLES/
 """
-    
+
 def main():
     if len(sys.argv) > 1:
         helps = ['--help', 'help', '-h']
