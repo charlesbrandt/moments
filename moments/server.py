@@ -83,22 +83,6 @@ def save_post():
     number = j.save(full_path)
     return "%s saved (%s entries) (full path: %s)" % (item, number, full_path)
 
-@server.route('/load_journal/:item#.+#')
-def load_journal(item):
-    """
-    if we load root automatically on start,
-    this won't have much use if we limit loads to the root directory
-    (as we do in normal load() and load_post())
-    but if we don't, that could have some security implications
-    (loading anywhere in the filesystem)
-    may or may not want to enable, depending on the environment in use
-    """
-    global j
-    temp_j = load_journal_path(item)
-    entries = temp_j.entries()
-    j.update_many(entries)
-    return "%s loaded (%s entries)" % (item, len(entries))
-
 @server.route('/load/:item#.+#')
 def load(item):
     global j, path_root
@@ -366,6 +350,22 @@ def clear():
     result = j.clear()
     return "Clear as a mountain stream.<br>(result: %s)" % result
 
+@server.route('/load_journal/:item#.+#')
+def load_journal(item):
+    """
+    if we load root automatically on start,
+    this won't have much use if we limit loads to the root directory
+    (as we do in normal load() and load_post())
+    but if we don't, that could have some security implications
+    (loading anywhere in the filesystem)
+    may or may not want to enable, depending on the environment in use
+    """
+    global j
+    temp_j = load_journal_path(item)
+    entries = temp_j.entries()
+    j.update_many(entries)
+    return "%s loaded (%s entries)" % (item, len(entries))
+
 def usage():
     print __doc__    
 
@@ -403,7 +403,9 @@ if __name__ == '__main__':
             #this will get the first one to use as primary path_root
             if not source:
                 source = s
-                
+
+            #this is the local load_journal function
+            #not to be confused with moments.path.load_journal function
             load_journal(s)
             print "Loaded: %s entries" % len(j.entries())
             print "Load finished: %s" % Timestamp()

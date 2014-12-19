@@ -440,7 +440,7 @@ class Path(object):
         #ignore_dirs = [ 'downloads', 'binaries' ]
 
         #this would be the place to add .hgignore items to the ignore_items list
-        ignore_items = [ 'downloads', 'index.txt' ]
+        ignore_items = [ 'downloads', 'index.txt', '.hg' ]
         j = Journal()
         log_check = re.compile('.*\.txt$')
         if os.path.isdir(self.path):
