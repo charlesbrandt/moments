@@ -35,15 +35,32 @@ def to_tag(item):
     item = item.strip()
     item = re.sub(' ', '_', item)
     item = re.sub("/", '_', item)
+
+    #there are times when it is useful to have a dash in a tag...
+    #removing should be left to caller:
+    #item = re.sub("\-", '_', item)
+    
     item = re.sub("\\\\'", '', item)
     item = re.sub("\\'", '', item)
     item = re.sub("'", '', item)
+
+    #unicode characters don't often agree with tags
+    #comment out if you want to keep them
+    item = re.sub(r'[^\x00-\x7F]+', ' ', item)
+
     #too many sources of problems with this sequence
     item = re.sub("&amp;", 'and', item)
+
+    #difficult to replace 
+    #sre_constants.error: unbalanced parenthesis
+    #item = re.sub(re.escape('('), '', item)
+    #item = re.sub(re.escape(')'), '', item)
     
-    #todo:
-    # filter any non alphanumeric characters
-    
+    item = re.sub('[()]', '', item)
+
+    #could consider filtering ':' and '?'
+    #these characters don't play well with command lines
+        
     return item
 
 class Tags(list):
