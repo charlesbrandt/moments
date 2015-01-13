@@ -24,15 +24,15 @@
 (setq js-indent-level 2)
 
 ;https://github.com/mooz/js2-mode
-(load-file "~/.emacs.d/js2-mode.el")
-(load-file "~/.emacs.d/js2-imenu-extras.el")
-(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+;; (load-file "~/.emacs.d/js2-mode.el")
+;; (load-file "~/.emacs.d/js2-imenu-extras.el")
+;; (add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
 
-;http://feeding.cloud.geek.nz/posts/proper-indentation-of-javascript-files/
-(custom-set-variables  
- '(js2-basic-offset 2)  
- '(js2-bounce-indent-p t)  
-)
+;; ;http://feeding.cloud.geek.nz/posts/proper-indentation-of-javascript-files/
+;; (custom-set-variables  
+;;  '(js2-basic-offset 2)  
+;;  '(js2-bounce-indent-p t)  
+;; )
 
 ;C/ARDUINO
 (add-to-list 'auto-mode-alist '("\\.ino$" . c-mode)) 
