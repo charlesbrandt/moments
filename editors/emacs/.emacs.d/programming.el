@@ -23,6 +23,11 @@
 ;http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
 (setq js-indent-level 2)
 
+;react based jsx files mode:
+;https://github.com/jsx/jsx-mode.el
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . jsx-mode))
+(autoload 'jsx-mode "jsx-mode" "JSX mode" t)
+
 ;https://github.com/mooz/js2-mode
 ;; (load-file "~/.emacs.d/js2-mode.el")
 ;; (load-file "~/.emacs.d/js2-imenu-extras.el")
