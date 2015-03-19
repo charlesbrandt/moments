@@ -11,13 +11,29 @@
 (setq interpreter-mode-alist (cons '("python" . python-mode) interpreter-mode-alist))
 (autoload 'python-mode "python-mode" "Python editing mode." t)
 
-(add-to-list 'auto-mode-alist '("\\.zpt$" . html-mode))
-(add-to-list 'auto-mode-alist '("\\.pt$" . html-mode))
-(add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
-(add-to-list 'auto-mode-alist '("\\.mako$" . html-mode))
-(add-to-list 'auto-mode-alist '("\\.tpl$" . html-mode))
+;(add-to-list 'auto-mode-alist '("\\.zpt$" . html-mode))
+;(add-to-list 'auto-mode-alist '("\\.pt$" . html-mode))
+;(add-to-list 'auto-mode-alist '("\\.dtml$" . html-mode))
+;(add-to-list 'auto-mode-alist '("\\.mako$" . html-mode))
+;(add-to-list 'auto-mode-alist '("\\.tpl$" . html-mode))
 
-(add-to-list 'auto-mode-alist '("\\.less$" . css-mode))
+;(add-to-list 'auto-mode-alist '("\\.less$" . css-mode))
+
+;http://web-mode.org/
+(require 'web-mode)
+(add-to-list 'auto-mode-alist '("\\.zpt$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.pt$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.dtml$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.mako$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.tpl$" . web-mode))
+
+(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.less$" . web-mode))
+
+(setq web-mode-markup-indent-offset 2)
+(setq web-mode-css-indent-offset 2)
+(setq web-mode-code-indent-offset 2)
 
 ;JAVASCRIPT
 ;http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
@@ -25,8 +41,8 @@
 
 ;react based jsx files mode:
 ;https://github.com/jsx/jsx-mode.el
-(add-to-list 'auto-mode-alist '("\\.jsx\\'" . jsx-mode))
-(autoload 'jsx-mode "jsx-mode" "JSX mode" t)
+;(add-to-list 'auto-mode-alist '("\\.jsx\\'" . jsx-mode))
+;(autoload 'jsx-mode "jsx-mode" "JSX mode" t)
 
 ;https://github.com/mooz/js2-mode
 ;; (load-file "~/.emacs.d/js2-mode.el")

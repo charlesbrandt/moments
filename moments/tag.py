@@ -50,6 +50,8 @@ def to_tag(item):
 
     #too many sources of problems with this sequence
     item = re.sub("&amp;", 'and', item)
+    #even this seems like it could re-introduce issues:
+    item = re.sub("&", 'and', item)
 
     #difficult to replace 
     #sre_constants.error: unbalanced parenthesis
