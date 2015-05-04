@@ -86,19 +86,29 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
                 print "%s" % result
                 lines = result.splitlines()
                 if len(lines) > 1:
-                    changes = True
-                    if re.search('hg update', lines[1]):
-                        print "updating"
-                        interface.pushbuffer()
-                        commands.update(interface, repo)
-                        result = interface.popbuffer()
-                        print "%s" % result
-                        response = interface.prompt("everything ok? (ctl-c to exit)",
-                                                    default='y')
-                        print "moving on then..."
+                    #changes = True
+                    need_update = False
 
-                    else:
+                    for line in lines:
+                        #sometimes might be only 2 lines
+                        #sometimes might be 3:
+                        #['pulling from /media/charles/CHARLES/moments', 'updating bookmark master', "(run 'hg update' to get a working copy)"]
+                        if re.search('hg update', line):
+                            print "updating"
+                            interface.pushbuffer()
+                            commands.update(interface, repo)
+                            result = interface.popbuffer()
+                            print "%s" % result
+                            response = interface.prompt("everything ok? (ctl-c to exit)",
+                                                        default='y')
+                            print "moving on then..."
+                            need_update = True
+
+                    if not need_update:
+                        #if we didn't update, the lines must be telling us
+                        #something else needs to happen...
                         #must be a merge:
+                        print lines
                         print "merge detected, all yours:"
                         print "cd %s" % local_repo_path
                         exit()
