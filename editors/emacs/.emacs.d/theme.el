@@ -7,30 +7,6 @@
 ;(print "SYSTEM NAME:")
 ;(print system-name)
 
-(message "SYSTEM NAME:")
-(setq hostname (car (split-string (system-name) "\\.")))
-(message hostname)
-
-;; frame setup for different computers
-(defun setup-frame-for (name h w font)
-  (if (equal hostname name)
-      (progn
-        (set-frame-height (selected-frame) h)
-        (set-frame-width (selected-frame) w)
-	;; this applies the height to new frames too 
-	(add-to-list 'default-frame-alist (cons 'height h))
-	(add-to-list 'default-frame-alist (cons 'width w))
-	(custom-set-faces font)
-	)
-    )
-  )
-
-(defun frame-setup (list)
-  (when window-system
-    (dolist (conf list)
-      ;(setup-frame-for (car conf) (cadr conf) (caddr conf)))))
-      (setup-frame-for (car conf) (cadr conf) (caddr conf) (cadddr conf) ))))
-
 (defun my-color-theme-light ()
   (interactive)
   ;; main theme

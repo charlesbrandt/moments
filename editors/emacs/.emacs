@@ -47,23 +47,57 @@
 ;http://www.emacswiki.org/cgi-bin/wiki/Icicles
 ;need to investigate icicles
 
-(load-file "~/.emacs.d/theme.el")
+;; (load-file "~/.emacs.d/theme.el")
 
-;keeping this around to undo the bad settings done elsewhere
-(my-color-theme-light)
+;; ;keeping this around to undo the bad settings done elsewhere
+;; (my-color-theme-light)
+
+;https://github.com/whitlockjc/atom-dark-theme-emacs
+(load-file "~/.emacs.d/atom-dark-theme.el")
+
+
 
 ;; this works, but will probably be global for all instances
 ;; unless frame-setup overrides
 ;(set-frame-height (selected-frame) 43)
 ;(set-frame-width (selected-frame) 80)
 
+(message "SYSTEM NAME:")
+(setq hostname (car (split-string (system-name) "\\.")))
+(message hostname)
+
+;; frame setup for different computers
+;(defun setup-frame-for (name h w font)
+(defun setup-frame-for (name h w)
+  (if (equal hostname name)
+      (progn
+        (set-frame-height (selected-frame) h)
+        (set-frame-width (selected-frame) w)
+	;; this applies the height to new frames too 
+	(add-to-list 'default-frame-alist (cons 'height h))
+	(add-to-list 'default-frame-alist (cons 'width w))
+	;(custom-set-faces font)
+	)
+    )
+  )
+
+(defun frame-setup (list)
+  (when window-system
+    (dolist (conf list)
+      ;(setup-frame-for (car conf) (cadr conf) (caddr conf)))))
+      ;(setup-frame-for (car conf) (cadr conf) (caddr conf) (cadddr conf) ))))
+
+      ;(setup-frame-for (car conf) (cadr conf) (cadr (cdr conf)) (cadr (cdr (cdr conf))) ))))
+      (setup-frame-for (car conf) (cadr conf) (cadr (cdr conf)) ))))
+
+
 ;(name height width font)
 ;where height and width are for the frame
 (frame-setup
  '(("blank" 29 98 '() ) ;; example
-   ("drishti" 34 125 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 97 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; netbook
-   ("context" 32 80 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 98 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))) ) ;; laptop
-   ("breathe" 43 80 (default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :family "Monaco")))) )
+   ("drishti" 34 125 ) ;; netbook
+   ("context" 32 80  ) ;; laptop
+   ("breathe" 43 80  )
    )
 )
 
@@ -105,15 +139,24 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#242424" "#E5786D" "#95E454" "#CAE682" "#8AC6F2" "#333366" "#CCAA8F" "#F6F3E8"])
+ '(custom-enabled-themes nil)
  '(global-font-lock-mode t)
  '(inhibit-startup-screen t)
  '(tool-bar-mode nil))
 
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :family "Monaco")))))
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
