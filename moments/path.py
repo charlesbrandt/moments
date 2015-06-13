@@ -47,7 +47,7 @@ except:
         #also check for Pillow version of PIL:
         import PIL.Image as PILImage
     except:
-        print "WARNING: Python Image Library not intalled."
+        print "WARNING: Python Image Library not installed."
         print "Image manipulation will not work"
 
 

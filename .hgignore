@@ -17,6 +17,7 @@ syntax: regexp
 ^editors/emacs/.emacs.d/matlab-emacs/
 ^editors/emacs/.emacs.d/session*
 ^editors/emacs/.emacs.d/abbrev_defs
+^editors/emacs/.emacs.d/recentf
 ^binaries*
 ^tests/zoobar/sample_log2.txt
 ^Moments.egg-info/SOURCES.txt
