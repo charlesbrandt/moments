@@ -1802,32 +1802,36 @@ class Directory(File):
         """
         self.scan_filetypes()
         #print "%s has %s images" % (self.path.name, len(self.images))
-        choice = None           
+        choice = None
         if len(self.images):
 
-            dest = os.path.join(str(self.path), "action.txt")
-            j = load_journal(dest)
-            if j:
-                #2009.12.19 13:19:27 
-                #need to generate the data association first now
-                j.associate_files()
+            if pick_by == "journal":
+                #*2015.07.27 18:30:19 
+                #this requires action.txt to contain valid full paths
+                #path prefixes change frequently enough
+                #
+                #also, action.txt is not often updated with events
+                dest = os.path.join(str(self.path), "action.txt")
+                j = load_journal(dest)
+                if j:
+                    #2009.12.19 13:19:27 
+                    #need to generate the data association first now
+                    j.associate_files()
 
-                most_frequent = j._files.frequency_list()
-                most_frequent.sort()
-                most_frequent.reverse()
-                if self.path.name == "20100522-rebel-slr":
-                    print most_frequent
-                while not choice and len(most_frequent):
-                    next_option = most_frequent.pop(0)
-                    file_part = next_option[1].strip()
-                    path_part = os.path.join(str(self.path), file_part)
-                    path = Path(path_part, relative_prefix=self.path.relative_prefix)
-                    if path.exists():
-                        if path.type() == "Image":
-                            choice = path
+                    most_frequent = j._files.frequency_list()
+                    most_frequent.sort()
+                    most_frequent.reverse()
+                    while not choice and len(most_frequent):
+                        next_option = most_frequent.pop(0)
+                        file_part = next_option[1].strip()
+                        path_part = os.path.join(str(self.path), file_part)
+                        path = Path(path_part, relative_prefix=self.path.relative_prefix)
+                        if path.exists():
+                            if path.type() == "Image":
+                                choice = path
 
-                    else:
-                        print "couldn't find: %s" % path
+                        else:
+                            print "couldn't find: %s" % path
                 
             elif pick_by == "random":
                 random.seed()
