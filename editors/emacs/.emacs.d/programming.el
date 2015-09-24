@@ -19,6 +19,10 @@
 
 ;(add-to-list 'auto-mode-alist '("\\.less$" . css-mode))
 
+;https://github.com/yoshiki/yaml-mode
+(require 'yaml-mode)
+(add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
+
 ;http://web-mode.org/
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.zpt$" . web-mode))
