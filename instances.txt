@@ -1,3 +1,15 @@
+*2011.08.31 18:36:32 moments
+/c/moments/instances.txt
+/c/moments/launch.sh
+/c/moments/moments/tag.py
+/c/moments/moments/moment.py
+/c/moments/moments/timestamp.py
+/c/moments/moments/log.py
+/c/moments/moments/filters.py
+/c/moments/moments/export.py
+/c/moments/moments/path.py
+/c/moments/moments/journal.py
+
 *2011.12.30 15:03:20 docs
 /c/moments/instances.txt
 /c/moments/docs/api.txt

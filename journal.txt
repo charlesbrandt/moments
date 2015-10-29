@@ -1,3 +1,11 @@
+*2015.09.22 19:11:14
+wow...
+it's been a while since making changes here
+
+a few bug fixes here and there... a few tweaks... but really it's been quite stable.
+
+I am running up against some limitations of using .txt files and loading everything in to memory. Investigating the use of couchdb as a persistence layer. Hoping that this also makes it easier to synchronize with mobile devices. 
+
 *2011.06.26 22:41:01 migration
 _add_entry -> _add
 replace_entry -> replace

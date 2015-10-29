@@ -310,6 +310,9 @@ class Journal(object):
         can merge later as needed using dedicated script for that purpose
         """
         if not hasattr(entry, "created") or not entry.created:
+            #TODO:
+            #this will not detect two entries with the same content
+            #if they are initialized as different python objects
             if entry not in self._entries:
                 self._add(entry, position)
                 if self.debug: print "Entry has no time associated, and no other entry found. added"

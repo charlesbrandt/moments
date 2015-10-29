@@ -126,6 +126,27 @@ class Moment(object):
 
         return item
 
+    def as_couch(self):
+        """
+        similar to as_dict
+        returns self as a dictionary suitable for JSON use
+        but a custom format specific for use in couch imports
+        """
+        item = {}
+        item['data'] = self.data
+        if self.created:
+            item['created'] = self.created.array()
+        else:
+            item['created'] = []
+        item['tags'] = list(self.tags)
+        item['paths'] = [ self.path ]
+
+        #TODO
+        #is item equivalent to a json.loads(json.dumps(self)) ???
+
+        return item
+
+
     def is_equal(self, other, debug=False):
         """
         take another entry/moment

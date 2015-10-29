@@ -20,6 +20,20 @@ class TestJournal:
         j.load("zoobar/sample_log.txt")
         assert j
 
+    def test_no_dates(self):
+        """
+        interested to see what happens when two entries are loaded
+        both without a date
+        but all other content is the same
+        """
+        j = journal.Journal()
+        j.load("zoobar/no_dates_log.txt")
+        
+        #not sure if this is desired behavior, but it is the way it works:
+        assert len(j._entries) == 2
+        assert j
+        #assert False
+
     def test_reverse(self):
         #manually sorted in reverse:
         reversed = journal.Journal("zoobar/sample_reverse.txt")

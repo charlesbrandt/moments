@@ -48,16 +48,17 @@ class TestStorage:
         mtime.from_epoch(self.node.mtime)
         assert str(mtime) == str(now)
         assert str(atime) == str(now)
-            
-def test_image_size_name():
-    i = Image('zoobar/IMG_6166_l.JPG')
-    new_name = i.size_name('small')
-    assert_equal(new_name, 'IMG_6166_l_s.JPG')
+
+# deprecated
+## def test_image_size_name():
+##     i = Image('zoobar/IMG_6166_l.JPG')
+##     new_name = i.size_name('small')
+##     assert_equal(new_name, 'IMG_6166_l_s.JPG')
 
 def test_image_get_size():
     i = Image('./zoobar/IMG_6166_l.JPG')
 
-    path = i.get_size('small')
+    path = i.size_path('small', square=False)
     #print path
     assert_equal(str(path), os.path.abspath('./zoobar/sized/small/IMG_6166_l_s.JPG'))
 

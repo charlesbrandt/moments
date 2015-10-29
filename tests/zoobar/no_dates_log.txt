@@ -1,0 +1,12 @@
+* sample test tags
+an entry with no date, but tags and data
+will make two copies to see if the entries are merged when loaded
+(they are the same!)
+or if both copies are preserved
+
+* sample test tags
+an entry with no date, but tags and data
+will make two copies to see if the entries are merged when loaded
+(they are the same!)
+or if both copies are preserved
+

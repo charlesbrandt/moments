@@ -275,6 +275,41 @@ class Timestamp(object):
         else:
             return self.dt.strftime("%Y.%m.%d %H:%M:%S")
 
+    def array(self, accuracy=None):
+        """
+        return datetime as an array of items
+        help via:
+        http://stackoverflow.com/questions/13650214/how-to-convert-a-python-datetime-datetime-into-a-list
+        """
+
+        #this works, but adds extra fields
+        #return list(self.dt.timetuple())
+
+        if self.dt:
+            return [self.dt.year, self.dt.month, self.dt.day, self.dt.hour, self.dt.minute, self.dt.second]
+        else:
+            return []
+
+        #not sure that limiting is a good idea in this case (even if zeros)
+
+        ## #if it was not passed in, see if it has been set elsewhere
+        ## if not accuracy and self.accuracy:
+        ##     accuracy = self.accuracy
+
+        ## if accuracy == 'year':
+        ##     return [self.dt.year]
+        ## elif accuracy == 'month':
+        ##     return [self.dt.year, self.dt.month]
+        ## elif (accuracy == 'day') or ((self.dt.hour == 0) and (self.dt.minute == 0) and (self.dt.second == 0)):
+        ##     return [self.dt.year, self.dt.month, self.dt.day]
+        ## elif accuracy == 'hour':
+        ##     return [self.dt.year, self.dt.month, self.dt.day, self.dt.hour]
+        ## elif (accuracy == 'minute') or (self.dt.second == 0):
+        ##     return [self.dt.year, self.dt.month, self.dt.day, self.dt.hour, self.dt.minute]
+        ## else:
+        ##     return [self.dt.year, self.dt.month, self.dt.day, self.dt.hour, self.dt.minute, self.dt.second]
+            
+        
     #was time_to_tstamp
     def compact(self, accuracy=None):
         """

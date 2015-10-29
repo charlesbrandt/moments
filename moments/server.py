@@ -65,7 +65,7 @@ server = bottle.Bottle()
 #where we store what we've loaded
 j = Journal()
 
-path_root = '/c/outgoing/'
+path_root = '/c/out/'
 
 @server.route('/save/:item#.+#')
 def save(item):
