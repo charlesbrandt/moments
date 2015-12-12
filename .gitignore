@@ -1,0 +1,27 @@
+# use glob syntax.
+syntax: glob
+
+*.elc
+*.pyc
+*~
+*\#
+.*.swp
+._*
+.DS_Store
+.Trashes*
+.Spotlight-V100*
+.fseventsd*
+
+editors/emacs/.emacs.d/matlab-emacs/
+editors/emacs/.emacs.d/session*
+editors/emacs/.emacs.d/abbrev_defs
+editors/emacs/.emacs.d/recentf
+editors/emacs/.emacs.d/ede-projects.el
+binaries*
+tests/zoobar/sample_log2.txt
+Moments.egg-info/SOURCES.txt
+moments.egg-info*
+build/
+sized
+snapshots*
+docs/_build/doctrees/

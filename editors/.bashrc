@@ -2,9 +2,7 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
-# Setting PATH for MacPython 2.5
-# The orginal version is saved in .bash_profile.pysave
-PATH="/Library/Frameworks/Python.framework/Versions/Current/bin:/opt/local/bin:/c/downloads/android/tools:/c/downloads/android/platform-tools:${PATH}"
+PATH="/c/public/mindstream/mindstream:/opt/local/bin:/c/downloads/android/tools:/c/downloads/android/platform-tools:${PATH}"
 export PATH
 
 # If not running interactively, don't do anything
