@@ -40,9 +40,13 @@ pass the launch to call via command line
 """
 import os, sys, subprocess
 #from moments.path import load_journal, load_instance, Context, Path
-from moments.path import load_journal, load_instance, Path
-from moments.timestamp import Timestamp
-from moments.journal import Journal
+#from moments.path import load_journal, load_instance, Path
+#from moments.timestamp import Timestamp
+#from moments.journal import Journal
+
+from path import load_journal, load_instance, Path
+from timestamp import Timestamp
+from journal import Journal
 
 #http://docs.python.org/library/optparse.html?highlight=optparse#module-optparse
 from optparse import OptionParser

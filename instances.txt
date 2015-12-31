@@ -1,3 +1,49 @@
+*2015.12.27 11:15:26 server
+/c/public/moments/instances.txt
+/c/public/mindstream/pose/application.py
+/c/public/moments/moments/journal.js
+/c/public/moments/moments/server.py
+
+*2015.12.13 18:29:58 server
+/c/public/moments/instances.txt
+/c/mindstream/pose/application-split.py
+/c/public/moments/moments/journal.js
+/c/public/moments/moments/server.py
+
+*2015.12.13 18:29:47 tests
+/c/public/moments/instances.txt
+/c/public/moments/tests/test_filters.py
+/c/public/moments/tests/test_export.py
+/c/public/moments/tests/test_path.py
+/c/public/moments/tests/test_blank_template.py
+/c/public/moments/tests/test_timestamp.py
+/c/public/moments/tests/test_moment.py
+/c/public/moments/tests/test_journal.py
+
+*2015.12.13 18:29:29 docs
+/c/public/moments/instances.txt
+/c/public/moments/docs/api.txt
+/c/public/moments/docs/using.txt
+/c/public/moments/docs/installation.txt
+/c/public/moments/docs/thanks.txt
+/c/public/moments/docs/index.txt
+/c/public/moments/docs/summary-process.txt
+/c/public/moments/docs/introduction.txt
+/c/public/moments/docs/why.txt
+/c/public/moments/README.txt
+
+*2015.12.13 18:28:53 moments
+/c/public/moments/instances.txt
+/c/public/moments/launch.sh
+/c/public/moments/moments/tag.py
+/c/public/moments/moments/moment.py
+/c/public/moments/moments/timestamp.py
+/c/public/moments/moments/log.py
+/c/public/moments/moments/filters.py
+/c/public/moments/moments/export.py
+/c/public/moments/moments/path.py
+/c/public/moments/moments/journal.py
+
 *2011.08.31 18:36:32 moments
 /c/moments/instances.txt
 /c/moments/launch.sh

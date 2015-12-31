@@ -102,7 +102,10 @@ class Moment(object):
                 self.created = Timestamp(created)
             else:
                 self.created = created
-                
+
+        elif isinstance(created, list) and created:
+            self.created = Timestamp(created)
+            
         else:
             raise TypeError, "Unknown time format for moment created value: %s type: %s" % (created, type(created))
         

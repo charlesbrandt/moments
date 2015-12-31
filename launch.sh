@@ -1,22 +1,25 @@
 #!/bin/bash
 
-python /c/mindstream/mindstream/launch.py -c /c/moments moments
+#may need to prefix launch.py if path is not set in .bashrc:
+#python /c/mindstream/mindstream/
+
+launch.py -c /c/public/moments moments
 
 echo "
 Other common options:
-python /c/mindstream/mindstream/launch.py -c /c/moments todo
-python /c/mindstream/mindstream/launch.py -c /c/moments tests
-python /c/mindstream/mindstream/launch.py -c /c/moments server
+launch.py -c /c/public/moments todo
+launch.py -c /c/public/moments tests
+launch.py -c /c/public/moments server
 
-python /c/mindstream/mindstream/launch.py -c /c/moments docs
-python /c/mindstream/mindstream/launch.py -c /c/technical javascript
+launch.py -c /c/public/moments docs
+launch.py -c /c/technical javascript
 "
 
 echo "new tab"
-echo "cd /c/moments/moments"
-echo "python server.py /c/moments/tests/"
+echo "cd /c/public/moments/moments"
+echo "python server.py /c/public/moments/tests/"
 echo ""
 
 echo "new tab"
-echo "cd /c/moments/tests"
+echo "cd /c/public/moments/tests"
 echo "nosetests --exe"

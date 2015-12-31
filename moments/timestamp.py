@@ -172,6 +172,8 @@ class Timestamp(object):
             elif isinstance(auto, str) or isinstance(auto, unicode):
                 #self.from_text(auto)
                 self.parse(auto)
+            elif isinstance(auto, list):
+                self.dt = datetime(*auto)
             else:
                 #print "Unknown auto item: %s (type: %s)" % (auto, type(auto))
                 raise ValueError, "Unknown Timestamp start value: %s of type %s" % (auto, type(auto))
