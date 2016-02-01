@@ -176,8 +176,12 @@ python /c/moments/moments/export.py /c/out/ /media/charles/CHARLES/out/
 
 /c/moments/mercurial_sync.py /c/clients /media/charles/CHARLES/clients
 /c/moments/mercurial_sync.py /c/clients /media/charles/WORK/clients
+/c/public/moments/mercurial_sync.py /media/charles/WORK/
 
 /c/moments/mercurial_sync.py /c /media/CHARLES/
+
+python /c/public/moments/moments/export.py /media/charles/WORK/out/ /c/out
+
 """
 
 def main():
