@@ -303,7 +303,7 @@ class Path(object):
         movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso', '.asf', '.mp4', '.m4v' ]
 
         #, 'm4p' are not playable by flash, should convert to use
-        sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg', '.flac' ]
+        sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg', '.flac', '.m4a' ]
 
         journal_extensions = [ '.txt', '.log' ]
 
