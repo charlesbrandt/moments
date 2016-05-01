@@ -293,14 +293,14 @@ class Path(object):
         path = os.path.join(parts)
         return path
                    
-    def type(self):
+    def type(self, strict=False):
         """
         determine the subclass that should be associated with this Path
         this gives us a central place to track this
         """
         #PCD image format seems to cause a lot of trouble
         image_extensions = [ '.jpg', '.jpeg', '.png', '.gif', '.tif' ]
-        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso', '.asf', '.mp4', '.m4v' ]
+        movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso', '.asf', '.mp4', '.m4v', '.webm' ]
 
         #, 'm4p' are not playable by flash, should convert to use
         sound_extensions = [ '.mp3', '.wav', '.aif', '.ogg', '.flac', '.m4a' ]
@@ -338,8 +338,10 @@ class Path(object):
         else:
             #this often occurs with broken symlinks
             print "Node... exists? %s Unknown filetype: %s" % (os.path.exists(self.path), self.path)
-            
-            raise ValueError
+
+            #sometimes this is an error, sometimes it's not
+            if strict: 
+                raise ValueError
             #return "Node"
 
     def load(self, node_type=None, create=True):
@@ -399,7 +401,11 @@ class Path(object):
         #elif node_type == "Sound":
         #    new_node = Sound(self.path)
         else: # node_type == "File":
-            new_node = File(self)
+            try:
+                new_node = File(self)
+            except:
+                #be strict? 
+                pass
 
         return new_node
 
@@ -1232,7 +1238,8 @@ class Image(File):
         self.make_thumb_dirs()
         
         try:
-            image = PILImage.open(str(self.path))
+            #image = PILImage.open(str(self.path))
+            image = PILImage.open(str(self.path)).convert('RGB')
         except:
             print "Error opening image: %s" % str(self.path)
         else:
@@ -1465,8 +1472,15 @@ class Directory(File):
         """
         if self.last_scan:
             self.reset()
+
+
+        try:
+            self.listdir = os.listdir(unicode(self.path))
+        except:
+            #possible to get:
+            #OSError: [Errno 13] Permission denied: '/some/path'
+            self.listdir = []
             
-        self.listdir = os.listdir(unicode(self.path))
         for item in self.listdir:
             if item not in self.ignores:
                 self.count += 1

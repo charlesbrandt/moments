@@ -17,6 +17,7 @@ editors/emacs/.emacs.d/session*
 editors/emacs/.emacs.d/abbrev_defs
 editors/emacs/.emacs.d/recentf
 editors/emacs/.emacs.d/ede-projects.el
+editors/emacs/.emacs.d/url/
 binaries*
 tests/zoobar/sample_log2.txt
 Moments.egg-info/SOURCES.txt
