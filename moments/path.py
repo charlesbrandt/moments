@@ -307,6 +307,10 @@ class Path(object):
 
         journal_extensions = [ '.txt', '.log' ]
 
+        json_extensions = [ '.json' ]
+        playlist_extensions = [ '.m3u', '.pls' ]
+        list_extensions = [ '.list', ]
+
         #others
         #playlist_extensions = [ 'm3u', 'pls' ]
         #document_extensions = [ 'html', 'htm', 'mako' ]
@@ -324,10 +328,14 @@ class Path(object):
                 return "Sound"
             elif ext in journal_extensions:
                 return "Log"
+            elif ext in json_extensions:
+                return "JSON"
+            elif ext in playlist_extensions:
+                return "Playlist"
+            elif ext in list_extensions:
+                return "List"
             #elif ext in library_extensions:
             #    return "Library"
-            #elif ext in playlist_extensions:
-            #    return "Playlist"
             #elif ext in document_extensions:
             #    return "Document"
             else:
@@ -1247,9 +1255,16 @@ class Image(File):
                 if save_square:
                     #print "making square"
                     #keep a copy of original for squaring
-                    square = image.copy()
-                    square = self._square_image(square)
-                    #print "square complete"
+                    try:
+                        square = image.copy()
+                        square = self._square_image(square)
+                        #print "square complete"
+                    except:
+                        #probably caused by:
+                        #IOError: image file is truncated (0 bytes not processed)
+                        #giving a few more details before exiting out...
+                        #this is a problem.
+                        raise ValueError, "Problem working with image: %s" % (self.path)
                     
                 if 'xlarge' in save_sizes:
                     image.thumbnail((xl,xl), PILImage.ANTIALIAS)                    #we've already resized to xl size:
