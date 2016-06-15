@@ -599,8 +599,23 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-c", "--context", dest="context",
                       help="directory to look for all other files in")
+
+    #default is to load the instance,
+    #but this can specify a non-standard location for instances
+    #(not instances.txt, which is the default)
     parser.add_option("-i", "--instance", "--instances", dest="instances",
                       help="pass in the instance file to look for instances in")
+
+    #TODO
+    #*2016.02.23 18:17:09
+    # haven't changed this in a long time!
+    #way to specify if launch should try to load a whole workspace
+    parser.add_option("-w", "--workspace", "--workspaces", dest="workspaces",
+                      help="flag to check for workspaces, expects context")
+    parser.add_option("-s", "--session", "--sessions", dest="sessions",
+                      help="flag to check for sessions, expects context")
+
+
     (options, args) = parser.parse_args()
     if options.context:
         context = Context(options.context)
