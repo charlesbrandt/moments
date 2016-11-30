@@ -1511,6 +1511,7 @@ class Directory(File):
                     self.directories.append(node)
 
                 else:
+                    #might be a symlink... could add somewhere if desired
                     print "ERROR: unknown item found; not a file or directory:"
                     print item_path
 
