@@ -149,7 +149,11 @@ def picture(source=''):
 #system_explorer, computer, etc
 def file_browse(source=''):
     if sys.platform == "linux2":
-        nautilus(source)
+        if check_which('nautilus'):
+            nautilus(source)
+        elif check_which('exo-open'):
+            file_manager(source)
+            
     elif sys.platform == "darwin":
         print "launch finder here"
     else:
@@ -174,9 +178,48 @@ def terminal(working_dirs=[], tabs=0):
     #process.communicate()[0]
     return command + "\n"
 
+def check_which(item=''):
+    """
+    check if a command exists on unix systems with which
+    """
+    command = "which %s" % (item)
+    process = subprocess.Popen(command, shell=True,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+
+    while process.poll() is None:
+        #depending on which channel has output, can tailor that here
+        l = process.stderr.readline()
+        #l = process.stdout.readline()
+        print l
+
+    result = process.stdout.read()
+    #if result has something, it exists
+    #works as a binary test
+    return result
+    
+
 ############################################################
 #application specific launchers
 ############################################################
+
+def nautilus(source=''):
+    command = "nautilus %s &" % source
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    return command + "\n"
+
+def file_manager(source=''):
+    """
+    filemanager is the default file browser available on xubuntu
+
+    for OS agnostic version, see file_browse()
+    """
+    command = "exo-open --launch FileManager %s &" % source
+    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    return command + "\n"
+
 
 
 def rsync(source, destination, verbose=True):
@@ -221,12 +264,6 @@ def echo(source=''):
     #process = subprocess.check_call([command], {'shell':True})
     process = subprocess.check_call([command])
     #process.communicate()[0]
-    return command + "\n"
-
-def nautilus(source=''):
-    command = "nautilus %s &" % source
-    process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
     return command + "\n"
 
 def vlc(source='', start=0):
