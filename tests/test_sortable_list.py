@@ -11,7 +11,7 @@ import unittest
 #from datetime import datetime
 
 #import any local modules
-from sortable_list import SortableList
+from moments.sortable_list import SortableList
 
 class SortableListTest(unittest.TestCase):
     def setUp(self):
