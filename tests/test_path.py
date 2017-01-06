@@ -78,6 +78,12 @@ class TestDirectory:
         path.remove()
         assert not os.path.exists(dest)
 
+    def test_sortable_list_name(self):
+        destination = self.d.sortable_list_path()
+        print destination
+        #assert False
+        assert destination == "./zoobar/zoobar.list"
+        
     def test_default_image(self):
         d2 = Directory("./zoobar")
         print d2.images

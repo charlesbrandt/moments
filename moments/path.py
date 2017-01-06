@@ -38,6 +38,7 @@ from datetime import datetime
 from timestamp import Timestamp
 from journal import Journal
 from tag import Tags
+from sortable_list import SortableList
 
 #from image import Image
 try:
@@ -299,6 +300,9 @@ class Path(object):
         this gives us a central place to track this
         """
         #PCD image format seems to cause a lot of trouble
+        #TODO:
+        #svg will require special handling with PIL. Convert using cairo first?
+        #image_extensions = [ '.jpg', '.jpeg', '.png', '.gif', '.tif', '.svg' ]
         image_extensions = [ '.jpg', '.jpeg', '.png', '.gif', '.tif' ]
         movie_extensions = [ '.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso', '.asf', '.mp4', '.m4v', '.webm' ]
 
@@ -1423,7 +1427,7 @@ class Image(File):
 class Directory(File):
     """
     This object holds a summary of a single directory.
-    (no recursion.  one level only)
+    (no recursion. one level only)
 
     A Directory is a collection of Path objects. 
     They can be sortable based on types, dates, etc.
@@ -1439,7 +1443,7 @@ class Directory(File):
 
 
         #self.ignores = []
-        self.ignores = [ '.hg', '.hgignore', '.svn', 'index.xml', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
+        self.ignores = [ '.hg', '.hgignore', '.gitignore', '.svn', 'index.xml', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
 
         self.reset()
         
@@ -1525,6 +1529,7 @@ class Directory(File):
                     self.directories.append(node)
 
                 else:
+                    #might be a symlink... could add somewhere if desired
                     print "ERROR: unknown item found; not a file or directory:"
                     print item_path
 
@@ -1823,18 +1828,80 @@ class Directory(File):
         """
         pass
 
-    def default_image(self, pick_by="random"):
+    def sortable_list_path(self):
         """
-        if we have an action log, use that regardless of pick_by
+        helper to standardize the name + path for a sortable list
+        sometimes need this before loading the sortable list (sortable_list())
+        """
+        list_file = self.path.name + ".list"
+        list_path = os.path.join(str(self.path), list_file)
+        return list_path
+    
+    def sortable_list(self, sl=None, create=False):
+        """
+        check the directory for a sortable list
 
+        load one if found
+
+        create one if create == True
+
+        return whatever was found
+        """
+        if sl is None:
+            sl = SortableList()
+
+        #look to see if there is an existing json/list in the path
+        #with the same name as the current directory...
+        #if so, this may be the configuration file for the content
+        #load that and investigate
+        #(could also look for some standard names, like 'config.json', etc)
+
+        list_path = self.sortable_list_path()
+        if os.path.exists(list_path):
+            sl.load(list_path)
+            #print "Loaded Sortable List from: %s" % list_path
+            #print sl
+
+        return sl
+
+    def default_image(self, pick_by=""):
+        """
         Not currently configured to work with RemoteJournal
         """
+        # if we didn't explicitly specify one
+        # investigate directory and see what is the best default
+        # look at what information we have...
+        # make decisions based on that
+        if not pick_by:
+            #TODO:
+            # if we see a sortable list, look there first
+            list_path = self.sortable_list_path()
+            if os.path.exists(list_path):
+                pick_by = "sortable_list"
+            else:
+                #if nothing else, default to random is a good choice
+                pick_by = "random"
+            
         self.scan_filetypes()
         #print "%s has %s images" % (self.path.name, len(self.images))
         choice = None
         if len(self.images):
 
-            if pick_by == "journal":
+            if pick_by == "sortable_list":
+                #trusting that if the list file exists,
+                #should show the first item in the list
+                #TODO:
+                #consider ways to specify a range of the top few
+                #and only randomize those (for variety)
+                sl = self.sortable_list()
+                for item in sl:
+                    #check if item in images
+                    for image in self.images:
+                        if image.filename == item:
+                            if not choice:
+                                choice = image
+                
+            elif pick_by == "journal":
                 #*2015.07.27 18:30:19 
                 #this requires action.txt to contain valid full paths
                 #path prefixes change frequently enough
@@ -1867,10 +1934,13 @@ class Directory(File):
                 r = random.randint(0, len(self.images)-1)
                 choice = self.images[r]
 
-            else:
+            elif pick_by == "first":
                 choice = self.images[0]
                 #must not have found anything statistical if we make it here
                 #just return the first one in the list
+
+            else:
+                raise ValueError, "Decide on the desired default image for a directory"
 
         else:
             #print "No images available in: %s" % self.path.name
