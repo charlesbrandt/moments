@@ -59,8 +59,6 @@ the only thing that will be lost is a moment's ability to automatically set the 
 i think that is worth the simplification
 in practice, journal.make is used
 
-
-
 *2011.06.28 19:55:07 complete nose nosetests
 nosetests -s --exe
 

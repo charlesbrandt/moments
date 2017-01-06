@@ -927,6 +927,7 @@ class File(object):
     def check_size(self):
         """
         Wraps os.path.getsize() to return the file's size.
+        https://docs.python.org/2/library/os.path.html
         """
         self.size = os.path.getsize(str(self.path))        
         return self.size

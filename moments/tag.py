@@ -43,6 +43,7 @@ def to_tag(item):
     item = re.sub("\\\\'", '', item)
     item = re.sub("\\'", '', item)
     item = re.sub("'", '', item)
+    item = re.sub('"', '', item)
 
     #unicode characters don't often agree with tags
     #comment out if you want to keep them
