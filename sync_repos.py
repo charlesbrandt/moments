@@ -3,13 +3,14 @@
 #
 # Description:
   Script to run through the process
-  of synchronizing mulitple mercurial repositories
-  probably similar in goal to a mercurial forest
-  but just loops over all repositories available
+  of synchronizing mulitple repositories under version control
+  loops over all repositories available in source directory
+  and compares the status of the corresponding directory in the destination
   
 # By: Charles Brandt [code at contextiskey dot com]
 # On: *2010.01.30 19:47:05
-#     also [2010.03.01 09:26:01] 
+#     also [2010.03.01 09:26:01]
+#     also [2016.12.10 07:57:19]
 # License:  MIT 
 
 # Requires: mercurial
@@ -43,130 +44,151 @@ mercurial.error.Abort: no username supplied (see "hg help config")
 import os, re, sys
 from mercurial import ui, hg, commands
 
+def sync_hg(hg_interface, local_repo_path, remote_repo_path):
+    if not os.path.exists(remote_repo_path):
+        #remote_repo_path does not exist
+        #could sync with default source (e.g. github) here
+        remote_repo_path = None
+        
+    if remote_repo_path:
+        #first pull down any changes that may exist on remote
+        repo = hg.repository(hg_interface, local_repo_path)
+        hg_interface.pushbuffer()
+        commands.pull(hg_interface, repo, remote_repo_path)
+        result = hg_interface.popbuffer()
+        #hg_interface won't catch all of the output of a pull
+        #if there were changes in the pull, it gets the line:
+        #(run 'hg update' to get a working copy)
+        #
+        #if not, only has:
+        # pulling from /media/CHARLES/charles
+
+        #keep track if we find something that changes
+        #so that we can pause at the end
+        #otherwise we should just move on automatically
+        changes = False
+
+        print "%s" % result
+        lines = result.splitlines()
+        if len(lines) > 1:
+            #changes = True
+            need_update = False
+
+            for line in lines:
+                #sometimes might be only 2 lines
+                #sometimes might be 3:
+                #['pulling from /media/charles/CHARLES/moments', 'updating bookmark master', "(run 'hg update' to get a working copy)"]
+                if re.search('hg update', line):
+                    print "updating"
+                    hg_interface.pushbuffer()
+                    commands.update(hg_interface, repo)
+                    result = hg_interface.popbuffer()
+                    print "%s" % result
+                    response = hg_interface.prompt("everything ok? (ctl-c to exit)",
+                                                default='y')
+                    print "moving on then..."
+                    need_update = True
+
+            if not need_update:
+                #if we didn't update, the lines must be telling us
+                #something else needs to happen...
+                #must be a merge:
+                print lines
+                print "merge detected, all yours:"
+                print "cd %s" % local_repo_path
+                exit()
+
+        #at this point all changes from remote media should be applied locally
+        #now we should check if we have any changes here:
+        hg_interface.pushbuffer()
+        commands.status(hg_interface, repo)
+        result = hg_interface.popbuffer()
+        if result:
+            print "looks like there are some local changes:"
+            print result
+            changes = True
+
+            new_files = False
+            for line in result.splitlines():
+                if line.startswith('?'):
+                    new_files = True
+            if new_files:
+                print "new files found"
+                response = hg_interface.prompt("would you like to add the new files?", default='y')
+                if response == 'y':
+                    commands.add(hg_interface, repo)
+
+
+            response = hg_interface.prompt("log (ctl-c to exit):", default='')
+            commands.commit(hg_interface, repo, message=response)
+
+        #push changes:
+        print "hg push %s" % remote_repo_path
+        commands.push(hg_interface, repo, remote_repo_path)
+
+        lines = result.splitlines()
+        if len(lines) > 1:
+            changes = True
+        #on remote repo,
+        remote_repo = hg.repository(hg_interface, remote_repo_path)
+        #update
+        print "updating remote:"
+        hg_interface.pushbuffer()
+        commands.update(hg_interface, remote_repo)
+        result = hg_interface.popbuffer()
+        print "%s" % result
+
+        #show remote status
+        commands.status(hg_interface, remote_repo)
+
+        if changes:
+            response = hg_interface.prompt("everything ok? (ctl-c to exit)",
+                                        default='y')
+    else:
+        print "skipping: %s (no remote repo detected)" % remote_repo_path
+        #pass
+    
+
 def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
     #local_root = '/c'
     #remote_root = '/media/CHARLES'
 
-    interface = ui.ui()
+    hg_interface = ui.ui()
 
+    if not os.path.exists(local_root):
+        print "Could not find source path: %s" % local_path
+        exit()
+        
     local_options = os.listdir(local_root)
     local_options.sort()
-    remote_options = os.listdir(remote_root)
-    remote_options.sort()
 
-    #*2010.05.03 22:24:10 
-    #not sure that this line is needed... certainly causes problems if there
-    #is only one directory locally:
-    #o = local_options[1]
-    for o in local_options:
-        if os.path.exists(os.path.join(local_root, o, '.hg')):
-            #print "%s is a mercurial repository" % o
-            local_repo_path = os.path.join(local_root, o)
-            if o in remote_options:
-                print "'%s' is on remote media, preparing to sync..." % o
-                remote_repo_path = os.path.join(remote_root, o)
+    remote_options = []
+    if os.path.exists(remote_root):
+        remote_options = os.listdir(remote_root)
+        remote_options.sort()
+    else:
+        #we can try synchronizing with default remote repo in this case
+        #(requires internet connection)
+        print "Could not find destination path: %s" % remote_root
 
-                #first pull down any changes that may exist on remote
-                repo = hg.repository(interface, local_repo_path)
-                interface.pushbuffer()
-                commands.pull(interface, repo, remote_repo_path)
-                result = interface.popbuffer()
-                #doesn't seem that the interface will catch all of the output of a pull
-                #if there were changes pull, it does get the line:
-                #(run 'hg update' to get a working copy)
-                #
-                #if not, only has:
-                # pulling from /media/CHARLES/charles
-
-                #keep track if we find something that changes
-                #so that we can pause at the end
-                #otherwise we should just move on automatically
-                changes = False
-
-                print "%s" % result
-                lines = result.splitlines()
-                if len(lines) > 1:
-                    #changes = True
-                    need_update = False
-
-                    for line in lines:
-                        #sometimes might be only 2 lines
-                        #sometimes might be 3:
-                        #['pulling from /media/charles/CHARLES/moments', 'updating bookmark master', "(run 'hg update' to get a working copy)"]
-                        if re.search('hg update', line):
-                            print "updating"
-                            interface.pushbuffer()
-                            commands.update(interface, repo)
-                            result = interface.popbuffer()
-                            print "%s" % result
-                            response = interface.prompt("everything ok? (ctl-c to exit)",
-                                                        default='y')
-                            print "moving on then..."
-                            need_update = True
-
-                    if not need_update:
-                        #if we didn't update, the lines must be telling us
-                        #something else needs to happen...
-                        #must be a merge:
-                        print lines
-                        print "merge detected, all yours:"
-                        print "cd %s" % local_repo_path
-                        exit()
-
-                #at this point all changes from remote media should be applied locally
-                #now we should check if we have any changes here:
-                interface.pushbuffer()
-                commands.status(interface, repo)
-                result = interface.popbuffer()
-                if result:
-                    print "looks like there are some local changes:"
-                    print result
-                    changes = True
-
-                    new_files = False
-                    for line in result.splitlines():
-                        if line.startswith('?'):
-                            new_files = True
-                    if new_files:
-                        print "new files found"
-                        response = interface.prompt("would you like to add the new files?", default='y')
-                        if response == 'y':
-                            commands.add(interface, repo)
+    for option in local_options:
+        local_repo_path = os.path.join(local_root, option)
+        remote_repo_path = os.path.join(remote_root, option)
+        if os.path.exists(os.path.join(local_repo_path, '.hg')):
+            sync_hg(hg_interface, local_repo_path, remote_repo_path)
+        elif os.path.exists(os.path.join(local_repo_path, '.git')):
+            sync_git(git_interface, local_repo_path, remote_repo_path)
 
 
-                    response = interface.prompt("log (ctl-c to exit):", default='')
-                    commands.commit(interface, repo, message=response)
-
-                #push changes:
-                print "hg push %s" % remote_repo_path
-                commands.push(interface, repo, remote_repo_path)
-
-                lines = result.splitlines()
-                if len(lines) > 1:
-                    changes = True
-                #on remote repo,
-                remote_repo = hg.repository(interface, remote_repo_path)
-                #update
-                print "updating remote:"
-                interface.pushbuffer()
-                commands.update(interface, remote_repo)
-                result = interface.popbuffer()
-                print "%s" % result
-
-                #show remote status
-                commands.status(interface, remote_repo)
-
-                if changes:
-                    response = interface.prompt("everything ok? (ctl-c to exit)",
-                                                default='y')
-
-
+        if ( os.path.exists(os.path.join(local_root, option, '.hg')) or
+             os.path.exists(os.path.join(local_root, option, '.git')) ):
+            if option in remote_options:
+                print "'%s' is on remote media, preparing to sync..." % option
             else:
-                print "%s is not on remote media, skipping" % o
+                #TODO:
+                #could try syncronizing with default remote repo (via web) here
+                print "%s is not on remote media, skipping" % option
 
-        else:
-            #print "skipping: %s" % o
-            pass
 
 def usage():
     print """
@@ -182,8 +204,8 @@ python /c/public/moments/moments/export.py /media/charles/WORK/out/ /c/out
 /c/public/moments/mercurial_sync.py /c /media/CHARLES/
 
 """
-
-def main():
+        
+if __name__ == '__main__':
     if len(sys.argv) > 1:
         helps = ['--help', 'help', '-h']
         for i in helps:
@@ -202,26 +224,11 @@ def main():
         elif len(args) == 1:
             sync_repos(remote_root=args[0])
         else:
-            print "SHOULDN'T BE HERE"
+            #NOT LOGICAL... SHOULDN'T EVER BE HERE
+            #but it is nice to be more explicit with what the elif condition is
             exit()
     else:
         #go with the default here
         sync_repos()
-        
-if __name__ == '__main__':
-    main()
+
     usage()
-    #read_file("some_file.txt")
-
-    #finish by printing export and extract commands:
-    #(from /c/charles/system/merge-usb.txt)
-
-    ## repo = hg.repository(interface, '.')
-    ## interface.pushbuffer()
-    ## commands.status(interface, repo)
-    ## status = interface.popbuffer()
-    ## print "->%s<-" % status
-
-    #getting user input:
-    #response = interface.prompt("what?", default='y')
-    #print response
