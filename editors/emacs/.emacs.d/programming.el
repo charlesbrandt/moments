@@ -23,6 +23,19 @@
 (require 'yaml-mode)
 (add-to-list 'auto-mode-alist '("\\.yml$" . yaml-mode))
 
+;markdown
+;http://jblevins.org/projects/markdown-mode/
+(require 'markdown-mode)
+(autoload 'markdown-mode "markdown-mode"
+   "Major mode for editing Markdown files" t)
+(add-to-list 'auto-mode-alist '("\\.markdown\\'" . markdown-mode))
+(add-to-list 'auto-mode-alist '("\\.md\\'" . markdown-mode))
+
+(autoload 'gfm-mode "gfm-mode"
+   "Major mode for editing GitHub Flavored Markdown files" t)
+(add-to-list 'auto-mode-alist '("README\\.md\\'" . gfm-mode))
+
+
 ;http://web-mode.org/
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.zpt$" . web-mode))
@@ -46,7 +59,6 @@
   '(("css" . "\\.less$")
     )
 )
-
 
 (setq web-mode-markup-indent-offset 2)
 (setq web-mode-css-indent-offset 2)
