@@ -182,7 +182,15 @@ class SortableList(SortableTextList):
         lines = src_file.readlines()
 
         for line in lines:
-            self.append(line.strip())
+            #WARNING:
+            #if a check is not in place to see if the item is already in self
+            #multiple calls to sortable_list.load()
+            #will result in the list growing (being duplicated)
+            #
+            #if order of file is more important than current order
+            #it may make sense to clear it out and start from scratch
+            if not line.strip() in self:
+                self.append(line.strip())
 
 
 def usage():

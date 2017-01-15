@@ -485,7 +485,7 @@ class Path(object):
                             #find suffix:
                             cur_path = Path(path_string)
 
-                            relative_path = cur_path.to_relative(str(self.path))
+                            relative_path = cur_path.to_relative(unicode(self.path))
                             #print relative_path
                             relative_path = Path(os.path.join('/', relative_path))
 
@@ -584,8 +584,8 @@ class Path(object):
                 os.remove(self.path)
             
     def rename(self, destination):
-        destination = str(destination)
-        os.rename(str(self), destination)
+        destination = unicode(destination)
+        os.rename(unicode(self), destination)
 
     def move(self, destination):
         self.rename(destination)
@@ -597,7 +597,7 @@ class Path(object):
         needed a system call in that case
         http://docs.python.org/library/shutil.html
         """
-        shutil.copy(str(self), destination)
+        shutil.copy(unicode(self), destination)
         
     #???
     def make_tree(self):
@@ -746,7 +746,7 @@ class Path(object):
         if extension:
             temp = Path(temp_path)
             temp.extension = extension
-            temp_path = str(temp)
+            temp_path = unicode(temp)
 
         #sometimes self.relative_prefix does not include a trailing prefix
         #this might make temp_path start with a '/'
@@ -824,10 +824,10 @@ class Path(object):
             d_path = self.parent()
             d = d_path.load()
 
-        dest = os.path.join(str(d), "action.txt")
+        dest = os.path.join(unicode(d), "action.txt")
         j = load_journal(dest, create=True)
         #j = d.load_journal()
-        entry = j.make(str(self.path), actions)
+        entry = j.make(unicode(self.path), actions)
         j.save(dest)
         return entry
         
@@ -928,7 +928,7 @@ class File(object):
         """
         Wraps os.path.getsize() to return the file's size.
         """
-        self.size = os.path.getsize(str(self.path))        
+        self.size = os.path.getsize(unicode(self.path))        
         return self.size
     
     def reset_stats(self):
@@ -937,7 +937,7 @@ class File(object):
         but we might want to keep the original time
         this resets them to what they were when originally initialized
         """
-        os.utime(str(self.path), (self.atime, self.mtime))
+        os.utime(unicode(self.path), (self.atime, self.mtime))
 
     def change_stats(self, accessed=None, modified=None):
         """
@@ -956,7 +956,7 @@ class File(object):
         else:
             new_mtime = modified.epoch()
             
-        os.utime(str(self.path), (new_atime, new_mtime))
+        os.utime(unicode(self.path), (new_atime, new_mtime))
 
         #keeps/restores the originals:
         #os.utime(self.path, (self.atime, self.mtime))
@@ -1037,7 +1037,7 @@ class File(object):
         """
         import hashlib
         m = hashlib.md5()
-        fd = open(str(self.path),"rb")
+        fd = open(unicode(self.path),"rb")
         m.update(fd.read())
         self.md5 = m.hexdigest()
         #not sure how this differs
@@ -1068,7 +1068,7 @@ class Image(File):
         # could use the actual path object to handle this 
         #parent_dir_path = os.path.dirname(str(self.path))
         #self.thumb_dir_path = os.path.join(parent_dir_path, self.thumb_dir_name)
-        self.thumb_dir_path = os.path.join(str(self.path.parent()),
+        self.thumb_dir_path = os.path.join(unicode(self.path.parent()),
                                            self.thumb_dir_name)
         
         #self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
@@ -1082,7 +1082,7 @@ class Image(File):
         """
         return the dimensions of this image
         """
-        image = PILImage.open(str(self.path))
+        image = PILImage.open(unicode(self.path))
         return image.size
 
     ## def size_name(self, size):
@@ -1251,9 +1251,9 @@ class Image(File):
         
         try:
             #image = PILImage.open(str(self.path))
-            image = PILImage.open(str(self.path)).convert('RGB')
+            image = PILImage.open(unicode(self.path)).convert('RGB')
         except:
-            print "Error opening image: %s" % str(self.path)
+            print "Error opening image: %s" % unicode(self.path)
         else:
             #made it this far... start resizing
             ## try:
@@ -1279,7 +1279,7 @@ class Image(File):
                     
                 if 'xlarge' in save_sizes:
                     image.thumbnail((xl,xl), PILImage.ANTIALIAS)                    #we've already resized to xl size:
-                    image.save(str(self.size_path('xlarge', square=False)), "JPEG")
+                    image.save(unicode(self.size_path('xlarge', square=False)), "JPEG")
 
                     #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
 
@@ -1288,45 +1288,45 @@ class Image(File):
                         large = image.copy()
                         large.thumbnail((l,l), PILImage.ANTIALIAS)
 
-                        large.save(str(self.size_path('large', square=False)), "JPEG")
+                        large.save(unicode(self.size_path('large', square=False)), "JPEG")
 
                     if save_square:
                         l_sq = square.copy()
                         l_sq.thumbnail((l,l), PILImage.ANTIALIAS)
 
-                        l_sq.save(str(self.size_path('large')), "JPEG")
+                        l_sq.save(unicode(self.size_path('large')), "JPEG")
 
                 if 'medium' in save_sizes:
                     if save_original:
                         medium = image.copy()
                         medium.thumbnail((m,m), PILImage.ANTIALIAS)
-                        medium.save(str(self.size_path('medium', square=False)), "JPEG")
+                        medium.save(unicode(self.size_path('medium', square=False)), "JPEG")
                     if save_square:
                         m_sq = square.copy()
                         m_sq.thumbnail((m,m), PILImage.ANTIALIAS)
-                        m_sq.save(str(self.size_path('medium')), "JPEG")
+                        m_sq.save(unicode(self.size_path('medium')), "JPEG")
 
                 if 'small' in save_sizes:
                     if save_original:
                         small = image.copy()
                         small.thumbnail((s,s), PILImage.ANTIALIAS)
-                        small.save(str(self.size_path('small', square=False)), "JPEG")
+                        small.save(unicode(self.size_path('small', square=False)), "JPEG")
 
                     if save_square:
                         s_sq = square.copy()
                         s_sq.thumbnail((s,s), PILImage.ANTIALIAS)
-                        s_sq.save(str(self.size_path('small')), "JPEG")
+                        s_sq.save(unicode(self.size_path('small')), "JPEG")
 
                 if 'tiny' in save_sizes:
                     if save_original:
                         tiny = image.copy()
                         tiny.thumbnail((t,t), PILImage.ANTIALIAS)
-                        tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
+                        tiny.save(unicode(self.size_path('tiny', square=False)), "JPEG")
                         
                     if save_square:
                         t_sq = square.copy()
                         t_sq.thumbnail((t,t), PILImage.ANTIALIAS)
-                        t_sq.save(str(self.size_path('tiny')), "JPEG")
+                        t_sq.save(unicode(self.size_path('tiny')), "JPEG")
 
 
 
@@ -1604,10 +1604,10 @@ class Directory(File):
             item_path = d[1]
             self.contents.append(item_path)
 
-            if (os.path.isfile(str(item_path))):
+            if (os.path.isfile(unicode(item_path))):
                 self.files.append(item_path)
 
-            elif (os.path.isdir(str(item_path))):
+            elif (os.path.isdir(unicode(item_path))):
                 self.directories.append(item_path)
 
 
@@ -1712,7 +1712,7 @@ class Directory(File):
         #just incase we haven't:
         self.scan_filetypes()
         
-        jpath = os.path.join(str(self.path), journal_file)
+        jpath = os.path.join(unicode(self.path), journal_file)
         j = load_journal(jpath, create=True)
 
         files = []
@@ -1736,9 +1736,9 @@ class Directory(File):
             #j.update_entry(e)
             f = fpath.load()
             if full_path:
-                data = str(fpath)
+                data = unicode(fpath)
             else:
-                data = str(fpath.filename)
+                data = unicode(fpath.filename)
             j.make(data=data, tags=tags, created=f.datetime())
 
         #print j
@@ -1755,12 +1755,12 @@ class Directory(File):
         adapted from moments/scripts/images_to_journal.py
         """
         j = None
-        source = os.path.join(str(self.path), journal)
+        source = os.path.join(unicode(self.path), journal)
         if os.path.exists(source):
             j = Journal()
             j.load(source)
 
-        source = os.path.join(str(self.path), journal)
+        source = os.path.join(unicode(self.path), journal)
         if not j:
             self.scan_filetypes()
 
@@ -1791,9 +1791,9 @@ class Directory(File):
                 #just use the file name in the local action tags
                 #elsewhere, full path is fine, knowing that it might change, but better than nothing
                 if full_path:
-                    data = str(i)
+                    data = unicode(i)
                 else:
-                    data = str(i.filename)
+                    data = unicode(i.filename)
                 #j.update_entry(e)
                 j.make(data, tags, created)
 
@@ -1833,8 +1833,11 @@ class Directory(File):
         helper to standardize the name + path for a sortable list
         sometimes need this before loading the sortable list (sortable_list())
         """
+        print "sortable_list_path() called"
         list_file = self.path.name + ".list"
-        list_path = os.path.join(str(self.path), list_file)
+        print "List file:", list_file
+        list_path = os.path.join(unicode(self.path), list_file)
+        print "List path:", list_path
         return list_path
     
     def sortable_list(self, sl=None, create=False):
@@ -1907,7 +1910,7 @@ class Directory(File):
                 #path prefixes change frequently enough
                 #
                 #also, action.txt is not often updated with events
-                dest = os.path.join(str(self.path), "action.txt")
+                dest = os.path.join(unicode(self.path), "action.txt")
                 j = load_journal(dest)
                 if j:
                     #2009.12.19 13:19:27 
@@ -1920,7 +1923,7 @@ class Directory(File):
                     while not choice and len(most_frequent):
                         next_option = most_frequent.pop(0)
                         file_part = next_option[1].strip()
-                        path_part = os.path.join(str(self.path), file_part)
+                        path_part = os.path.join(unicode(self.path), file_part)
                         path = Path(path_part, relative_prefix=self.path.relative_prefix)
                         if path.exists():
                             if path.type() == "Image":

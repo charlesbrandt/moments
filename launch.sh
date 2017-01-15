@@ -15,6 +15,7 @@ launch.py -c /c/public/moments docs
 launch.py -c /c/technical javascript
 "
 
+echo "FOR TESTING:"
 echo "new tab"
 echo "cd /c/public/moments/moments"
 echo "python server.py /c/public/moments/tests/"

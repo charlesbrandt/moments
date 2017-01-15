@@ -232,6 +232,10 @@ def rsync(source, destination, verbose=True):
     output = process.communicate()[0]
     if output:
         print output
+
+    #this stalls for rsync...
+    #process.wait()
+
     
 
 def emacs(source=''):
