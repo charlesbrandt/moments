@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ----------------------------------------------------------------------------
 # moments
-# Copyright (c) 2009-2010, Charles Brandt
+# Copyright (c) 2009-2017, Charles Brandt
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,15 +38,22 @@ add a main function
 pass the launch to call via command line
 (maybe someday a running process like quicksilver/gnome-do)
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import range
+from builtins import object
 import os, sys, subprocess
+
+#__package__ = 'launch'
+
 #from moments.path import load_journal, load_instance, Context, Path
 #from moments.path import load_journal, load_instance, Path
 #from moments.timestamp import Timestamp
 #from moments.journal import Journal
 
-from path import load_journal, load_instance, Path
-from timestamp import Timestamp
-from journal import Journal
+from moments.path import load_journal, load_instance, Path
+from moments.timestamp import Timestamp
+from moments.journal import Journal
 
 #http://docs.python.org/library/optparse.html?highlight=optparse#module-optparse
 from optparse import OptionParser
@@ -79,10 +86,10 @@ def simple_launcher(command):
         #depending on which channel has output, can tailor that here
         l = process.stderr.readline()
         #l = process.stdout.readline()
-        print l
+        print(l)
 
     #when process terminates, can finish printing the rest:
-    print process.stdout.read()
+    print(process.stdout.read())
         
     return command + "\n"
     
@@ -99,7 +106,7 @@ def edit_instance(args, instance='/c/instances.txt', editor="emacs"):
         file_string = ' '.join(files)
         edit(file_string, editor=editor)
         #echo(file_string)
-        print "Loading: %s" % arg                
+        print("Loading: %s" % arg)                
         #except:
         #    print "Could not load instance: %s" % arg                
 
@@ -109,7 +116,7 @@ def edit(source='', editor="emacs"):
     if editor == "emacs":
         emacs(source)
     else:
-        print "Unknown editor: %s" % editor    
+        print("Unknown editor: %s" % editor)    
 
 def browse(urls=[], browser="firefox"):
     """
@@ -118,7 +125,7 @@ def browse(urls=[], browser="firefox"):
     if browser == "firefox":
         firefox(urls)
     else:
-        print "Unknown broswer: %s" % browser
+        print("Unknown broswer: %s" % browser)
 
 def play(source='', start=0):
     """
@@ -132,7 +139,7 @@ def play(source='', start=0):
         #TODO
         #could search here
         #but for now...
-        print "Could not find: %s" % source
+        print("Could not find: %s" % source)
     else:
         process = vlc(source, start)
     return process
@@ -155,9 +162,9 @@ def file_browse(source=''):
             file_manager(source)
             
     elif sys.platform == "darwin":
-        print "launch finder here"
+        print("launch finder here")
     else:
-        print "launch explorer here"
+        print("launch explorer here")
 
 def terminal(working_dirs=[], tabs=0):
     """
@@ -191,7 +198,7 @@ def check_which(item=''):
         #depending on which channel has output, can tailor that here
         l = process.stderr.readline()
         #l = process.stdout.readline()
-        print l
+        print(l)
 
     result = process.stdout.read()
     #if result has something, it exists
@@ -225,13 +232,13 @@ def file_manager(source=''):
 def rsync(source, destination, verbose=True):
     command = "rsync -av %s %s" % (source, destination)
     if verbose:
-        print command
+        print(command)
     
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     output = process.communicate()[0]
     if output:
-        print output
+        print(output)
     
 
 def emacs(source=''):
@@ -291,18 +298,18 @@ def evolution(component="calendar"):
 
 def mount_iso(source, mount):
     if not os.path.exists(mount):
-        print "creating mount point: %s" % mount
+        print("creating mount point: %s" % mount)
         os.mkdir(mount)
 
     #try unmounting first
     command = "sudo umount %s" % (mount)
-    print "To unmount:"
-    print command
+    print("To unmount:")
+    print(command)
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     output = process.communicate()[0]
     if output:
-        print output
+        print(output)
     
     
     command = "sudo mount %s %s -t iso9660 -o loop" % (source, mount)
@@ -310,7 +317,7 @@ def mount_iso(source, mount):
                                stderr=subprocess.PIPE)
     output = process.communicate()[0]
     if output:
-        print output
+        print(output)
 
 def mount_iso_macosx(source):
     #http://osxdaily.com/2008/04/22/easily-mount-an-iso-in-mac-os-x/
@@ -319,7 +326,7 @@ def mount_iso_macosx(source):
                                stderr=subprocess.PIPE)
     output = process.communicate()[0]
     if output:
-        print output
+        print(output)
     
 def dvd_macosx(movie):
     command = "/Applications/DVD\ Player.app/Contents/MacOS/DVD\ Player &"
@@ -464,13 +471,13 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     if include_week:
         today_j.make(flat, ['upcoming', 'this_week', 'delete'])
 
-    print "Today journal length (post): %s" % len(today_j.entries())
+    print("Today journal length (post): %s" % len(today_j.entries()))
 
     today_j.save(today)
 
     #we only need to add the priority entry to today if this is the first time
     #other wise it may have changed, and we don't want to re-add the prior one
-    if not today_j._tags.has_key('priority'):
+    if 'priority' not in today_j._tags:
         #add in priorities to today:
         priorities = load_journal(priority)
         entries = priorities.sort('reverse-chronological')
@@ -483,14 +490,14 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
             yesterday_stamp = now.past(days=1)
             yesterday = os.path.join(destination, yesterday_stamp.filename())
             yesterday_j = load_journal(yesterday)
-            if yesterday_j._tags.has_key('priority'):
+            if 'priority' in yesterday_j._tags:
                 yps = yesterday_j._tags['priority']
-                print len(yps)
+                print(len(yps))
                 #get the first one:
                 p = yps[0]
 
                 if p.data != e.data:
-                    print "adding yesterday's priority to: %s" % priority
+                    print("adding yesterday's priority to: %s" % priority)
                     #think that putting this at the end is actually better...
                     #that way it's always there
                     #priorities.update_entry(p, position=0)
@@ -507,8 +514,8 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
             j.make(e.data, ['priority'], today_ts, position=None)
             j.save(today)
         else:
-            print "No priorities found"
-        print ""
+            print("No priorities found")
+        print("")
         
     return today
 
@@ -521,9 +528,9 @@ def edit_today(context=None, instances=None, files=[], destination=None, priorit
         try:
             files = load_instance(instances, "now")
         except:
-            print "'now' instance not found in instances: %s" % instances
-            print "additional files will not be loaded with daily log"
-            print ""
+            print("'now' instance not found in instances: %s" % instances)
+            print("additional files will not be loaded with daily log")
+            print("")
 
     #set defaults for all operating systems here
     #incase no destintation was explicitly specified.
@@ -584,13 +591,13 @@ def launch(context='./', args=["now"], destination=None):
     #sometimes might want to pass in just the context path and create Context object here
     #string = "string"
     #if type(string) == type(context):
-    if isinstance(context, str) or isinstance(context, unicode):
+    if isinstance(context, str) or isinstance(context, str):
         c = Context(context)
     elif isinstance(context, Context):
         #other times pass the actual context object in (created earlier)
         c = context
     else:
-        raise ValueError, "Unknown type: %s for context: %s" % (type(context), context)
+        raise ValueError("Unknown type: %s for context: %s" % (type(context), context))
         
     if "now" in args:
         #now(c, files=files)
@@ -602,7 +609,7 @@ def launch(context='./', args=["now"], destination=None):
         edit_journal(destination=destination)
         args.remove("journal")
 
-    print c.instances
+    print(c.instances)
     #launch the rest:
     edit_instance(args, c.instances)
     
@@ -628,9 +635,9 @@ if __name__ == '__main__':
     """
     command line interface to launch()
     """
-    print "incase you need it: "
-    print "/Applications/Emacs.app/Contents/MacOS/Emacs &"
-    print ""
+    print("incase you need it: ")
+    print("/Applications/Emacs.app/Contents/MacOS/Emacs &")
+    print("")
 
     # launch our instances
     parser = OptionParser()
@@ -674,7 +681,7 @@ if __name__ == '__main__':
         local_instance = ""
         
         if local_instance:
-            print "Loading the local instance: %s" % local_instance
+            print("Loading the local instance: %s" % local_instance)
             files = local_instance.splitlines()
             files = files[1:]
             #need option to generate and load now here too
@@ -687,7 +694,7 @@ if __name__ == '__main__':
             #args = [ "now", "todo" ]
             args = [ "journal" ]
 
-    print "launching: %s with args: %s" % (context.context, args)
+    print("launching: %s with args: %s" % (context.context, args))
     launch(context, args, destination=None)
 
     #reminder on how to extract finished, completed thoughts

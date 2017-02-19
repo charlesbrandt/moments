@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import object
 import sys, os, subprocess
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -12,7 +14,7 @@ from moments.path import load_journal
 ##     assert len(j) == 1
 ##     os.remove(new)
 
-class TestExtracts:
+class TestExtracts(object):
     def setUp(self):
         source = "zoobar/extractable_log.txt"
         #make a copy
@@ -33,7 +35,7 @@ class TestExtracts:
     def test_omit_date_tags(self):
         tags = [ "20110915", "2011", "09", "tag_to_keep"]
         new_tags = omit_date_tags(tags)
-        print new_tags
+        print(new_tags)
         assert new_tags == [ "tag_to_keep" ]
         
         

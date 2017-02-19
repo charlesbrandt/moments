@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
 # moments
-# Copyright (c) 2009-2011, Charles Brandt
+# Copyright (c) 2009-2017, Charles Brandt
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,20 @@ Moments Journal object and functions related to using journals
 A journal holds a collection of Moments
 (and Entries, for moments with no timestamps)
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 import re, codecs, os
-import urllib, urllib2
+
+try:
+    import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
+except:
+    #enable this for python2
+    from future import standard_library
+    standard_library.install_aliases()
+    import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
+    
 from datetime import datetime
 
 try:
@@ -36,13 +48,13 @@ except:
     try:
         import json
     except:
-        print "No json module found"
+        print("No json module found")
         exit()
 
-from log import Log
-from moment import Moment
-from timestamp import Timestamp, Timerange
-from association import Association
+from moments.log import Log
+from moments.moment import Moment
+from moments.timestamp import Timestamp, Timerange
+from moments.association import Association
 
 def log_action(destination, message, tags=[]):
     """
@@ -156,7 +168,7 @@ class Journal(object):
         if hasattr(self, "path") and self.path:
             l = Log(self.path)
         else:
-            print "No name to save Journal to"
+            print("No name to save Journal to")
             exit()
 
         #l.from_journal(self, holder, entry)
@@ -315,7 +327,7 @@ class Journal(object):
             #if they are initialized as different python objects
             if entry not in self._entries:
                 self._add(entry, position)
-                if self.debug: print "Entry has no time associated, and no other entry found. added"
+                if self.debug: print("Entry has no time associated, and no other entry found. added")
 
         else:
             #this makes entry_time available in the event the entry already
@@ -324,14 +336,14 @@ class Journal(object):
             entry_time = entry.created.compact()
             if entry not in self._entries:
 
-                if not self._dates.has_key(entry_time):
+                if entry_time not in self._dates:
                     self._add(entry, position)
-                    if self.debug: print "No other entry found with time: %s. added" % entry_time
+                    if self.debug: print("No other entry found with time: %s. added" % entry_time)
                 
-                elif self._dates.has_key(entry_time):
+                elif entry_time in self._dates:
                     #it must have *something* in that time slot
                     #check for duplicates
-                    if self.debug: print "Other entries found with time: %s. checking all.." % entry_time
+                    if self.debug: print("Other entries found with time: %s. checking all.." % entry_time)
 
                     options = self._dates[entry_time]
                     found_match = False
@@ -340,19 +352,19 @@ class Journal(object):
                         if existing.is_equal(entry, debug=self.debug):
                             #print "DUPE, but tags and data are same... skipping"
                             found_match = True
-                            if self.debug: print "Equal entry found. Skipping"
+                            if self.debug: print("Equal entry found. Skipping")
 
                         #only want to merge if we have data
                         #otherwise blank entries can end up grouped together
                         elif entry.data and (existing.data == entry.data):
                             #tags must differ... those are easy to merge:
-                            print "from: %s, %s" % (existing.path, existing.created)
-                            print "and: %s, %s" % (entry.path, entry.created)
-                            print "only TAGS differ"
-                            print "original: %s" % existing.tags
-                            print "new: %s" % entry.tags
+                            print("from: %s, %s" % (existing.path, existing.created))
+                            print("and: %s, %s" % (entry.path, entry.created))
+                            print("only TAGS differ")
+                            print("original: %s" % existing.tags)
+                            print("new: %s" % entry.tags)
                             existing.tags.union(entry.tags)
-                            print "merged: %s" % existing.tags
+                            print("merged: %s" % existing.tags)
                             found_match = True
 
                         else:
@@ -367,9 +379,9 @@ class Journal(object):
                         #print "but none matched this one.  Adding now"
                         self._add(entry, position)
 
-                        if self.debug: print "No equivalent entries found. adding"
+                        if self.debug: print("No equivalent entries found. adding")
             else:
-                if self.debug: print "Entry (%s) already exists in journal" % entry_time
+                if self.debug: print("Entry (%s) already exists in journal" % entry_time)
 
     #aka create, new
     def make(self, data, tags=[], created=None, source='', position=0):
@@ -468,7 +480,7 @@ class Journal(object):
         but server needs to be a little different
         """
         #print self._tags.keys()
-        if tag_key and self._tags.has_key(tag_key):
+        if tag_key and tag_key in self._tags:
             #print self._tags[tag_key]
             ## moments = []
             ## for m in self._tags[tag_key]:
@@ -510,7 +522,7 @@ class Journal(object):
                 tags = [ tags ]
             found_entries = Journal()
             for t in tags:
-                if self._tags.has_key(t):
+                if t in self._tags:
                     #print len(self._tags[t])
                     found_entries.update_many(self._tags[t])
 
@@ -520,7 +532,7 @@ class Journal(object):
 
         else:
             tdict = {}
-            for tag in self._tags.keys():
+            for tag in list(self._tags.keys()):
                 tdict[tag] = len(self._tags[tag])
             return tdict
     
@@ -549,7 +561,7 @@ class Journal(object):
                 #return {ts.compact():entries}
                 return entries
                 
-            elif self._dates.has_key(ts.compact()):
+            elif ts.compact() in self._dates:
                 entries = self._dates[ts.compact()]
                 #print "LEN ENTRIES: %s" % len(entries)
                 #print entries
@@ -572,7 +584,7 @@ class Journal(object):
         number of entries for each date as values
         """
         ddict = {}
-        for key in self._dates.keys():
+        for key in list(self._dates.keys()):
             #print "KEY:", key
             
             #key might be blank here (i.e. no timestamp)
@@ -614,7 +626,7 @@ class Journal(object):
          same as self._tags)
         """
         #make sure we have it, otherwise nothing relates
-        if not self._tags.has_key(key):
+        if key not in self._tags:
             return []
         
         entries = self._tags[key]
@@ -634,7 +646,7 @@ class Journal(object):
         scan tags for tags matching (searching) look_for
         if data is True, look in entry.data too
         """
-        tags = self._tags.keys()
+        tags = list(self._tags.keys())
         found = []
 
         # in this case, we'll return the whole entry
@@ -706,17 +718,17 @@ class Journal(object):
             return self._entries
 
         else:
-            entry_times = self._dates.keys()
+            entry_times = list(self._dates.keys())
 
             if order == "reverse-chronological" or order == 'newest to oldest':
                 entry_times.sort()
                 entry_times.reverse()
             elif order == "chronological" or order == 'oldest to newest':
-                if self.debug: print "oldest to newest"
+                if self.debug: print("oldest to newest")
                 entry_times.sort()
-                if self.debug: print entry_times
+                if self.debug: print(entry_times)
             else:
-                raise ValueError, "Unknown sort option supplied: %s" % order
+                raise ValueError("Unknown sort option supplied: %s" % order)
 
             entries = []
             for et in entry_times:
@@ -746,14 +758,14 @@ class Journal(object):
         """
 
         if start is None and end is None:
-            dates = self._dates.keys()
+            dates = list(self._dates.keys())
             dates.sort()
             start = dates[0]
             end = dates[-1]
             #might have entries with no timestamp first:
             if start is None:
                 start = dates[1]
-            print start, end
+            print(start, end)
             return Timerange(start=start, end=end)
 
         else:
@@ -764,7 +776,7 @@ class Journal(object):
                 relative = Timerange(start)
                 end = relative.end
 
-            times = self._dates.keys()
+            times = list(self._dates.keys())
             times.sort()
 
             matches = []
@@ -894,7 +906,7 @@ class RemoteJournal(object):
         call the save option on server
         """
         url = '%s/save/%s' % (self.source, path)
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         return True
 
     def save_post(self, path=''):
@@ -903,11 +915,12 @@ class RemoteJournal(object):
         using POST
         """
         values = { 'destination': path }
-        params = urllib.urlencode(values)
+        params = urllib.parse.urlencode(values).encode("utf-8")
+        #params = urllib.parse.urlencode(values)
         #url = '%s/save/%s' % (self.source, path)
         url = '%s/save' % (self.source)
         #POST:
-        req = urllib2.urlopen(url, params)
+        req = urllib.request.urlopen(url, params)
         #json_raw = req.read()
         return True
 
@@ -916,7 +929,7 @@ class RemoteJournal(object):
         call the load option on server
         """
         url = '%s/load/%s' % (self.source, path)
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         return True
 
     def load_post(self, path=''):
@@ -925,11 +938,12 @@ class RemoteJournal(object):
         using POST
         """
         values = { 'source': path }
-        params = urllib.urlencode(values)
+        params = urllib.parse.urlencode(values).encode("utf-8")
+        #params = urllib.parse.urlencode(values)
         #url = '%s/load/%s' % (self.source, path)
         url = '%s/load' % (self.source)
         #POST:
-        req = urllib2.urlopen(url, params)
+        req = urllib.request.urlopen(url, params)
         #json_raw = req.read()
         return True
 
@@ -956,14 +970,14 @@ class RemoteJournal(object):
                    'source' : source,
                    'position' : position,
                    }
-        print values
-        params = urllib.urlencode(values)
-        print params
+        print(values)
+        params = urllib.parse.urlencode(values).encode("utf-8")
+        print(params)
         #url = '%s/load/%s' % (self.source, path)
         url = '%s/make' % (self.source)
-        print url
+        print(url)
         #POST:
-        req = urllib2.urlopen(url, params)
+        req = urllib.request.urlopen(url, params)
 
     def remove(self, entry):
         values = { 'data' : entry.data,
@@ -971,11 +985,12 @@ class RemoteJournal(object):
                    'created' : entry.created,
                    'source' : entry.source,
                    }
-        params = urllib.urlencode(values)
+        params = urllib.parse.urlencode(values).encode("utf-8")
+        #params = urllib.parse.urlencode(values)
         #print params
         url = '%s/remove' % (self.source)
         #POST:
-        req = urllib2.urlopen(url, params)
+        req = urllib.request.urlopen(url, params)
         #for debugging:
         #print req.read()
         req.close()
@@ -987,15 +1002,17 @@ class RemoteJournal(object):
         otherwise returns a list of moments for item specified
         """
         values = {}
-        params = urllib.urlencode(values)
+        params = urllib.parse.urlencode(values).encode("utf-8")
+        #params = urllib.parse.urlencode(values)
         url = '%s/tags/%s' % (self.source, item)
         #POST:
         #req = urllib2.urlopen(url, params)
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         req.close()
-        result = json.loads(json_raw)
+        result = json.loads(str(json_raw, 'utf-8'))
+        #result = json.loads(json_raw)
         if item:
             entries = []
             entry_strings = result[item]
@@ -1004,7 +1021,7 @@ class RemoteJournal(object):
                 log.write(e)
                 log_entries = log.to_entries()
                 if len(log_entries) > 1:
-                    print "WARNING: expected one entry string, found more..."
+                    print("WARNING: expected one entry string, found more...")
                 entries.extend(log_entries)
             return entries
         else:
@@ -1014,11 +1031,12 @@ class RemoteJournal(object):
         url = '%s/tag/%s' % (self.source, tag_key)
         #print url
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         #print "json from server: %s" % json_raw
         req.close()
-        result = json.loads(json_raw)
+        result = json.loads(str(json_raw, 'utf-8'))
+        #result = json.loads(json_raw)
         elist = []
         for e in result[tag_key]:
             m = Moment(data=e['data'], tags=e['tags'], created=e['created'], path=e['path'])
@@ -1029,14 +1047,16 @@ class RemoteJournal(object):
 
     def dates(self):
         url = '%s/dates' % (self.source)
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         req.close()
-        return json.loads(json_raw)
+        return json.loads(str(json_raw, 'utf-8'))
+        #return json.loads(json_raw)
 
     def date(self, date_key=''):
         values = {}
-        params = urllib.urlencode(values)
+        params = urllib.parse.urlencode(values).encode("utf-8")
+        #params = urllib.parse.urlencode(values)
         if isinstance(date_key, Timestamp):
             ts = date_key
         else:
@@ -1044,11 +1064,12 @@ class RemoteJournal(object):
         url = '%s/date/%s' % (self.source, ts.compact())
         #print url
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         #print "json from server: %s" % json_raw
         req.close()
-        result = json.loads(json_raw)
+        result = json.loads(str(json_raw, 'utf-8'))
+        #result = json.loads(json_raw)
         elist = []
         for e in result[ts.compact()]:
             m = Moment(data=e['data'], tags=e['tags'], created=e['created'], path=e['path'])
@@ -1059,11 +1080,12 @@ class RemoteJournal(object):
     def entry(self, item=''):
         url = '%s/entry/%s' % (self.source, item)
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         req.close()
         #print json_raw
-        e = json.loads(json_raw)
+        e = json.loads(str(json_raw, 'utf-8'))
+        #e = json.loads(json_raw)
         #print e
         m = Moment(data=e['data'], tags=e['tags'], created=e['created'], path=e['path'])
         #print m
@@ -1072,10 +1094,11 @@ class RemoteJournal(object):
     def entries(self):
         url = '%s/entries' % (self.source)
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         req.close()
-        result = json.loads(json_raw)
+        #print(str(json_raw, 'utf-8'))
+        result = json.loads(str(json_raw, 'utf-8'))
         elist = []
         for e in result['entries']:
             m = Moment(data=e['data'], tags=e['tags'], created=e['created'], path=e['path'])
@@ -1090,10 +1113,11 @@ class RemoteJournal(object):
             url = '%s/search/%s/%s' % (self.source, look_for, limit)
             #url = '%s/search/%s' % (self.source, look_for)
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         req.close()
-        result = json.loads(json_raw)
+        result = json.loads(str(json_raw, 'utf-8'))
+        #result = json.loads(json_raw)
         found = []
         if data:
             #for e in result['matches']:
@@ -1110,10 +1134,11 @@ class RemoteJournal(object):
     def related(self, key):
         url = '%s/related/%s' % (self.source, key)
         #GET:
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         json_raw = req.read()
         req.close()
-        result = json.loads(json_raw)
+        result = json.loads(str(json_raw, 'utf-8'))
+        #result = json.loads(json_raw)
         tags = result[key]
         return tags
         ## elist = []
@@ -1124,7 +1149,7 @@ class RemoteJournal(object):
 
     def sort(self, order='original'):
         url = '%s/sort/%s' % (self.source, order)
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         return req.read()        
         
     def range(self, start=None, end=None):
@@ -1144,11 +1169,12 @@ class RemoteJournal(object):
 
         #print url
             
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         response = req.read()
         req.close()
         if expect_entries:
-            result = json.loads(response)
+            result = json.loads(str(response, 'utf-8'))
+            #result = json.loads(response)
             elist = []
             for e in result['entries']:
                 m = Moment(data=e['data'], tags=e['tags'], created=e['created'], path=e['path'])
@@ -1163,7 +1189,7 @@ class RemoteJournal(object):
         call the load option on server
         """
         url = '%s/clear' % (self.source)
-        req = urllib2.urlopen(url)
+        req = urllib.request.urlopen(url)
         return req.read()
 
 

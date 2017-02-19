@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import str
+from builtins import object
 import sys, os
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -7,7 +10,7 @@ from nose.tools import *
 from moments.timestamp import Timestamp
 from moments.path import File, Directory, Image, Path, name_only, load_instance
 
-class TestStorage:
+class TestStorage(object):
     def setUp(self):
         self.node = File(os.path.join(os.getcwd(), "zoobar/IMG_6166_l.JPG"))
 
@@ -17,12 +20,12 @@ class TestStorage:
 
     def test_load_instance(self):
         items = load_instance('zoobar/instances.txt', 'tests')
-        print items
+        print(items)
         assert len(items) == 3
 
     def test_change(self):
-        print "THIS WILL FAIL ON MAC OSX.  NO SUPPORT FOR os.utime"
-        print "others may need to run twice to get times set as expected"
+        print("THIS WILL FAIL ON MAC OSX.  NO SUPPORT FOR os.utime")
+        print("others may need to run twice to get times set as expected")
         now = Timestamp()
         #this does not work as expected:
         #atime = Timestamp().from_epoch(self.node.atime)
@@ -33,12 +36,12 @@ class TestStorage:
 
         assert str(mtime) != str(now)
         assert str(atime) != str(now)
-        print "Current atime: %s" % atime
-        print "Current mtime: %s" % mtime
-        print "POSIX FORMATS:"
-        print "New atime: %s" % now.epoch()
-        print "Current atime: %s" % self.node.atime
-        print "Current mtime: %s" % self.node.mtime
+        print("Current atime: %s" % atime)
+        print("Current mtime: %s" % mtime)
+        print("POSIX FORMATS:")
+        print("New atime: %s" % now.epoch())
+        print("Current atime: %s" % self.node.atime)
+        print("Current mtime: %s" % self.node.mtime)
         self.node.change_stats(now, now)
 
         #regenerate updates:
@@ -63,7 +66,7 @@ def test_image_get_size():
     assert_equal(str(path), os.path.abspath('./zoobar/sized/small/IMG_6166_l_s.JPG'))
 
 
-class TestDirectory:
+class TestDirectory(object):
     def setUp(self):
         #self.d = Directory(os.getcwd())
         path = './zoobar'
@@ -80,15 +83,15 @@ class TestDirectory:
 
     def test_sortable_list_name(self):
         destination = self.d.sortable_list_path()
-        print destination
+        print(destination)
         #assert False
         assert destination == "./zoobar/zoobar.list"
         
     def test_default_image(self):
         d2 = Directory("./zoobar")
-        print d2.images
-        print d2.default_image()
-        print d2.images
+        print(d2.images)
+        print(d2.default_image())
+        print(d2.images)
         
         d = Directory(os.getcwd())
         assert d.default_image() == None
@@ -112,8 +115,8 @@ class TestDirectory:
         #last new line in ls output adds an empty item to list
         images2 = images2[:-1]
 
-        print images
-        print images2
+        print(images)
+        print(images2)
 
         assert images == images2
 
@@ -139,7 +142,7 @@ class TestDirectory:
     ##     print new_d.file_date_range()
     ##     assert new_d.file_date_range() == "20090121"
 
-class TestPath:
+class TestPath(object):
     """
     see also test node
     """
@@ -153,8 +156,8 @@ class TestPath:
     def test_periods(self):
         name = ".emacs.desktop"
         p = Path(name)
-        print name_only(name)
-        print str(p)
+        print(name_only(name))
+        print(str(p))
         assert name == str(p)
         
 
@@ -175,8 +178,8 @@ class TestPath:
     def test_hidden(self):
         path_s = "zoobar/.emacs"
         hidden = Path(path_s)
-        print str(hidden)
-        print "Filename: %s (name: %s, extension: %s)" % (hidden.filename, hidden.name, hidden.extension)
+        print(str(hidden))
+        print("Filename: %s (name: %s, extension: %s)" % (hidden.filename, hidden.name, hidden.extension))
         assert hidden._full_name == ".emacs"
         #assert name_only(path_s)
         assert hidden.filename == ".emacs"

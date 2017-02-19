@@ -37,7 +37,7 @@ class Association(dict):
 
         will not fail if key does not exist.
         """
-        if self.has_key(key) and item in self[key]:
+        if key in self and item in self[key]:
             return True
         else:
             return False
@@ -47,14 +47,14 @@ class Association(dict):
         return a list of keys that have that item
         """
         matches = []
-        for k in self.keys():
+        for k in list(self.keys()):
             if self.key_has_item(k, item):
                 matches.append(k)
 
         return matches
             
     def associate(self, item, key):
-        if self.has_key(key):
+        if key in self:
             if not item in self[key]:
                 self[key].append(item)
                 #self[key].sort()
@@ -73,7 +73,7 @@ class Association(dict):
         """
         remove all instances of item from all associations
         """
-        for k in self.keys():
+        for k in list(self.keys()):
             self.remove_association(item, k)
 
     def frequency_list(self):
@@ -85,7 +85,7 @@ class Association(dict):
         [ (freq, item), ... ]
         """
         items = []
-        for key in self.keys():
+        for key in list(self.keys()):
             items.append( (len(self[key]), key) )
         return items
 

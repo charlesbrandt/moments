@@ -29,12 +29,15 @@ python server.py /c/journal/ -p 8001 /c/charles
 
 python server.py /c/journal/ /c/charles
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
 import sys, os, re
 
-from path import load_journal as load_journal_path
-from journal import Journal
-from moment import Moment
-from timestamp import Timestamp
+from moments.path import load_journal as load_journal_path
+from moments.journal import Journal
+from moments.moment import Moment
+from moments.timestamp import Timestamp
 
 #bottle will handle returning dicts as json automatically
 #sometimes it is nice to simply return a list as json
@@ -44,23 +47,30 @@ except:
     try:
         import json
     except:
-        print "No json module found"
+        print("No json module found")
         exit()
-                
+
+__package__ = 'moments'
+if __name__ == '__main__' and __package__ is None:
+    from os import sys, path
+    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+
+
 #from bottle import static_file
 #from bottle import get, post, request
 #from bottle import route
 #from bottle import template
-from bottle import run, request
+from moments.bottle import run, request
+from moments.bottle import debug, Bottle
 
-import bottle
+#import bottle
 
-debug = True
-if debug:
+enable_debug = True
+if enable_debug:
     #DO NOT USE THIS IN PRODUCTION!!
-    bottle.debug(True)
+    debug(True)
 
-server = bottle.Bottle()
+server = Bottle()
 
 #where we store what we've loaded
 j = Journal()
@@ -166,7 +176,7 @@ def _lookup(data, tags, created):
     if len(options):
         matches = []
         for o in options:
-            print "type moment: %s, type o: %s" % (type(moment), type(o))
+            print("type moment: %s, type o: %s" % (type(moment), type(o)))
             if moment.is_equal(o):
                 matches.append(o)
                 
@@ -192,9 +202,11 @@ def remove_form():
 @server.post('/remove')
 def remove():
     global js
-    created = request.forms.get('created')
+    created = request.forms.get('created').encode("utf-8")
     tags = request.forms.get('tags')
     data = request.forms.get('data')
+
+    print("CREATED", created, type(created))
 
     #convert & verify data recieved as needed here
     data, tags, ts = validate(data, tags, created)
@@ -367,7 +379,7 @@ def load_journal(item):
     return "%s loaded (%s entries)" % (item, len(entries))
 
 def usage():
-    print __doc__    
+    print(__doc__)    
 
 if __name__ == '__main__':
     source = None
@@ -407,8 +419,8 @@ if __name__ == '__main__':
             #this is the local load_journal function
             #not to be confused with moments.path.load_journal function
             load_journal(s)
-            print "Loaded: %s entries" % len(j.entries())
-            print "Load finished: %s" % Timestamp()
+            print("Loaded: %s entries" % len(j.entries()))
+            print("Load finished: %s" % Timestamp())
             
     if source and not found_root:
         path_root = source

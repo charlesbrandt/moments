@@ -41,6 +41,18 @@ and
 docs/_build/html/installation.html
 
 
+TEST:
+----------
+
+cd /path/to/moments/moments 
+python server.py /path/to/moments/tests/
+
+#new tab:
+cd tests/
+nosetests
+
+ETC:
+-------------
 
 Moments is available at bitbucket.org/cbrandt/moments. 
 Moments is free and open source software. 

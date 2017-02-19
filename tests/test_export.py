@@ -1,3 +1,4 @@
+from builtins import object
 import sys, os, subprocess
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -8,7 +9,7 @@ from moments.journal import Journal
 from moments.path import Path, load_journal
 from moments import export
 
-class TestMerge:
+class TestMerge(object):
     ## def setUp(self):
     ##     """ setup up any state specific to the execution
     ##         of the given cls.
@@ -38,7 +39,7 @@ class TestMerge:
         assert_equal(len1 + len2 - 2, len3)
 
 
-class TestExport:
+class TestExport(object):
     def setUp(self):
         osource = "zoobar"
         #make a copy

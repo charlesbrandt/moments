@@ -27,6 +27,10 @@ functions useful for extracting moments from a group of log files
 based on the tags we want to extract
 
 """
+from __future__ import print_function
+from builtins import str
+from builtins import chr
+from builtins import object
 import os, re
 import unicodedata, sys
 
@@ -98,7 +102,7 @@ def filter_log(path, filters, save=False):
     """
     """
     if not os.path.isfile(path):
-        raise ValueError, "path must be a file, got: %s" % path
+        raise ValueError("path must be a file, got: %s" % path)
 
     #j = Journal()
     #j.load(path)
@@ -136,9 +140,9 @@ def filter_logs(path, updates=[], save=False):
         filter_log(path, updates, save)
     else:
         #no logs to scan
-        print "Unknown filetype sent as path: %s" % path
+        print("Unknown filetype sent as path: %s" % path)
 
-    print "finished filtering"
+    print("finished filtering")
 
 def remove_dupes(items):
     """
@@ -163,7 +167,7 @@ def union(set1, set2):
             combined.append(i)
         else:
             count += 1
-    print "Found: %s dupes" % count
+    print("Found: %s dupes" % count)
     return combined
 
 def intersect(set1, set2):
@@ -244,7 +248,7 @@ def intersect_journals(journal, other):
     for entry in other:
         entry_time = str(entry.created)
         matched = False
-        if journal.dates.has_key(entry_time):
+        if entry_time in journal.dates:
             options = journal.dates[entry_time]
         else:
             options = []
@@ -269,7 +273,7 @@ def difference_journals(journal, other):
     for entry in other:
         entry_time = str(entry.created)
         matched = False
-        if journal.dates.has_key(entry_time):
+        if entry_time in journal.dates:
             options = journal.dates[entry_time]
         else:
             options = []
@@ -292,7 +296,7 @@ def flatten(journal, filename=None):
     elif journal.path:
         f = codecs.open(journal.path, 'w', encoding='utf-8')
     else:
-        print "No path to save file to"
+        print("No path to save file to")
         exit()
 
     flat = ''
@@ -368,7 +372,7 @@ def extract(journal, tag_list, etype="intersect"):
     elif etype == "intersect":
         entries = intersect_journal_entries_with_tags(journal, tag_list)
     else:
-        print "Unknown type of extraction!!!"
+        print("Unknown type of extraction!!!")
 
     #sending fname creates place holder entries in the journal
     #not sure if we still need to do that [2008.11.04 16:58]
@@ -401,7 +405,7 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
     these_tags.extend(filename_tags)
 
     if not os.path.isfile(path):
-        raise ValueError, "path must be a file, got: %s" % path
+        raise ValueError("path must be a file, got: %s" % path)
     j = Journal()
     
     #j.load(path, add_tags=these_tags)
@@ -410,7 +414,7 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
     for (tags, destination) in extractions:
         entries = extract(j, tags, extract_type)
         if len(entries):
-            print "found %s entries with tag: %s in: %s" % (len(entries), tags, path)
+            print("found %s entries with tag: %s in: %s" % (len(entries), tags, path))
             entries.reverse()
             j2 = Journal()
             j2.load(destination)
@@ -419,7 +423,7 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
                 j2.update(e, 0)
                 entry = e.render()
                 e_ascii = entry.translate(unaccented_map()).encode("ascii", "ignore")
-                print "adding entry to: %s\n%s" % (destination, e_ascii)
+                print("adding entry to: %s\n%s" % (destination, e_ascii))
             if save:
                 #this way we're saving any entries we extract to the new
                 #destination before we save the original source file
@@ -486,7 +490,7 @@ def extract_tags(path, extractions=[], ignores=[], save=False,
         extract_many(path, extractions, ignores, save, extract_type)
     else:
         #no logs to scan
-        print "Unknown filetype sent as path: %s" % path
+        print("Unknown filetype sent as path: %s" % path)
 
     #print "finished extracting multiple tags to multiple destinations"
 
@@ -526,7 +530,7 @@ class unaccented_map(dict):
         ch = self.get(key)
         if ch is not None:
             return ch
-        de = unicodedata.decomposition(unichr(key))
+        de = unicodedata.decomposition(chr(key))
         if de:
             try:
                 ch = int(de.split(None, 1)[0], 16)
@@ -556,7 +560,7 @@ def to_unicode(source):
     s = u''
     for c in source:
         try:
-            s += unicode(c)
+            s += str(c)
         except:
             pass
     return s
@@ -586,7 +590,7 @@ def test_ascii():
 
     """
 
-    print text.translate(unaccented_map())
+    print(text.translate(unaccented_map()))
 
     # note that non-letters are passed through as is; you can use
     # encode("ascii", "ignore") to get rid of them.  alternatively,
@@ -595,8 +599,8 @@ def test_ascii():
 
     map = unaccented_map()
 
-    print repr(u"12\xbd inch".translate(map))
-    print repr(u"12\xbd inch".translate(map).encode("ascii", "ignore"))
+    print(repr(u"12\xbd inch".translate(map)))
+    print(repr(u"12\xbd inch".translate(map).encode("ascii", "ignore")))
 
 
 def main():

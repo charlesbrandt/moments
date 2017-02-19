@@ -1,3 +1,6 @@
+from __future__ import print_function
+from builtins import str
+from builtins import object
 import sys, os
 sys.path.append(os.path.dirname(os.getcwd()))
 
@@ -17,7 +20,7 @@ def test_time():
     assert t.datetime == t2
 
 
-class TestTimestamp:
+class TestTimestamp(object):
     def setUp(self):
         self.ts = Timestamp("20110707")
     
@@ -28,16 +31,16 @@ class TestTimestamp:
 
     def test_dupe_init(self):
         dupe_ts = Timestamp(self.ts)
-        print self.ts.dt
-        print isinstance(self.ts, Timestamp)
-        print dupe_ts.dt
+        print(self.ts.dt)
+        print(isinstance(self.ts, Timestamp))
+        print(dupe_ts.dt)
         assert dupe_ts.dt == self.ts.dt
 
     def test_months(self):
         now = Timestamp()
         assert str(now.future_month(0)) == str(now.past_month(0))
         
-class TestTimerange:
+class TestTimerange(object):
     def setUp(self):
         tstamp = "20081218210057"
         self.tr = Timerange(tstamp)
@@ -55,7 +58,7 @@ class TestTimerange:
     def test_str(self):
         tstamp = "20081218"
         tr = Timerange(tstamp)
-        print str(tr)
+        print(str(tr))
         #assert str(tr) == "20081218-20081219"
         assert str(tr) == "20081218-20081218235959"
         tstamp = "20081231"
@@ -72,7 +75,7 @@ class TestTimerange:
         assert isinstance(start.datetime, datetime)
         assert isinstance(end.datetime, datetime)
 
-class TestRelativeRange:
+class TestRelativeRange(object):
     def setUp(self):
         tstamp = "20081218210057"
         self.tr = Timerange(tstamp)
@@ -84,7 +87,7 @@ class TestRelativeRange:
         #print tstamp
         #self.rr = RelativeRange(tstamp)
         self.rr = Timerange(tstamp)
-        print self.rr
+        print(self.rr)
         
         #december 1, 2010 is a Wednesday:
         self.dec = Timestamp(compact='201012')
@@ -92,8 +95,8 @@ class TestRelativeRange:
         self.rr_dec = Timerange(self.dec)
         
     def test_year(self):
-        print str(self.rr)
-        print self.rr.year()
+        print(str(self.rr))
+        print(self.rr.year())
         assert str(self.rr.year()) == "2010-20101231235959"
 
     def test_month(self):
@@ -104,7 +107,7 @@ class TestRelativeRange:
         assert str(feb_r) == "20100201-20100228235959"
 
         nov_r = self.rr_dec.last_month()
-        print nov_r
+        print(nov_r)
         assert str(nov_r) == "20101101-20101130235959"
         
         this_month_r = self.rr_dec.this_month()
@@ -115,12 +118,12 @@ class TestRelativeRange:
 
     def test_week(self):
         week = self.rr.week()
-        print week
+        print(week)
 
         #dec 1, 2010 is wednesday, starting week on friday
         #to test opposite direction
         week = self.rr_dec.week(week_start=4)
-        print week
+        print(week)
         assert str(week) == "20101126-20101202235959"
 
         week = self.rr.week()
@@ -129,7 +132,7 @@ class TestRelativeRange:
 
     def test_day(self):
         day = self.rr.day()
-        print day
+        print(day)
         assert str(day) == "20100602-20100602235959"
 
 
