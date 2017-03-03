@@ -20,15 +20,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 # ----------------------------------------------------------------------------
-import StringIO, re, os
+from __future__ import print_function
+from __future__ import absolute_import
+import sys
+if sys.version_info[0] <= 2:
+    from future import standard_library
+    standard_library.install_aliases()
+from builtins import str
+
+import io, re, os
 import codecs
 
-from moment import Moment
+from moments.moment import Moment
 
-import timestamp
-from tag import Tags
+from moments import timestamp
+from moments.tag import Tags
 
-class Log(StringIO.StringIO):
+class Log(io.StringIO):
     """
     Log is an in memory buffer (StringIO) that holds
     a text format for a list of entries / moments. 
@@ -40,7 +48,7 @@ class Log(StringIO.StringIO):
        will create a Moment (with or without timestamp)
     """
     def __init__(self, filename=None):
-        StringIO.StringIO.__init__(self)
+        io.StringIO.__init__(self)
         if filename:
             self.name = filename
         else:
@@ -60,14 +68,14 @@ class Log(StringIO.StringIO):
         if not self.name:
             #we don't have a file associated with the EntryList:
             if not filename:
-                print "UNKNOWN FILE!"
+                print("UNKNOWN FILE!")
                 exit
             else:
                 self.name = filename
                 
         elif filename and filename != self.name:
             #ambiguous which file to use
-            print "different file than what log was initialized with"
+            print("different file than what log was initialized with")
             exit
             
         else:
@@ -94,7 +102,7 @@ class Log(StringIO.StringIO):
             self.seek(0)
 
         else:
-            print "NO FILE ASSOCIATED WITH LOG: %s" % self.name
+            print("NO FILE ASSOCIATED WITH LOG: %s" % self.name)
 
     def from_string(self, text):
         """
@@ -130,7 +138,7 @@ class Log(StringIO.StringIO):
             f.write(self.read())
             f.close()
         else:
-            print "No log_name for this log"
+            print("No log_name for this log")
 
     def from_entries(self, entries, omits=[], include_path=False):
         """
@@ -183,9 +191,9 @@ class Log(StringIO.StringIO):
         try:
             self.seek(0)
             line = self.readline()
-            line = unicode(line)
+            line = str(line)
         except:
-            print "Problem reading file"
+            print("Problem reading file")
             return entries
 
         #first line of a log should have an entry... this is our check
@@ -204,7 +212,7 @@ class Log(StringIO.StringIO):
                     elif add_time and moments_only:
                         #ok to make a default time for the entry
                         new_entry = Moment()
-                        print "no timestamp found in this entry"
+                        print("no timestamp found in this entry")
                     else:
                         #must be moments only,
                         #but we don't want to add a timestamp
@@ -236,7 +244,7 @@ class Log(StringIO.StringIO):
                     # only want to add the entry itself
                     cur_entry.data += line
 
-                line = unicode(self.readline())
+                line = str(self.readline())
                 
             #need to get the last entry from the file, if there is one.
             if cur_entry.data:
@@ -244,7 +252,7 @@ class Log(StringIO.StringIO):
 
         #if not, don't scan
         else:
-            print "File does not start with an entry: %s" % self.name
+            print("File does not start with an entry: %s" % self.name)
             
         return entries
 

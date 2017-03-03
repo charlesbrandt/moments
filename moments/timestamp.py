@@ -66,6 +66,12 @@ could add those arguments to the init function if that was needed
 by those using Timestamp objects in place of datetime objects
 
 """
+from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import range
+from builtins import object
+#from past.utils import old_div
 
 from datetime import datetime, timedelta, date
 from datetime import time as dttime
@@ -169,14 +175,14 @@ class Timestamp(object):
                 #this doesn't seem to work:
                 #self = auto
                 self.dt = auto.dt
-            elif isinstance(auto, str) or isinstance(auto, unicode):
+            elif isinstance(auto, str):
                 #self.from_text(auto)
                 self.parse(auto)
             elif isinstance(auto, list):
                 self.dt = datetime(*auto)
             else:
                 #print "Unknown auto item: %s (type: %s)" % (auto, type(auto))
-                raise ValueError, "Unknown Timestamp start value: %s of type %s" % (auto, type(auto))
+                raise ValueError("Unknown Timestamp start value: %s of type %s" % (auto, type(auto)))
 
         elif tstamp:
             self.from_text(tstamp)
@@ -395,7 +401,7 @@ class Timestamp(object):
         else:
             #some other format
             #self.dt = None
-            raise AttributeError, "Unknown compact time format: %s" % text_time
+            raise AttributeError("Unknown compact time format: %s" % text_time)
         return self.dt
 
     #was log.text_to_time
@@ -446,7 +452,7 @@ class Timestamp(object):
         else:
             #some other format
             #time = None
-            raise ValueError, "Unknown time string format passed to Timestamp.from_text: %s (type: %s)" % (text_time, type(text_time))
+            raise ValueError("Unknown time string format passed to Timestamp.from_text: %s (type: %s)" % (text_time, type(text_time)))
 
         self.dt = time
         return time
@@ -467,7 +473,7 @@ class Timestamp(object):
             month = months_abr.index(month_s) + 1
             #print month
         else:
-            print "Couldn't find: %s" % month_s
+            print("Couldn't find: %s" % month_s)
             month = None
         #get rid of ',' after date
         if re.search(',', day_s):
@@ -501,7 +507,7 @@ class Timestamp(object):
         else:
             #some other format
             self.dt = None
-            print "Unknown gps date format: %s" % text_time
+            print("Unknown gps date format: %s" % text_time)
             exit()
 
         off = timedelta(hours=offset)
@@ -702,7 +708,7 @@ class Timestamp(object):
         """
         next_month = self.month + months
         if next_month >= 13:
-            years = next_month / 12
+            years = next_month//12
             next_month = next_month % 12
             #next_month = 1
             year = self.year + years
@@ -716,7 +722,7 @@ class Timestamp(object):
     def past_month(self, months=1):
         prior_month = self.month - months
         if prior_month <= 0:
-            years = 1 + (abs(prior_month) / 12)
+            years = 1 + (abs(prior_month)//12)
             year = self.year - years
             prior_month = 12 - (abs(prior_month) % 12)
         else:
@@ -817,7 +823,7 @@ class Timerange(object):
         """
         #this may get set in a number of different places
         self.end = None
-        if isinstance(start, str) or isinstance(start, unicode):
+        if isinstance(start, str) or isinstance(start, str):
             self.from_text(start)
         else:
             #this should handle all different cases
@@ -921,13 +927,13 @@ class Timerange(object):
         else:
             diff = self.end.datetime - self.start.datetime
             if diff.days >= 365:
-                print "YEAR"
+                print("YEAR")
                 return "year"
             elif diff.days >= 31:
-                print "MONTH"
+                print("MONTH")
                 return "month"
             elif diff.days >= 28:
-                print "MONTH (maybe)"
+                print("MONTH (maybe)")
                 diff_m = self.end.month - self.start.month
                 #should check here if the month and days increment accordingly
                 if (diff_m == 1) and (self.end.day >= self.start.day):
@@ -935,10 +941,10 @@ class Timerange(object):
                 elif (diff_m > 1):
                     return "month"
             elif diff.days >= 7:
-                print "WEEK"
+                print("WEEK")
                 return "week"
             elif diff.days >= 1:
-                print "DAY"
+                print("DAY")
                 return "day"
             else:
                 return "hour"
@@ -1231,11 +1237,11 @@ class Month(Timerange):
         #rr_month = rr.month()
         rr_month = self.month()
         if rr_month.start.datetime != self.start.datetime:
-            print "Moving start from: %s to: %s" % (self.start, rr_month.start)
+            print("Moving start from: %s to: %s" % (self.start, rr_month.start))
             self.start = rr_month.start
             
         if rr_month.end.datetime != self.end.datetime:
-            print "Moving end from: %s to: %s" % (self.end, rr_month.end)
+            print("Moving end from: %s to: %s" % (self.end, rr_month.end))
             self.end = rr_month.end
         
         #start = timerange.start

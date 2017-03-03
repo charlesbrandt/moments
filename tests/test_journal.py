@@ -1,3 +1,5 @@
+from __future__ import print_function
+from builtins import object
 import sys, os
 sys.path.append(os.path.dirname(os.getcwd()))
 #print sys.path
@@ -6,7 +8,7 @@ from datetime import datetime
 from moments import moment, timestamp
 from moments import journal 
 
-class TestJournal:
+class TestJournal(object):
     def setUp(self):
         """
         setup up any state specific to the execution
@@ -40,9 +42,9 @@ class TestJournal:
         #print dir(reversed)
 
         self.j.sort("reverse")
-        print "Pre: %s" % self.j
+        print("Pre: %s" % self.j)
         #self.j.reverse()
-        print "Post: %s" % self.j
+        print("Post: %s" % self.j)
 
         count = 0
         for e in self.j.entries():
@@ -52,7 +54,7 @@ class TestJournal:
     def test_load(self):
         j = journal.Journal()
         j.load("zoobar/sample_log.txt")
-        print self.j
+        print(self.j)
         assert len(j.entries()) == 4
 
     def test_save(self):
@@ -61,7 +63,7 @@ class TestJournal:
         self.j.save("zoobar/sample_log2.txt")
         k = journal.Journal()
         k.load("zoobar/sample_log2.txt")
-        print len(k.entries())
+        print(len(k.entries()))
         assert len(k.entries()) == 5
 
         
@@ -70,14 +72,14 @@ class TestJournal:
         test for known duplicate entries
         """
         self.j.debug = True
-        print "All entries: " 
+        print("All entries: ") 
         for e in self.j.entries():
-            print e.as_dict()
+            print(e.as_dict())
         pre_len = len(self.j.entries())
         e = moment.Moment(tags=[u'foo'], data=u'another test entry, this one has seconds\n\n', created='2008.10.22 11:15:42')
         self.j.update(e)
         post_len = len(self.j.entries())
-        print "pre: %s, post: %s" % (pre_len, post_len)
+        print("pre: %s, post: %s" % (pre_len, post_len))
         assert pre_len == post_len
         #assert True == False
 
@@ -86,16 +88,16 @@ class TestJournal:
         f2 = "zoobar/sample_log3.txt"
         j2 = journal.Journal()
         j2.load(f2)
-        print j2
-        print len(j2.entries())
+        print(j2)
+        print(len(j2.entries()))
         assert len(j2.entries()) == 4
 
-        print "pre: %s" % len(self.j.entries())
+        print("pre: %s" % len(self.j.entries()))
         self.j.load(f2)
 
         #will have 1 dupe timestamp,
         #but now dupes are added so there should be 5:
-        print self.j
+        print(self.j)
         assert len(self.j.entries()) == 6
 
     def test_merge2(self):
@@ -103,11 +105,11 @@ class TestJournal:
         self.j.load(f2)
         #will have 1 dupe timestamp,
         #but now dupes are added so there should be 5:
-        print self.j
+        print(self.j)
         for e in self.j.entries():
-            print e.render()
+            print(e.render())
             
-        print len(self.j.entries())
+        print(len(self.j.entries()))
         assert len(self.j.entries()) == 6
 
     def test_date(self):
@@ -116,7 +118,7 @@ class TestJournal:
         #assert result.has_key(ts.compact())
         #assert len(result[ts.compact()]) == 1
         #assert result.has_key(ts.compact())
-        print "Result: %s" % result
+        print("Result: %s" % result)
         assert len(result) == 1
         
     def test_tag(self):
@@ -124,28 +126,28 @@ class TestJournal:
         result = self.j.tag(tag)
         #assert result.has_key(tag)
         #assert len(result[tag]) == 3
-        print result
+        print(result)
         assert len(result) == 3
 
     def test_entry_position(self):
         es = self.j.entries()
         for e in es:
-            print e.render()
+            print(e.render())
 
-        print "xxxxxxxxxxxxxxxxxxxxxxxxx"
+        print("xxxxxxxxxxxxxxxxxxxxxxxxx")
         new_e = moment.Moment("Testing position", now=True)
         self.j.update(new_e, position=2)
 
         es = self.j.entries()
         for e in es:
-            print e.render()
-        print "xxxxxxxxxxxxxxxxxxxxxxxxx"
+            print(e.render())
+        print("xxxxxxxxxxxxxxxxxxxxxxxxx")
 
         #with remote journal, might not be the same entry object
         #but might still be equivalent
         #assert self.j.entry(2) == e
-        print "ENTRY1: ->%s<-" % self.j.entry(2).render()
-        print "ENTRY2: ->%s<-" % new_e.render()
+        print("ENTRY1: ->%s<-" % self.j.entry(2).render())
+        print("ENTRY2: ->%s<-" % new_e.render())
         assert self.j.entry(2).is_equal(new_e)
         
     def test_make_entry(self):
@@ -156,25 +158,25 @@ class TestJournal:
     def test_search(self):
         """search for matching tags"""
         results = self.j.search("foo")
-        print results
+        print(results)
         #should only be one matching tag
         assert results == ['foo']
         
     def test_remove(self):
         entry = self.j.entry(1)
-        print entry.render()
+        print(entry.render())
         self.j.remove(entry)
-        print len(self.j.entries())
+        print(len(self.j.entries()))
         assert len(self.j.entries()) == 3
         #TODO:
         #not sure if we should be referencing hidden attributes in tests
-        print "In dates?: %s" % self.j._dates.keys_with_item(entry)
+        print("In dates?: %s" % self.j._dates.keys_with_item(entry))
         assert self.j._dates.keys_with_item(entry) == []
         assert self.j._tags.keys_with_item(entry) == []
 
     def test_range(self):
         entries = self.j.range(datetime(2008, 10, 21))
-        print entries
+        print(entries)
         assert len(entries) == 3
 
         #get specific moment entry using that entry's timestamp:
@@ -184,7 +186,7 @@ class TestJournal:
         #print start, end
         tstamp = "20081218210057-20081218210059"
         (start, end) = timestamp.Timerange(tstamp).as_tuple()
-        print start, end
+        print(start, end)
         #entries = self.j
         #assert len(entries) == 3
         entries = self.j.range(start, end)
@@ -212,9 +214,9 @@ class TestRemoteJournal(TestJournal):
         setup up any state specific to the execution
         of the given cls.
         """
-        print "Be sure local server is running"
-        print "cd /c/moments/moments"
-        print "python server.py /c/moments/tests/"
+        print("Be sure local server is running")
+        print("cd /c/moments/moments")
+        print("python server.py /c/moments/tests/")
         self.j = journal.RemoteJournal('http://localhost:8000')
         #be sure we're back to a clean slate:
         self.j.clear()
@@ -222,7 +224,7 @@ class TestRemoteJournal(TestJournal):
         #print os.curdir
         #f = open('zoobar/sample_log.txt')
         #print f.read()
-        print "Number of entries after load: %s" % len(self.j.entries())
+        print("Number of entries after load: %s" % len(self.j.entries()))
 
     def test_clear(self):
         """
@@ -230,9 +232,9 @@ class TestRemoteJournal(TestJournal):
         but with a server, the loaded journal entries
         are not cleared automatically by just instantiating a new RemoteJournal
         """
-        print len(self.j.entries())
+        print(len(self.j.entries()))
         self.j.clear()
-        print len(self.j.entries())
+        print(len(self.j.entries()))
         assert len(self.j.entries()) == 0
 
     def test_remove(self):
@@ -249,12 +251,12 @@ class TestRemoteJournal(TestJournal):
 
         not sure that order can be forced
         """
-        print len(self.j.entries())
+        print(len(self.j.entries()))
 
         #self.j.clear()
         entry = self.j.entry(1)
-        print entry.render()
+        print(entry.render())
         self.j.remove(entry)
-        print len(self.j.entries())
+        print(len(self.j.entries()))
         assert len(self.j.entries()) == 3
 

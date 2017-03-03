@@ -39,13 +39,16 @@ With a timestamp:
   \\n
 
 """
+from __future__ import print_function
+from __future__ import absolute_import
+from builtins import str
+from builtins import object
 
 from datetime import datetime
 import string, re
 
-from timestamp import Timestamp
-from tag import Tags
-
+from moments.timestamp import Timestamp
+from moments.tag import Tags
 
 class Moment(object):
     """
@@ -64,7 +67,7 @@ class Moment(object):
     default is false
     """
     #def __init__(self, data=u'', tags=[], created=None, closed=None, placeholder=False, path=u''):
-    def __init__(self, data=u'', tags=[], created='', path=u'', now=False):
+    def __init__(self, data=u'', tags=[], created=u'', path=u'', now=False):
 
         self.data = data        
         self.tags = Tags(tags)
@@ -85,7 +88,7 @@ class Moment(object):
         #this may closely mimic the way Timestamp initializes
         #may want to leverage that
         #or just pass created and now values in to there
-        
+
         if now:
             self.created = Timestamp()
 
@@ -97,7 +100,7 @@ class Moment(object):
         elif isinstance(created, Timestamp):
             self.created = created
 
-        elif isinstance(created, str) or isinstance(created, unicode):
+        elif isinstance(created, str):
             if created:
                 self.created = Timestamp(created)
             else:
@@ -107,7 +110,7 @@ class Moment(object):
             self.created = Timestamp(created)
             
         else:
-            raise TypeError, "Unknown time format for moment created value: %s type: %s" % (created, type(created))
+            raise TypeError("Unknown time format for moment created value: %s type: %s" % (created, type(created)))
         
         #self.closed = closed
         
@@ -158,16 +161,16 @@ class Moment(object):
         equal = True
         if not self.tags.is_equal(other.tags):
             equal = False
-            if debug: print "Tags: %s (self) != %s (other)" % (str(self.tags), str(other.tags))
+            if debug: print("Tags: %s (self) != %s (other)" % (str(self.tags), str(other.tags)))
             
         #elif self.data != other.data:
         elif self.render_data() != other.render_data():
             equal = False
-            if debug: print "Data: %s (self) != %s (other)" % (self.data, other.data)
+            if debug: print("Data: %s (self) != %s (other)" % (self.data, other.data))
 
         elif equal and str(self.created) != str(other.created):
             equal = False
-            if debug: print "Created: %s (self) != %s (other)" % (str(self.created), str(other.created))
+            if debug: print("Created: %s (self) != %s (other)" % (str(self.created), str(other.created)))
 
         return equal
 
@@ -179,7 +182,7 @@ class Moment(object):
             line = '#' + str(self.created) + ' ' + ' '.join(self.tags) + "\n"
         else:
             line = '*' + str(self.created) + ' ' + ' '.join(self.tags) + "\n"
-        return unicode(line)
+        return str(line)
 
     def has_data(self):
         return self.data.strip()
@@ -208,14 +211,14 @@ class Moment(object):
                     #should troubleshoot web entries
                     self.data += "\n\n"
 
-            return unicode(self.data)
+            return str(self.data)
         else:
             #*2011.11.17 16:44:15
             #if loaded from a file, data almost always has newlines in it
             #shouldn't ever get here in that case
             
             #print "no data in this entry! : %s" % self.render_first_line()
-            return unicode('')
+            return str('')
 
     def render(self, include_path=False):
         """

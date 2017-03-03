@@ -7,6 +7,9 @@
 # Description:
 
 """
+from __future__ import print_function
+from builtins import str
+from builtins import object
 
 import sys, os, codecs
 
@@ -64,7 +67,7 @@ class SortableTextList(list):
             self.source = source
 
         if not source:
-            raise ValueError, "No source specified: %s" % source
+            raise ValueError("No source specified: %s" % source)
                 
         #this is a very simple loading process
         #that only loads a simple text list
@@ -86,7 +89,7 @@ class SortableTextList(list):
             self.source = destination
 
         if not destination:
-            raise ValueError, "No destination specified: %s" % destination
+            raise ValueError("No destination specified: %s" % destination)
         
         dst_file = codecs.open(destination, 'w', encoding='utf-8', errors='ignore')
         for line in self:
@@ -159,7 +162,7 @@ class SortableList(SortableTextList):
             self.source = source
 
         if not source:
-            raise ValueError, "No source specified: %s" % source
+            raise ValueError("No source specified: %s" % source)
                 
         #TODO:
         #look for corresponding settings file
@@ -194,7 +197,7 @@ class SortableList(SortableTextList):
 
 
 def usage():
-    print __doc__
+    print(__doc__)
     
 def main():
     #requires that at least one argument is passed in to the script itself (sys.argv)

@@ -40,8 +40,15 @@ and also the different roots from command line
     raise util.Abort(_('no username supplied (see "hg help config")'))
 mercurial.error.Abort: no username supplied (see "hg help config")
 """
+from __future__ import print_function
+## from future import standard_library
+## standard_library.install_aliases()
 
 import os, re, sys
+
+#mercurial does not yet support python3, so this won't work with python3
+#https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support.
+#can maintain this script as future compatible 
 from mercurial import ui, hg, commands
 
 def sync_hg(hg_interface, local_repo_path, remote_repo_path):
@@ -68,7 +75,7 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
         #otherwise we should just move on automatically
         changes = False
 
-        print "%s" % result
+        print("%s" % result)
         lines = result.splitlines()
         if len(lines) > 1:
             #changes = True
@@ -79,23 +86,23 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
                 #sometimes might be 3:
                 #['pulling from /media/charles/CHARLES/moments', 'updating bookmark master', "(run 'hg update' to get a working copy)"]
                 if re.search('hg update', line):
-                    print "updating"
+                    print("updating")
                     hg_interface.pushbuffer()
                     commands.update(hg_interface, repo)
                     result = hg_interface.popbuffer()
-                    print "%s" % result
+                    print("%s" % result)
                     response = hg_interface.prompt("everything ok? (ctl-c to exit)",
                                                 default='y')
-                    print "moving on then..."
+                    print("moving on then...")
                     need_update = True
 
             if not need_update:
                 #if we didn't update, the lines must be telling us
                 #something else needs to happen...
                 #must be a merge:
-                print lines
-                print "merge detected, all yours:"
-                print "cd %s" % local_repo_path
+                print(lines)
+                print("merge detected, all yours:")
+                print("cd %s" % local_repo_path)
                 exit()
 
         #at this point all changes from remote media should be applied locally
@@ -104,8 +111,8 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
         commands.status(hg_interface, repo)
         result = hg_interface.popbuffer()
         if result:
-            print "looks like there are some local changes:"
-            print result
+            print("looks like there are some local changes:")
+            print(result)
             changes = True
 
             new_files = False
@@ -113,7 +120,7 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
                 if line.startswith('?'):
                     new_files = True
             if new_files:
-                print "new files found"
+                print("new files found")
                 response = hg_interface.prompt("would you like to add the new files?", default='y')
                 if response == 'y':
                     commands.add(hg_interface, repo)
@@ -123,7 +130,7 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
             commands.commit(hg_interface, repo, message=response)
 
         #push changes:
-        print "hg push %s" % remote_repo_path
+        print("hg push %s" % remote_repo_path)
         commands.push(hg_interface, repo, remote_repo_path)
 
         lines = result.splitlines()
@@ -132,11 +139,11 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
         #on remote repo,
         remote_repo = hg.repository(hg_interface, remote_repo_path)
         #update
-        print "updating remote:"
+        print("updating remote:")
         hg_interface.pushbuffer()
         commands.update(hg_interface, remote_repo)
         result = hg_interface.popbuffer()
-        print "%s" % result
+        print("%s" % result)
 
         #show remote status
         commands.status(hg_interface, remote_repo)
@@ -145,7 +152,7 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path):
             response = hg_interface.prompt("everything ok? (ctl-c to exit)",
                                         default='y')
     else:
-        print "skipping: %s (no remote repo detected)" % remote_repo_path
+        print("skipping: %s (no remote repo detected)" % remote_repo_path)
         #pass
     
 
@@ -156,7 +163,7 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
     hg_interface = ui.ui()
 
     if not os.path.exists(local_root):
-        print "Could not find source path: %s" % local_path
+        print("Could not find source path: %s" % local_path)
         exit()
         
     local_options = os.listdir(local_root)
@@ -169,7 +176,7 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
     else:
         #we can try synchronizing with default remote repo in this case
         #(requires internet connection)
-        print "Could not find destination path: %s" % remote_root
+        print("Could not find destination path: %s" % remote_root)
 
     for option in local_options:
         local_repo_path = os.path.join(local_root, option)
@@ -183,15 +190,15 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
         if ( os.path.exists(os.path.join(local_root, option, '.hg')) or
              os.path.exists(os.path.join(local_root, option, '.git')) ):
             if option in remote_options:
-                print "'%s' is on remote media, preparing to sync..." % option
+                print("'%s' is on remote media, preparing to sync..." % option)
             else:
                 #TODO:
                 #could try syncronizing with default remote repo (via web) here
-                print "%s is not on remote media, skipping" % option
+                print("%s is not on remote media, skipping" % option)
 
 
 def usage():
-    print """
+    print("""
 python /c/public/moments/moments/export.py /c/out/ /media/charles/CHARLES/out/
 python /c/public/moments/moments/export.py /c/out/ /media/charles/WORK/out/
 (reset any open journal buffers after export)
@@ -203,7 +210,7 @@ python /c/public/moments/moments/export.py /media/charles/WORK/out/ /c/out
 
 /c/public/moments/mercurial_sync.py /c /media/CHARLES/
 
-"""
+""")
         
 if __name__ == '__main__':
     if len(sys.argv) > 1:

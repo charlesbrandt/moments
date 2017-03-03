@@ -31,14 +31,22 @@ Directories are a collection of Paths (that link to other files and directories)
 
 There is a circular dependency with these objects, so they need to be kept in one file.
 """
-import os, re, random, subprocess, cPickle, shutil
-import urllib
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+#from future import standard_library
+#standard_library.install_aliases()
+from builtins import str
+#from past.utils import old_div
+from builtins import object
+import os, re, random, subprocess, pickle, shutil
+import urllib.request, urllib.parse, urllib.error
 from datetime import datetime
 
-from timestamp import Timestamp
-from journal import Journal
-from tag import Tags
-from sortable_list import SortableList
+from moments.timestamp import Timestamp
+from moments.journal import Journal
+from moments.tag import Tags
+from moments.sortable_list import SortableList
 
 #from image import Image
 try:
@@ -48,8 +56,8 @@ except:
         #also check for Pillow version of PIL:
         import PIL.Image as PILImage
     except:
-        print "WARNING: Python Image Library not installed."
-        print "Image manipulation will not work"
+        print("WARNING: Python Image Library not installed.")
+        print("Image manipulation will not work")
 
 
 def check_ignore(item, ignores=[]):
@@ -105,7 +113,7 @@ def load_instance(instances="/c/instances.txt", tag=None):
         #print items
         return items
     else:
-        print "No instance entry found in journal: %s for tag: %s " % (instances, tag)
+        print("No instance entry found in journal: %s for tag: %s " % (instances, tag))
         return []
         
 def name_only(name):
@@ -216,7 +224,7 @@ class Path(object):
         return str(self.path)
     
     def __unicode__(self):
-        return unicode(self.path)
+        return str(self.path)
 
     def parse_name(self, name):
         #name without file extension:
@@ -248,7 +256,7 @@ class Path(object):
         #print "parsing path: %s" % path
         #print "->%s<-" % path
         if not path and not parts:
-            raise AttributeError, "Need either path or parts"
+            raise AttributeError("Need either path or parts")
 
         if path:
             if path == ".":
@@ -263,13 +271,13 @@ class Path(object):
             #*2012.12.06 05:25:14
             #problems here with filesystem paths with special characters
             #make sure not using str(path) anywhere else (walk, etc)
-            self._dirname = unicode(path)
+            self._dirname = str(path)
         else:
             self._dirname = self.from_parts(parts)
 
         if local_path:
-            actual_path = os.path.join(unicode(local_path), self._dirname)
-            actual_path = unicode(actual_path)
+            actual_path = os.path.join(str(local_path), self._dirname)
+            actual_path = str(actual_path)
             actual_path = os.path.normpath(actual_path)
             self._dirname = actual_path
 
@@ -349,7 +357,7 @@ class Path(object):
             return "Directory"
         else:
             #this often occurs with broken symlinks
-            print "Node... exists? %s Unknown filetype: %s" % (os.path.exists(self.path), self.path)
+            print("Node... exists? %s Unknown filetype: %s" % (os.path.exists(self.path), self.path))
 
             #sometimes this is an error, sometimes it's not
             if strict: 
@@ -565,7 +573,7 @@ class Path(object):
         """
         #print "Extension: %s" % self.extension
         if self.extension:
-            f = file(self.path, 'w')
+            f = open(self.path, 'w')
             f.close()
             assert self.exists()
         else:
@@ -781,13 +789,13 @@ class Path(object):
             parts = (prefix, local_to_relative(path))
             try:
                 #return urllib.quote(os.path.join(prefix, local_to_relative(path)))
-                return urllib.quote('/'.join(parts))
+                return urllib.parse.quote('/'.join(parts))
             except:
                 #return os.path.join(prefix, local_to_relative(path))
                 return '/'.join(parts)
         else:
             #return urllib.quote(os.path.join('/', local_to_relative(path, add_prefix=True)))
-            return urllib.quote(''.join(['/', local_to_relative(path, add_prefix=True)]))
+            return urllib.parse.quote(''.join(['/', local_to_relative(path, add_prefix=True)]))
 
     def relative_path_parts(self):
         """
@@ -902,7 +910,7 @@ class File(object):
         return str(self.path.filename)
     
     def __unicode__(self):
-        return unicode(self.path.filename)
+        return str(self.path.filename)
 
     def check_stats(self):
         """
@@ -912,7 +920,7 @@ class File(object):
         """
         #http://docs.python.org/lib/os-file-dir.html
         #stat = os.stat(str(self.path))
-        stat = os.stat(unicode(self.path))
+        stat = os.stat(str(self.path))
         #st_atime (time of most recent access)
         self.atime = stat.st_atime
         #st_mtime (time of most recent content modification)
@@ -1069,7 +1077,7 @@ class Image(File):
         # could use the actual path object to handle this 
         #parent_dir_path = os.path.dirname(str(self.path))
         #self.thumb_dir_path = os.path.join(parent_dir_path, self.thumb_dir_name)
-        self.thumb_dir_path = os.path.join(unicode(self.path.parent()),
+        self.thumb_dir_path = os.path.join(str(self.path.parent()),
                                            self.thumb_dir_name)
         
         #self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
@@ -1083,7 +1091,7 @@ class Image(File):
         """
         return the dimensions of this image
         """
-        image = PILImage.open(unicode(self.path))
+        image = PILImage.open(str(self.path))
         return image.size
 
     ## def size_name(self, size):
@@ -1145,7 +1153,7 @@ class Image(File):
         #self.make_thumb_dirs(os.path.join(new_dir, self.thumb_dir_name))
         new_image.make_thumb_dirs()
 
-        for k in self.sizes.keys():
+        for k in list(self.sizes.keys()):
             os.rename(self.size_path(k), new_image.size_path(k))
 
     def copy(self, destination, relative=True):
@@ -1190,7 +1198,7 @@ class Image(File):
             os.mkdir(base)
             
         #make separate directories for each thumbnail size
-        for k in self.sizes.keys():
+        for k in list(self.sizes.keys()):
             if k != 'tiny_o':
                 size_path = os.path.join(base, k)
                 if not os.path.isdir(size_path):
@@ -1203,14 +1211,16 @@ class Image(File):
                 bigger = destination.size[0]
                 smaller= destination.size[1]
                 diff = bigger - smaller
-                first = diff/2
+                #first = old_div(diff,2)
+                first = diff//2
                 last = bigger - (diff - first)
                 box = (first, 0, last, smaller)
             else:
                 bigger = destination.size[1]
                 smaller= destination.size[0]
                 diff = bigger - smaller
-                first = diff/2
+                #first = old_div(diff,2)
+                first = diff//2
                 last = bigger - (diff - first)
                 box = (0, first, smaller, last)
             region = destination.crop(box)
@@ -1252,9 +1262,9 @@ class Image(File):
         
         try:
             #image = PILImage.open(str(self.path))
-            image = PILImage.open(unicode(self.path)).convert('RGB')
+            image = PILImage.open(str(self.path)).convert('RGB')
         except:
-            print "Error opening image: %s" % unicode(self.path)
+            print("Error opening image: %s" % str(self.path))
         else:
             #made it this far... start resizing
             ## try:
@@ -1276,11 +1286,11 @@ class Image(File):
                         #IOError: image file is truncated (0 bytes not processed)
                         #giving a few more details before exiting out...
                         #this is a problem.
-                        raise ValueError, "Problem working with image: %s" % (self.path)
+                        raise ValueError("Problem working with image: %s" % (self.path))
                     
                 if 'xlarge' in save_sizes:
                     image.thumbnail((xl,xl), PILImage.ANTIALIAS)                    #we've already resized to xl size:
-                    image.save(unicode(self.size_path('xlarge', square=False)), "JPEG")
+                    image.save(str(self.size_path('xlarge', square=False)), "JPEG")
 
                     #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
 
@@ -1289,45 +1299,45 @@ class Image(File):
                         large = image.copy()
                         large.thumbnail((l,l), PILImage.ANTIALIAS)
 
-                        large.save(unicode(self.size_path('large', square=False)), "JPEG")
+                        large.save(str(self.size_path('large', square=False)), "JPEG")
 
                     if save_square:
                         l_sq = square.copy()
                         l_sq.thumbnail((l,l), PILImage.ANTIALIAS)
 
-                        l_sq.save(unicode(self.size_path('large')), "JPEG")
+                        l_sq.save(str(self.size_path('large')), "JPEG")
 
                 if 'medium' in save_sizes:
                     if save_original:
                         medium = image.copy()
                         medium.thumbnail((m,m), PILImage.ANTIALIAS)
-                        medium.save(unicode(self.size_path('medium', square=False)), "JPEG")
+                        medium.save(str(self.size_path('medium', square=False)), "JPEG")
                     if save_square:
                         m_sq = square.copy()
                         m_sq.thumbnail((m,m), PILImage.ANTIALIAS)
-                        m_sq.save(unicode(self.size_path('medium')), "JPEG")
+                        m_sq.save(str(self.size_path('medium')), "JPEG")
 
                 if 'small' in save_sizes:
                     if save_original:
                         small = image.copy()
                         small.thumbnail((s,s), PILImage.ANTIALIAS)
-                        small.save(unicode(self.size_path('small', square=False)), "JPEG")
+                        small.save(str(self.size_path('small', square=False)), "JPEG")
 
                     if save_square:
                         s_sq = square.copy()
                         s_sq.thumbnail((s,s), PILImage.ANTIALIAS)
-                        s_sq.save(unicode(self.size_path('small')), "JPEG")
+                        s_sq.save(str(self.size_path('small')), "JPEG")
 
                 if 'tiny' in save_sizes:
                     if save_original:
                         tiny = image.copy()
                         tiny.thumbnail((t,t), PILImage.ANTIALIAS)
-                        tiny.save(unicode(self.size_path('tiny', square=False)), "JPEG")
+                        tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
                         
                     if save_square:
                         t_sq = square.copy()
                         t_sq.thumbnail((t,t), PILImage.ANTIALIAS)
-                        t_sq.save(unicode(self.size_path('tiny')), "JPEG")
+                        t_sq.save(str(self.size_path('tiny')), "JPEG")
 
 
 
@@ -1419,7 +1429,7 @@ class Image(File):
         jhead = subprocess.Popen("jhead -autorot %s" % self.path, shell=True, stdout=subprocess.PIPE)
         current = jhead.communicate()[0]
         #print "Finished rotating: %s, %s" % (self.name, current)
-        if current: print current
+        if current: print(current)
         result += current
         #make sure timestamps stay the same
         self.reset_stats()
@@ -1502,7 +1512,7 @@ class Directory(File):
 
 
         try:
-            self.listdir = os.listdir(unicode(self.path))
+            self.listdir = os.listdir(str(self.path))
         except:
             #possible to get:
             #OSError: [Errno 13] Permission denied: '/some/path'
@@ -1514,16 +1524,16 @@ class Directory(File):
                 
                 #print "SUPPORTS UNICODE: %s" % os.path.supports_unicode_filenames
                 if os.path.supports_unicode_filenames:
-                    item_path = os.path.normpath(os.path.join(unicode(self.path), item))
+                    item_path = os.path.normpath(os.path.join(str(self.path), item))
                 else:
-                    #item_path = unicode(self.path) + u'/' + unicode(item)
+                    #item_path = str(self.path) + u'/' + str(item)
                     #try:
-                    item_path = os.path.normpath(os.path.join(unicode(self.path), item))
+                    item_path = os.path.normpath(os.path.join(str(self.path), item))
                     #except:
                     #    item_path = ''
                     #    print "could not open: %s" % item
 
-                item_path = unicode(item_path)
+                item_path = str(item_path)
                 #propagate any relative settings passed to us
                 node = Path(item_path, relative_prefix=self.path.relative_prefix)
 
@@ -1538,8 +1548,8 @@ class Directory(File):
 
                 else:
                     #might be a symlink... could add somewhere if desired
-                    print "ERROR: unknown item found; not a file or directory:"
-                    print item_path
+                    print("ERROR: unknown item found; not a file or directory:")
+                    print(item_path)
 
         self.last_scan = Timestamp()
 
@@ -1612,10 +1622,10 @@ class Directory(File):
             item_path = d[1]
             self.contents.append(item_path)
 
-            if (os.path.isfile(unicode(item_path))):
+            if (os.path.isfile(str(item_path))):
                 self.files.append(item_path)
 
-            elif (os.path.isdir(unicode(item_path))):
+            elif (os.path.isdir(str(item_path))):
                 self.directories.append(item_path)
 
 
@@ -1649,7 +1659,7 @@ class Directory(File):
     def sort_helper(self, collection):
         strings = []
         for item in collection:
-            strings.append(unicode(item))
+            strings.append(str(item))
         strings.sort()
         paths = []
         for s in strings:
@@ -1720,7 +1730,7 @@ class Directory(File):
         #just incase we haven't:
         self.scan_filetypes()
         
-        jpath = os.path.join(unicode(self.path), journal_file)
+        jpath = os.path.join(str(self.path), journal_file)
         j = load_journal(jpath, create=True)
 
         files = []
@@ -1744,9 +1754,9 @@ class Directory(File):
             #j.update_entry(e)
             f = fpath.load()
             if full_path:
-                data = unicode(fpath)
+                data = str(fpath)
             else:
-                data = unicode(fpath.filename)
+                data = str(fpath.filename)
             j.make(data=data, tags=tags, created=f.datetime())
 
         #print j
@@ -1763,12 +1773,12 @@ class Directory(File):
         adapted from moments/scripts/images_to_journal.py
         """
         j = None
-        source = os.path.join(unicode(self.path), journal)
+        source = os.path.join(str(self.path), journal)
         if os.path.exists(source):
             j = Journal()
             j.load(source)
 
-        source = os.path.join(unicode(self.path), journal)
+        source = os.path.join(str(self.path), journal)
         if not j:
             self.scan_filetypes()
 
@@ -1799,16 +1809,16 @@ class Directory(File):
                 #just use the file name in the local action tags
                 #elsewhere, full path is fine, knowing that it might change, but better than nothing
                 if full_path:
-                    data = unicode(i)
+                    data = str(i)
                 else:
-                    data = unicode(i.filename)
+                    data = str(i.filename)
                 #j.update_entry(e)
                 j.make(data, tags, created)
 
             j.save(source, order="chronological")
 
         else:
-            print "Journal: %s already exists" % (source)
+            print("Journal: %s already exists" % (source))
 
         return j
 
@@ -1841,11 +1851,11 @@ class Directory(File):
         helper to standardize the name + path for a sortable list
         sometimes need this before loading the sortable list (sortable_list())
         """
-        #print "sortable_list_path() called"
+        #print("sortable_list_path() called")
         list_file = self.path.name + ".list"
-        #print "List file:", list_file
-        list_path = os.path.join(unicode(self.path), list_file)
-        #print "List path:", list_path
+        #print("List file:", list_file)
+        list_path = os.path.join(str(self.path), list_file)
+        #print("List path:", list_path)
         return list_path
     
     def sortable_list(self, sl=None, create=False):
@@ -1931,7 +1941,7 @@ class Directory(File):
                 #path prefixes change frequently enough
                 #
                 #also, action.txt is not often updated with events
-                dest = os.path.join(unicode(self.path), "action.txt")
+                dest = os.path.join(str(self.path), "action.txt")
                 j = load_journal(dest)
                 if j:
                     #2009.12.19 13:19:27 
@@ -1944,14 +1954,14 @@ class Directory(File):
                     while not choice and len(most_frequent):
                         next_option = most_frequent.pop(0)
                         file_part = next_option[1].strip()
-                        path_part = os.path.join(unicode(self.path), file_part)
+                        path_part = os.path.join(str(self.path), file_part)
                         path = Path(path_part, relative_prefix=self.path.relative_prefix)
                         if path.exists():
                             if path.type() == "Image":
                                 choice = path
 
                         else:
-                            print "couldn't find: %s" % path
+                            print("couldn't find: %s" % path)
                 
             elif pick_by == "random":
                 random.seed()
@@ -1964,7 +1974,7 @@ class Directory(File):
                 #just return the first one in the list
 
             else:
-                raise ValueError, "Decide on the desired default image for a directory"
+                raise ValueError("Decide on the desired default image for a directory")
 
         else:
             #print "No images available in: %s" % self.path.name

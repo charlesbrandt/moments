@@ -11,6 +11,8 @@
 
 # Requires: moments
 """
+from __future__ import print_function
+from builtins import str
 import sys, subprocess, os, re
 
 from moments.journal import Journal
@@ -65,7 +67,7 @@ def merge_logs(f1, f2, add_tags=[], ofile="", verbose=False):
     j.save(ofile)
 
     if verbose:
-        print result
+        print(result)
 
     #if there are dupes the two totals may not add up to the new total
     # (does not necessarily mean a conflict)
@@ -100,7 +102,7 @@ def export_logs(source, destination, add_tags=[], recurse=True):
     dst.scan_directory()
     dstlistdircp = dst.listdir[:]
 
-    print "items found: %s" % src.listdir
+    print("items found: %s" % src.listdir)
     
     for i in src.listdir:
         #items to ignore (and make sure it's a text file)
@@ -110,7 +112,7 @@ def export_logs(source, destination, add_tags=[], recurse=True):
             n1path = Path(os.path.join(source, i)) # == i ???
             n2path = Path(os.path.join(destination, i))
 
-            print "exporting: %s" % i
+            print("exporting: %s" % i)
 
             if i in dstlistdircp:
                 #they both have an item with the same name
@@ -125,7 +127,7 @@ def export_logs(source, destination, add_tags=[], recurse=True):
                     if recurse:
                         conflicts.extend(export_logs(n1, n2, add_tags, recurse))
                     else:
-                        print "Not recursing into directory: %s" % n1
+                        print("Not recursing into directory: %s" % n1)
                 else:
                     #must have 2 files... lets merge them
                     (merged, result) = merge_logs(n1path, n2path, add_tags)
@@ -166,10 +168,10 @@ def export_logs(source, destination, add_tags=[], recurse=True):
     return conflicts
 
 def usage():
-    print """
+    print("""
     python /c/code/python/scripts/export_logs.py outgoing/ /media/USB/outgoing/ system_name-other_tags
 
-    """
+    """)
     
 def main():
     if len (sys.argv) > 1:
@@ -185,7 +187,7 @@ def main():
 
         conflicts = export_logs(d1, d2, add_tags)
         for c in conflicts:
-            print "Conflict found in: %s" % c
+            print("Conflict found in: %s" % c)
         
         # for merging
         # f1 = sys.argv[1]
