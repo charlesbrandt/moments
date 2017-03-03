@@ -1445,6 +1445,13 @@ class Directory(File):
 
         #self.ignores = []
         self.ignores = [ '.hg', '.hgignore', '.gitignore', '.svn', 'index.xml', 'meta.txt', 'sized', '.DS_Store', '.HFS+ Private Directory Data', '.HFS+ Private Directory Data\r', '.fseventsd', '.Spotlight-V100', '.TemporaryItems', '.Trash-ubuntu', '.Trashes', 'lost+found' ]
+        #this won't work with checking for presence in list:
+        #self.ignores.append('\._*')
+        #would need to iterate through each item in ignores and check with re
+        #might be easier just to clean those up!
+        #they shouldn't be necessary anyway
+        #
+        #find * -name "._*" -exec rm \{\} \;
 
         self.reset()
         
@@ -1834,11 +1841,11 @@ class Directory(File):
         helper to standardize the name + path for a sortable list
         sometimes need this before loading the sortable list (sortable_list())
         """
-        print "sortable_list_path() called"
+        #print "sortable_list_path() called"
         list_file = self.path.name + ".list"
-        print "List file:", list_file
+        #print "List file:", list_file
         list_path = os.path.join(unicode(self.path), list_file)
-        print "List path:", list_path
+        #print "List path:", list_path
         return list_path
     
     def sortable_list(self, sl=None, create=False):
@@ -1898,12 +1905,25 @@ class Directory(File):
                 #consider ways to specify a range of the top few
                 #and only randomize those (for variety)
                 sl = self.sortable_list()
-                for item in sl:
+                index = 0
+                #for item in sl:
+
+                #using while loops to exit out early if a match is found...
+                #this can take a while for directories with many subdirectories
+                while (choice is None) and (index < len(sl)):
+                    item = sl[index]
                     #check if item in images
-                    for image in self.images:
+
+                    image_index = 0
+                    #for image in self.images:
+                    while (choice is None) and (image_index < len(self.images)):
+                        image = self.images[image_index]
                         if image.filename == item:
                             if not choice:
                                 choice = image
+                        image_index += 1
+                        
+                    index += 1
                 
             elif pick_by == "journal":
                 #*2015.07.27 18:30:19 

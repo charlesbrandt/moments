@@ -61,7 +61,7 @@ def filter_list(items, ignores, search=False):
         if i in items:
             items.remove(i)
         elif search:
-            for item in items:
+            for item in items[:]:
                 if re.search(i, item):
                     items.remove(item)
         else:
