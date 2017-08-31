@@ -965,7 +965,7 @@ class File(object):
         else:
             new_mtime = modified.epoch()
             
-        os.utime(unicode(self.path), (new_atime, new_mtime))
+        os.utime(str(self.path), (new_atime, new_mtime))
 
         #keeps/restores the originals:
         #os.utime(self.path, (self.atime, self.mtime))
