@@ -720,6 +720,11 @@ class Journal(object):
         else:
             entry_times = list(self._dates.keys())
 
+            have_none = False
+            if None in entry_times:
+                have_none = True
+                entry_times.remove(None)
+
             if order == "reverse-chronological" or order == 'newest to oldest':
                 entry_times.sort()
                 entry_times.reverse()
@@ -731,6 +736,8 @@ class Journal(object):
                 raise ValueError("Unknown sort option supplied: %s" % order)
 
             entries = []
+            if have_none:
+                entry_times.append(None)
             for et in entry_times:
                 elist = self._dates[et]
                 for entry in elist:

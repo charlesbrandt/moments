@@ -97,7 +97,7 @@ class Log(io.StringIO):
             f = codecs.open(self.name, encoding='utf-8', errors='ignore')
 
             self.write(f.read())
-            f.close
+            f.close()
 
             self.seek(0)
 

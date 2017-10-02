@@ -493,7 +493,7 @@ class Path(object):
                             #find suffix:
                             cur_path = Path(path_string)
 
-                            relative_path = cur_path.to_relative(unicode(self.path))
+                            relative_path = cur_path.to_relative(str(self.path))
                             #print relative_path
                             relative_path = Path(os.path.join('/', relative_path))
 
@@ -592,8 +592,8 @@ class Path(object):
                 os.remove(self.path)
             
     def rename(self, destination):
-        destination = unicode(destination)
-        os.rename(unicode(self), destination)
+        destination = str(destination)
+        os.rename(str(self), destination)
 
     def move(self, destination):
         self.rename(destination)
@@ -605,7 +605,7 @@ class Path(object):
         needed a system call in that case
         http://docs.python.org/library/shutil.html
         """
-        shutil.copy(unicode(self), destination)
+        shutil.copy(str(self), destination)
         
     #???
     def make_tree(self):
@@ -754,7 +754,7 @@ class Path(object):
         if extension:
             temp = Path(temp_path)
             temp.extension = extension
-            temp_path = unicode(temp)
+            temp_path = str(temp)
 
         #sometimes self.relative_prefix does not include a trailing prefix
         #this might make temp_path start with a '/'
@@ -832,10 +832,10 @@ class Path(object):
             d_path = self.parent()
             d = d_path.load()
 
-        dest = os.path.join(unicode(d), "action.txt")
+        dest = os.path.join(str(d), "action.txt")
         j = load_journal(dest, create=True)
         #j = d.load_journal()
-        entry = j.make(unicode(self.path), actions)
+        entry = j.make(str(self.path), actions)
         j.save(dest)
         return entry
         
@@ -937,7 +937,7 @@ class File(object):
         Wraps os.path.getsize() to return the file's size.
         https://docs.python.org/2/library/os.path.html
         """
-        self.size = os.path.getsize(unicode(self.path))        
+        self.size = os.path.getsize(str(self.path))        
         return self.size
     
     def reset_stats(self):
@@ -946,7 +946,7 @@ class File(object):
         but we might want to keep the original time
         this resets them to what they were when originally initialized
         """
-        os.utime(unicode(self.path), (self.atime, self.mtime))
+        os.utime(str(self.path), (self.atime, self.mtime))
 
     def change_stats(self, accessed=None, modified=None):
         """
@@ -965,7 +965,7 @@ class File(object):
         else:
             new_mtime = modified.epoch()
             
-        os.utime(unicode(self.path), (new_atime, new_mtime))
+        os.utime(str(self.path), (new_atime, new_mtime))
 
         #keeps/restores the originals:
         #os.utime(self.path, (self.atime, self.mtime))
@@ -1046,7 +1046,7 @@ class File(object):
         """
         import hashlib
         m = hashlib.md5()
-        fd = open(unicode(self.path),"rb")
+        fd = open(str(self.path),"rb")
         m.update(fd.read())
         self.md5 = m.hexdigest()
         #not sure how this differs
@@ -1430,7 +1430,7 @@ class Image(File):
         current = jhead.communicate()[0]
         #print "Finished rotating: %s, %s" % (self.name, current)
         if current: print(current)
-        result += current
+        result += current.decode('utf-8')
         #make sure timestamps stay the same
         self.reset_stats()
         return result
@@ -1610,8 +1610,15 @@ class Directory(File):
 
         for f in self.contents:
             date = f.load().datetime()
+            #print(date)
             dates.append( (date, f) )
-        dates.sort()
+
+        #looks like this tries to sort the second Path() object too
+        # (that doesn't work)
+        #dates.sort()
+        sorted(dates, key = lambda x: x[0])
+        #print(dates)
+        
         self.contents = []
         self.files = []
         self.directories = []
