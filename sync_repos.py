@@ -99,14 +99,13 @@ def sync_git(local_repo_path, remote_repo_path=None):
         message = input("Commit message (Ctrl-C to cancel): ")
         local.git.add(A=True)
         local.git.commit('-m "message"')
-        if remote_repo_path:
-            remote = Repo(remote_repo_path)
-            remote.git.pull(local_repo_path)
-        else:
-            #probably assumes all authentication has been confiured in shell
-            local.git.push()
+
+    if remote_repo_path:
+        remote = Repo(remote_repo_path)
+        remote.git.pull(local_repo_path)
     else:
-        print("all clear", local_repo_path)
+        #probably assumes all authentication has been confiured in shell
+        local.git.push()
 
 
     ## repo = hg.repository(hg_interface, local_repo_path)
