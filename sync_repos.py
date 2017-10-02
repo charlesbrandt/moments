@@ -84,6 +84,13 @@ def sync_git(local_repo_path, remote_repo_path=None):
     local = Repo(local_repo_path)
     assert not local.bare
 
+    # get any remote changes first
+    if remote_repo_path:
+        local.git.pull(remote_repo_path)
+    else:
+        #default upstream
+        local.git.pull()
+
     if local.is_dirty():
         print("local changes!", local_repo_path)
         #print(dir(local.git))
