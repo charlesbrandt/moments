@@ -84,13 +84,6 @@ def sync_git(local_repo_path, remote_repo_path=None):
     local = Repo(local_repo_path)
     assert not local.bare
 
-    # get any remote changes first
-    if remote_repo_path:
-        local.git.pull(remote_repo_path)
-    else:
-        #default upstream
-        local.git.pull()
-
     if local.is_dirty():
         print("local changes!", local_repo_path)
         #print(dir(local.git))
@@ -99,6 +92,12 @@ def sync_git(local_repo_path, remote_repo_path=None):
         message = input("Commit message (Ctrl-C to cancel): ")
         local.git.add(A=True)
         local.git.commit('-m "message"')
+
+    if remote_repo_path:
+        local.git.pull(remote_repo_path)
+    else:
+        #default upstream
+        local.git.pull()
 
     if remote_repo_path:
         remote = Repo(remote_repo_path)
