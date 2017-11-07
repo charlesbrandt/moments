@@ -1,23 +1,69 @@
-;THINGS THAT ONLY NEED TO BE RUN ONCE (AT STARTUP) GO HERE
+;;;; THINGS THAT ONLY NEED TO BE RUN ONCE (AT STARTUP) GO HERE
 
-; customizations [custom lisp code snippets to modify editor behavior]
-; that are updated as various processes are refined
-; should go in ~/.emacs.d/context.el
-;
+;; Notes about ';' and comments:
+;; https://www.gnu.org/software/emacs/manual/html_node/elisp/Comment-Tips.html
+;; (single ';' are meant to be to the right)
 
-;Invoke Custom:
-;M-x customize
-;Then, choose "Programming," and then "Languages," and then select a language/mode to customize. Edit the options as you see fit. When done, choose either "Save for current session" or "Save for future sessions."
-;via: http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
-
-;
-; these can then be easily reloaded in the editor without restarting the editor
-; there is a "M-x reload" function for that.
-; reloading can also be accomplished by selecting the region below,
-; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
+;; set load-path .emacs.d/ first
 (setq load-path (cons "~/.emacs.d/" load-path))
 
+
+;; customizations [custom lisp code snippets to modify editor behavior]
+;; that are updated as various processes are refined
+;; should go in ~/.emacs.d/context.el
+
+;; these can then be easily reloaded in the editor without restarting the editor
+;; there is a "M-x reload" function for that.
+;; reloading can also be accomplished by selecting the region below,
+;; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
+
+;; Emacs Lisp Package Archive
+
+;; https://www.emacswiki.org/emacs/ELPA
+;; https://melpa.org/#/getting-started
+(require 'package) 
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+
+;; via: http://wikemacs.org/wiki/Package.el
+
+;; may be able to accomplish the following with:
+;; https://github.com/jwiegley/use-package
+
+(require 'cl-lib)
+
+(defvar my-packages
+  ;; todo: consider these packages
+  ;; '(ack-and-a-half auctex clojure-mode coffee-mode deft expand-region
+  ;;                  gist groovy-mode haml-mode haskell-mode inf-ruby
+  ;;                  magit magithub markdown-mode paredit projectile python
+  ;;                  sass-mode rainbow-mode scss-mode solarized-theme
+  ;;                  volatile-highlights yaml-mode yari zenburn-theme)
+  '(python markdown-mode sass-mode scss-mode yaml-mode web-mode vue-mode)
+  "A list of packages to ensure are installed at launch.")
+  ;; https://github.com/AdamNiederer/vue-mode
+
+(defun my-packages-installed-p ()
+  (cl-loop for p in my-packages
+           when (not (package-installed-p p)) do (cl-return nil)
+           finally (cl-return t)))
+
+(unless (my-packages-installed-p)
+  ;; check for new packages (package versions)
+  (package-refresh-contents)
+  ;; install the missing packages
+  (dolist (p my-packages)
+    (when (not (package-installed-p p))
+      (package-install p))))
+
+
+;(autoload 'context)
+(load-file "~/.emacs.d/context.el")
+
+
 (tool-bar-mode -1) 
+(put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
 
 (setq mac-option-key-is-meta nil) 
 (setq mac-command-key-is-meta t) 
@@ -36,16 +82,29 @@
                    
     (save-buffers-kill-emacs))))
 
-;;(autoload 'context)
-(load-file "~/.emacs.d/context.el")
-
 (add-hook 'text-mode-hook 'flyspell-mode) 
 
 ;http://www.emacswiki.org/cgi-bin/wiki/RecentFiles
 (require 'recentf)
 (recentf-mode 1)
-;http://www.emacswiki.org/cgi-bin/wiki/Icicles
-;need to investigate icicles
+
+; Tab completion:
+; http://www.emacswiki.org/cgi-bin/wiki/Icicles
+; consider investigating icicles
+
+
+;*2012.02.05 14:25:26 
+; switch to only one window (in the emacs sense) open (one editing panel)
+; (delete-other-windows) is what ctl-x 1 does
+; but it must happen too early in the sequence (before other files are loaded)
+; 
+; this works:
+(add-hook 'window-setup-hook 'delete-other-windows)
+; via: 
+; http://stackoverflow.com/questions/1144729/how-do-i-prevent-emacs-from-horizontally-splitting-the-screen-when-opening-multi
+
+
+;;;; Themes
 
 ;; (load-file "~/.emacs.d/theme.el")
 
@@ -55,7 +114,26 @@
 ;https://github.com/whitlockjc/atom-dark-theme-emacs
 (load-file "~/.emacs.d/atom-dark-theme.el")
 
+;(color-theme-calm-forest)
+;;set default color theme
+;
+;(color-theme-gray30)
+;(color-theme-calm-forest)
+;(color-theme-euphoria)
 
+;;black bagkgrounds:netbook
+;(color-theme-oswald)
+;(color-theme-lawrence)
+;(color-theme-hober)
+;(color-theme-charcoal-black)
+;(color-theme-black)
+;(color-theme-billw)
+;(color-theme-midnight)
+;(color-theme-late-night)
+
+
+
+;;; Frame size:
 
 ;; this works, but will probably be global for all instances
 ;; unless frame-setup overrides
@@ -103,36 +181,14 @@
 
 ;:height 97 :width normal :foundry "unknown" 
 
-;(color-theme-calm-forest)
-;;set default color theme
-;
-;(color-theme-gray30)
-;(color-theme-calm-forest)
-;(color-theme-euphoria)
-
-;;black bagkgrounds:netbook
-;(color-theme-oswald)
-;(color-theme-lawrence)
-;(color-theme-hober)
-;(color-theme-charcoal-black)
-;(color-theme-black)
-;(color-theme-billw)
-;(color-theme-midnight)
-;(color-theme-late-night)
 
 
 
-;*2012.02.05 14:25:26 
-;looking for a way to switch to only one window (in the emacs sense) open
-;(one editing panel)
-; this is what ctl-x 1 does
-; but it must happen too early in the sequence (before other files are loaded)
-; (delete-other-windows)
+;Customize via Emacs:
+;M-x customize
+;Then, choose "Programming," and then "Languages," and then select a language/mode to customize. Edit the options as you see fit. When done, choose either "Save for current session" or "Save for future sessions."
+;via: http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
 
-; this works:
-(add-hook 'window-setup-hook 'delete-other-windows)
-; via: 
-; http://stackoverflow.com/questions/1144729/how-do-i-prevent-emacs-from-horizontally-splitting-the-screen-when-opening-multi
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -152,8 +208,6 @@
 ;;  ;; Your init file should contain only one such instance.
 ;;  ;; If there is more than one, they won't work right.
 ;;  '(default ((t (:inherit nil :stipple nil :background "white" :foreground "black" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :family "Monaco")))))
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

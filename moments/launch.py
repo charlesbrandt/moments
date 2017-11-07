@@ -330,7 +330,7 @@ def mount_iso_macosx(source):
         print(output)
     
 def dvd_macosx(movie):
-    command = "/Applications/DVD\ Player.app/Contents/MacOS/DVD\ Player &"
+    command = r"/Applications/DVD\ Player.app/Contents/MacOS/DVD\ Player &"
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     return command + "\n"
