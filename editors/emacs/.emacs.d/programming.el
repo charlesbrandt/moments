@@ -48,6 +48,7 @@
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.less$" . web-mode))
+(add-to-list 'auto-mode-alist '("\\.scss$" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.tag$" . web-mode))
 
 (setq web-mode-engines-alist
