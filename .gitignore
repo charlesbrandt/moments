@@ -12,7 +12,6 @@ syntax: glob
 .Spotlight-V100*
 .fseventsd*
 
-editors/emacs/.emacs.d/elpa/
 editors/emacs/.emacs.d/matlab-emacs/
 editors/emacs/.emacs.d/session*
 editors/emacs/.emacs.d/abbrev_defs

@@ -1,3 +1,16 @@
+*2017.11.08 22:58:52 emacs
+/c/public/moments/instances.txt
+/c/public/moments/editors/emacs/.emacs.d/journal.el
+/c/public/moments/editors/emacs/.emacs.d/context.el
+/c/public/moments/editors/emacs/.emacs.d/programming.el
+/c/public/moments/editors/emacs/.emacs
+/c/public/moments/launch.sh
+
+
+*2017.11.08 22:50:34 todo
+/c/public/moments/instances.txt
+/c/public/moments/launch.sh
+
 *2015.12.27 11:15:26 server
 /c/public/moments/instances.txt
 /c/public/mindstream/pose/application.py
