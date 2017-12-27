@@ -17,6 +17,15 @@
 ;; reloading can also be accomplished by selecting the region below,
 ;; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
 
+(setq web-mode-markup-indent-offset 2)
+(setq web-mode-css-indent-offset 2)
+(setq web-mode-code-indent-offset 2)
+
+;JAVASCRIPT
+;http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
+(setq js-indent-level 2)
+
+
 ;; Emacs Lisp Package Archive
 
 ;; https://www.emacswiki.org/emacs/ELPA
