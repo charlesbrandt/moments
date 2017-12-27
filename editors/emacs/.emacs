@@ -184,7 +184,7 @@
 
 
 
-;Customize via Emacs:
+;Customize Indentation levels via Emacs:
 ;M-x customize
 ;Then, choose "Programming," and then "Languages," and then select a language/mode to customize. Edit the options as you see fit. When done, choose either "Save for current session" or "Save for future sessions."
 ;via: http://stackoverflow.com/questions/4177929/how-to-change-the-indentation-width-in-emacs-javascript-mode
@@ -200,6 +200,7 @@
  '(custom-enabled-themes nil)
  '(global-font-lock-mode t)
  '(inhibit-startup-screen t)
+ '(js-indent-level 2)
  '(tool-bar-mode nil))
 
 ;; (custom-set-faces

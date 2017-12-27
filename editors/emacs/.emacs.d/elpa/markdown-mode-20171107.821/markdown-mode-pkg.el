@@ -1,0 +1,1 @@
+(define-package "markdown-mode" "20171107.821" "Major mode for Markdown-formatted text" '((emacs "24") (cl-lib "0.5")) :commit "772d607f64a111bb8c21a0dca7908f6876b0a029" :url "https://jblevins.org/projects/markdown-mode/" :keywords '("markdown" "github flavored markdown" "itex"))
