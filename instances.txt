@@ -1,3 +1,11 @@
+*2017.12.27 18:25:17 emacs
+/c/public/moments/instances.txt
+/c/public/moments/launch.sh
+/c/public/moments/editors/emacs/.emacs.d/journal.el
+/c/public/moments/editors/emacs/.emacs.d/context.el
+/c/public/moments/editors/emacs/.emacs.d/programming.el
+/c/public/moments/editors/emacs/.emacs
+
 *2017.11.08 22:58:52 emacs
 /c/public/moments/instances.txt
 /c/public/moments/editors/emacs/.emacs.d/journal.el

@@ -6,6 +6,19 @@
 ;http://stackoverflow.com/questions/45861/how-do-i-get-js2-mode-to-use-spaces-instead-of-tabs-in-emacs
 (setq-default indent-tabs-mode nil)
 
+;; *2018.01.10 18:12:55 
+;; seems that the python mode has changed a lot over time
+;; I still like the older one:
+;; https://gitlab.com/python-mode-devs/python-mode
+;; python-mode-devs / python-mode · GitLab
+;; https://www.google.com/search?client=ubuntu&channel=fs&q=emacs+python+mode+IM-Python+menu&ie=utf-8&oe=utf-8
+;; emacs python mode IM-Python menu - Google Search
+;; https://emacs.stackexchange.com/questions/9982/how-do-use-emacs-to-look-up-a-function-in-python/10131
+;; development - How do use Emacs to look up a function in Python? - Emacs Stack Exchange
+;; https://stackoverflow.com/questions/15670505/comparison-of-python-modes-for-emacs
+;; Comparison of Python modes for Emacs - Stack Overflow
+
+
 ;PYTHON
 (setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
 (setq interpreter-mode-alist (cons '("python" . python-mode) interpreter-mode-alist))

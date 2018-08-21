@@ -7,16 +7,6 @@
 ;; set load-path .emacs.d/ first
 (setq load-path (cons "~/.emacs.d/" load-path))
 
-
-;; customizations [custom lisp code snippets to modify editor behavior]
-;; that are updated as various processes are refined
-;; should go in ~/.emacs.d/context.el
-
-;; these can then be easily reloaded in the editor without restarting the editor
-;; there is a "M-x reload" function for that.
-;; reloading can also be accomplished by selecting the region below,
-;; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
-
 (setq web-mode-markup-indent-offset 2)
 (setq web-mode-css-indent-offset 2)
 (setq web-mode-code-indent-offset 2)
@@ -41,14 +31,16 @@
 
 (require 'cl-lib)
 
+;; the python module available here doesn't provide a menu to navigate code
+;; trying both 'python' and 'python-mode'
 (defvar my-packages
   ;; todo: consider these packages
   ;; '(ack-and-a-half auctex clojure-mode coffee-mode deft expand-region
   ;;                  gist groovy-mode haml-mode haskell-mode inf-ruby
-  ;;                  magit magithub markdown-mode paredit projectile python
-  ;;                  sass-mode rainbow-mode scss-mode solarized-theme
-  ;;                  volatile-highlights yaml-mode yari zenburn-theme)
-  '(python markdown-mode sass-mode scss-mode yaml-mode web-mode vue-mode)
+  ;;                  magit magithub paredit projectile 
+  ;;                  rainbow-mode solarized-theme
+  ;;                  volatile-highlights yari zenburn-theme)
+  '(markdown-mode sass-mode scss-mode yaml-mode web-mode vue-mode)
   "A list of packages to ensure are installed at launch.")
   ;; https://github.com/AdamNiederer/vue-mode
 
@@ -65,9 +57,23 @@
     (when (not (package-installed-p p))
       (package-install p))))
 
+;PYTHON
+(setq auto-mode-alist (cons '("\\.py$" . python-mode) auto-mode-alist))
+(setq interpreter-mode-alist (cons '("python" . python-mode) interpreter-mode-alist))
+(autoload 'python-mode "python-mode" "Python editing mode." t)
+
 
 ;(autoload 'context)
 (load-file "~/.emacs.d/context.el")
+
+;; customizations [custom lisp code snippets to modify editor behavior]
+;; that are updated as various processes are refined
+;; should go in ~/.emacs.d/context.el
+
+;; these can then be easily reloaded in the editor without restarting the editor
+;; there is a "M-x reload" function for that.
+;; reloading can also be accomplished by selecting the region below,
+;; then executing it using the "Emacs-Lisp->Evaluate Region" option/command
 
 
 (tool-bar-mode -1) 

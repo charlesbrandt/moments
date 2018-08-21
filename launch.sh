@@ -13,6 +13,8 @@ launch.py -c /c/public/moments server
 
 launch.py -c /c/public/moments docs
 launch.py -c /c/technical javascript
+
+launch.py -c /c/public/moments emacs
 "
 
 echo "FOR TESTING:"
