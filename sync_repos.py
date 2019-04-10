@@ -6,12 +6,12 @@
   of synchronizing mulitple repositories under version control
   loops over all repositories available in source directory
   and compares the status of the corresponding directory in the destination
-  
+
 # By: Charles Brandt [code at contextiskey dot com]
 # On: *2010.01.30 19:47:05
 #     also [2010.03.01 09:26:01]
 #     also [2016.12.10 07:57:19]
-# License:  MIT 
+# License:  MIT
 
 # Requires: mercurial
 #
@@ -45,7 +45,7 @@ to update the default upstream destination, use:
     git push -u <remote_name> <local_branch_name>
 
 via:
-https://stackoverflow.com/questions/18801147/changing-the-git-remote-push-to-default    
+https://stackoverflow.com/questions/18801147/changing-the-git-remote-push-to-default
 """
 from __future__ import print_function
 ## from future import standard_library
@@ -56,7 +56,7 @@ import os, re, sys
 try:
     #mercurial does not yet support python3, so this won't work with python3
     #https://www.mercurial-scm.org/wiki/SupportedPythonVersions#Python_3.x_support.
-    #can maintain this script as future compatible 
+    #can maintain this script as future compatible
     from mercurial import ui, hg, commands
     hg_available = True
 except:
@@ -74,7 +74,7 @@ def sync_git(local_repo_path, remote_repo_path=None):
         #could sync with default source (e.g. github) here
         remote_repo_path = None
 
-        
+
     #keep track if we find something that changes
     #so that we can pause at the end
     #otherwise we should just move on automatically
@@ -203,14 +203,14 @@ def sync_git(local_repo_path, remote_repo_path=None):
     if changes:
         response = hg_interface.prompt("everything ok? (ctl-c to exit)",
                                     default='y')
-    
+
 
 def sync_hg(hg_interface, local_repo_path, remote_repo_path=None):
     if remote_repo_path and not os.path.exists(remote_repo_path):
         #remote_repo_path does not exist
         #could sync with default source (e.g. github) here
         remote_repo_path = None
-        
+
     #first pull down any changes that may exist on remote
     repo = hg.repository(hg_interface, local_repo_path)
     hg_interface.pushbuffer()
@@ -312,7 +312,7 @@ def sync_hg(hg_interface, local_repo_path, remote_repo_path=None):
     if changes:
         response = hg_interface.prompt("everything ok? (ctl-c to exit)",
                                     default='y')
-    
+
 
 def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
     #local_root = '/c'
@@ -325,7 +325,7 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
     if not os.path.exists(local_root):
         print("Could not find source path: %s" % local_path)
         exit()
-        
+
     local_options = os.listdir(local_root)
     local_options.sort()
 
@@ -372,13 +372,13 @@ def sync_repos(local_root='/c', remote_root='/media/charles/CHARLES'):
 
 def usage():
     print("""
-python /c/public/moments/moments/export.py [source] [destination]
+python3 /c/public/moments/moments/export.py [source] [destination]
 (reset any open journal buffers after export)
 
 /c/public/moments/sync_repos.py [local_dir] [remote_dir]
 
 """)
-        
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         helps = ['--help', 'help', '-h']
@@ -398,7 +398,7 @@ if __name__ == '__main__':
         elif len(args) == 1:
             #defaulting to remote_root as the primary arg doesn't make sense
             #sync_repos(remote_root=args[0])
-            
+
             sync_repos(local_root=args[0])
         else:
             #NOT LOGICAL... SHOULDN'T EVER BE HERE

@@ -69,7 +69,7 @@ def check_ignore(item, ignores=[]):
     """
     ignore = False
     for i in ignores:
-        if i and re.search(i, item):
+        if i and re.search(i, str(item)):
             # print "ignoring item: %s for ignore: %s" % (item, i)
             ignore = True
     return ignore
@@ -274,6 +274,7 @@ class Path(object):
         # TODO:
         # svg will require special handling with PIL. Convert using cairo first?
         # image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.tif', '.svg' ]
+        vector_extensions = ['.svg']
         image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.tif']
         movie_extensions = ['.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso',
                             '.asf', '.mp4', '.m4v', '.webm']
@@ -298,6 +299,8 @@ class Path(object):
             ext = self.extension.lower()
             if ext in image_extensions:
                 return "Image"
+            elif ext in vector_extensions:
+                return "Vector"
             elif ext in movie_extensions:
                 return "Movie"
             elif ext in sound_extensions:
@@ -963,10 +966,10 @@ class File(object):
 ## class Sound(File):
 ##     """
 ##     object to hold sound/music specific meta data for local sound file
-
 ##     """
 ##     def __init__(self, path):
 ##         File.__init__(self, path)
+
 
 class Image(File):
     """
@@ -1413,8 +1416,16 @@ class Directory(File):
 
         try:
             # self.listdir = os.listdir(str(self.path))
-            # sounds like scandir is faster ... try it out
-            self.listdir = os.scandir(str(self.path))
+            # sounds like scandir is faster
+            # but it only returns an iterator...
+            # will need to convert to a list to be compatible
+            # in this context
+            #self.listdir = os.scandir(str(self.path))
+            self.listdir = []
+            with os.scandir(str(self.path)) as it:
+                for entry in it:
+                    if not entry.name.startswith('.'):
+                        self.listdir.append(entry.name)
         except:
             # it's possible to get:
             # OSError: [Errno 13] Permission denied: '/some/path'
@@ -1752,12 +1763,21 @@ class Directory(File):
         helper to standardize the name + path for a sortable list
         sometimes need this before loading the sortable list (sortable_list())
         """
+        # DEPRECATED:
+        # standardize the name of this meta data file
+
         # print("sortable_list_path() called")
         list_file = self.path.name + ".list"
         # print("List file:", list_file)
         list_path = os.path.join(str(self.path), list_file)
         # print("List path:", list_path)
-        return list_path
+        # *2018.09.01 16:29:42
+        # switching to using 'order.list' by default...
+        # makes it easier to rename directories and still have everything work
+        if os.path.exists(list_path):
+            return list_path
+        else:
+            return os.path.join(str(self.path), 'order.list')
 
     def sortable_list(self, sl=None, create=False):
         """
@@ -1781,14 +1801,14 @@ class Directory(File):
         list_path = self.sortable_list_path()
         if os.path.exists(list_path):
             sl.load(list_path)
-            print("Loaded Sortable List from: %s" % list_path)
-            print(sl)
+            # print("Loaded Sortable List from: %s" % list_path)
+            # print(sl)
 
         return sl
 
     def default_image(self, pick_by=""):
         """
-        Not currently configured to work with RemoteJournal
+        Not configured to work with RemoteJournal
         """
         # if we didn't explicitly specify one
         # investigate directory and see what is the best default
@@ -1804,84 +1824,101 @@ class Directory(File):
                 # if nothing else, default to random is a good choice
                 pick_by = "random"
 
-        self.scan_filetypes()
-        # print "%s has %s images" % (self.path.name, len(self.images))
+
         choice = None
-        if len(self.images):
 
-            if pick_by == "sortable_list":
-                # trusting that if the list file exists,
-                # should show the first item in the list
-                # TODO:
-                # consider ways to specify a range of the top few
-                # and only randomize those (for variety)
-                sl = self.sortable_list()
-                index = 0
+        if pick_by == "sortable_list":
+            # trusting that if the list file exists,
+            # should show the first item in the list
+            #
+            # don't need to limit to just images in this case
+            # could recurse down into directories
+            #
+            # TODO:
+            # consider ways to specify a range of the top few
+            # and only randomize those (for variety)
+            sl = self.sortable_list()
+            index = 0
 
-                # for item in sl:
-                # using while loops to exit out early if a match is found...
-                # can take a while for directories with many subdirectories
-                while (choice is None) and (index < len(sl)):
-                    item = sl[index]
-                    # check if item in images
+            # for item in sl:
+            # using while loops to exit out early if a match is found...
+            # can take a while for directories with many subdirectories
+            while (choice is None) and (index < len(sl)):
+                item = sl[index]
 
-                    image_index = 0
-                    # for image in self.images:
-                    while (choice is None) and (image_index < len(self.images)):
-                        image = self.images[image_index]
-                        if image.filename == item:
-                            if not choice:
-                                choice = image
-                        image_index += 1
+                item_path = os.path.join(str(self.path), item)
+                ip = Path(item_path)
+                if ip.type() == "Image":
+                    choice = ip
+                elif ip.type() == "Directory":
+                    sub_d = ip.load()
+                    sub_default = sub_d.default_image()
+                    if sub_default:
+                        choice = sub_default
 
-                    index += 1
+                # # check if item in images
+                # image_index = 0
+                # # for image in self.images:
+                # while (choice is None) and (image_index < len(self.images)):
+                #     image = self.images[image_index]
+                #     if image.filename == item:
+                #         if not choice:
+                #             choice = image
+                #     image_index += 1
 
-            elif pick_by == "journal":
-                # *2015.07.27 18:30:19
-                # this requires action.txt to contain valid full paths
-                # path prefixes change frequently enough
-                #
-                # also, action.txt is not often updated with events
-                dest = os.path.join(str(self.path), "action.txt")
-                j = load_journal(dest)
-                if j:
-                    # 2009.12.19 13:19:27
-                    # need to generate the data association first now
-                    j.associate_files()
+                index += 1
+        else:
+            # other forms of pick_by require images
+            self.scan_filetypes()
+            # print "%s has %s images" % (self.path.name, len(self.images))
+            if len(self.images):
 
-                    most_frequent = j._files.frequency_list()
-                    most_frequent.sort()
-                    most_frequent.reverse()
-                    while not choice and len(most_frequent):
-                        next_option = most_frequent.pop(0)
-                        file_part = next_option[1].strip()
-                        path_part = os.path.join(str(self.path), file_part)
-                        path = Path(path_part,
-                                    relative_prefix=self.path.relative_prefix)
-                        if path.exists():
-                            if path.type() == "Image":
-                                choice = path
+                if pick_by == "journal":
+                    # *2015.07.27 18:30:19
+                    # this requires action.txt to contain valid full paths
+                    # path prefixes change frequently enough
+                    #
+                    # also, action.txt is not often updated with events
+                    dest = os.path.join(str(self.path), "action.txt")
+                    j = load_journal(dest)
+                    if j:
+                        # 2009.12.19 13:19:27
+                        # need to generate the data association first now
+                        j.associate_files()
 
-                        else:
-                            print("couldn't find: %s" % path)
+                        most_frequent = j._files.frequency_list()
+                        most_frequent.sort()
+                        most_frequent.reverse()
+                        while not choice and len(most_frequent):
+                            next_option = most_frequent.pop(0)
+                            file_part = next_option[1].strip()
+                            path_part = os.path.join(str(self.path), file_part)
+                            path = Path(path_part,
+                                        relative_prefix=self.path.relative_prefix)
+                            if path.exists():
+                                if path.type() == "Image":
+                                    choice = path
 
-            elif pick_by == "random":
-                random.seed()
-                r = random.randint(0, len(self.images)-1)
-                choice = self.images[r]
+                            else:
+                                print("couldn't find: %s" % path)
 
-            elif pick_by == "first":
-                choice = self.images[0]
-                # must not have found anything statistical if we make it here
-                # just return the first one in the list
+                elif pick_by == "random":
+                    random.seed()
+                    r = random.randint(0, len(self.images)-1)
+                    choice = self.images[r]
+
+                elif pick_by == "first":
+                    choice = self.images[0]
+                    # must not have found anything statistical if we make it here
+                    # just return the first one in the list
+
+                else:
+                    raise ValueError("Decide on the desired default image for a directory")
 
             else:
-                raise ValueError("Decide on the desired default image for a directory")
-
-        else:
-            # print "No images available in: %s" % self.path.name
-            # choice will be None:
-            pass
+                # print "No images available in: %s" % self.path.name
+                # choice will be None:
+                pass
 
         # FOR DEBUG:
         # if choice:

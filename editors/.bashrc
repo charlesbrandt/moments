@@ -2,6 +2,9 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
+# to compare an original, try:
+# cd ~/; diff .bashrc /c/public/moments/editors/.bashrc
+
 # If not running interactively, don't do anything
 case $- in
     *i*) ;;
@@ -11,12 +14,12 @@ esac
 # If not running interactively, don't do anything
 [ -z "$PS1" ] && return
 
-PATH="/c/public/moments/moments:/opt/local/bin:/c/downloads/android/tools:/c/downloads/android/platform-tools:${PATH}"
+PATH="/c/public/moments/moments:/opt/local/bin:~/.yarn/bin:/c/downloads/android/tools:/c/downloads/android/platform-tools:${PATH}"
 export PATH
 
 #this needs to come after previous line, otherwise scp will have trouble
 #http://unix.stackexchange.com/questions/18231/scp-fails-without-error
-echo "Deep Breath... Inhale.... Exhale.... :)"
+#echo "Deep Breath... Inhale.... Exhale.... :)"
 export EDITOR=vi
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -63,11 +66,14 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
+#https://unix.stackexchange.com/questions/124407/what-color-codes-can-i-use-in-my-ps1-prompt
 if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+    #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$'
+    PS1='\n\[\033[38;5;129m\]# \D{%Y.%m.%d} \t ${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n'
 else
     #PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-    PS1="\n#\D{%Y.%m.%d} \t \u@\h:\w \n"
+    #PS1="\n#\D{%Y.%m.%d} \t \u@\h:\w \n"
+    PS1="\n# \D{%Y.%m.%d} \t \h:\w \n"
 
 fi
 unset color_prompt force_color_prompt
@@ -100,6 +106,7 @@ fi
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+alias filemgr='exo-open --launch FileManager'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
