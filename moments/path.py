@@ -44,6 +44,7 @@ import subprocess
 import shutil
 import urllib
 from datetime import datetime
+from multiprocessing import Pool
 
 from moments.timestamp import Timestamp
 from moments.journal import Journal
@@ -141,6 +142,11 @@ def extension(name):
     parts = os.path.splitext(name)
     extension = parts[-1]
     return extension
+
+
+def thumb_helper(name):
+    save_sizes = ['medium']
+    name.load().make_thumbs(save_sizes)
 
 
 class Path(object):
@@ -274,7 +280,6 @@ class Path(object):
         # TODO:
         # svg will require special handling with PIL. Convert using cairo first?
         # image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.tif', '.svg' ]
-        vector_extensions = ['.svg']
         image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.tif']
         movie_extensions = ['.mpg', '.avi', '.flv', '.vob', '.wmv', '.iso',
                             '.asf', '.mp4', '.m4v', '.webm']
@@ -287,6 +292,7 @@ class Path(object):
         json_extensions = ['.json']
         playlist_extensions = ['.m3u', '.pls']
         list_extensions = ['.list', ]
+        vector_extensions = ['.svg']
 
         # others
         # playlist_extensions = ['m3u', 'pls']
@@ -299,8 +305,6 @@ class Path(object):
             ext = self.extension.lower()
             if ext in image_extensions:
                 return "Image"
-            elif ext in vector_extensions:
-                return "Vector"
             elif ext in movie_extensions:
                 return "Movie"
             elif ext in sound_extensions:
@@ -313,6 +317,9 @@ class Path(object):
                 return "Playlist"
             elif ext in list_extensions:
                 return "List"
+            elif ext in vector_extensions:
+                return "Vector"
+
             # elif ext in library_extensions:
             #    return "Library"
             # elif ext in document_extensions:
@@ -567,14 +574,6 @@ class Path(object):
         """
         shutil.copy(str(self), destination)
 
-    #???
-    def make_tree(self):
-        """
-        go through all parts and make a node for each of them
-        return the root node
-        """
-        pass
-
     # def parent_path(self):
     def parent(self):
         """
@@ -660,15 +659,6 @@ class Path(object):
                         all_tags.append(tag)
 
         return all_tags
-
-    def distance(self, path):
-        """
-        the shortest number of nodes between self and path
-
-        find common prefix
-        then count from there
-        """
-        pass
 
     # def local_to_relative(path=None, add_prefix=False):
     # def to_relative(self, path='', leading_slash=False, extension=None):
@@ -966,10 +956,10 @@ class File(object):
 ## class Sound(File):
 ##     """
 ##     object to hold sound/music specific meta data for local sound file
+
 ##     """
 ##     def __init__(self, path):
 ##         File.__init__(self, path)
-
 
 class Image(File):
     """
@@ -980,18 +970,18 @@ class Image(File):
     def __init__(self, path):
         File.__init__(self, path)
         self.thumb_dir_name = "sized"
-        #2010.03.02 22:43:35
+        # 2010.03.02 22:43:35
         # could use the actual path object to handle this
-        #parent_dir_path = os.path.dirname(str(self.path))
-        #self.thumb_dir_path = os.path.join(parent_dir_path, self.thumb_dir_name)
+        # parent_dir_path = os.path.dirname(str(self.path))
+        # self.thumb_dir_path = os.path.join(parent_dir_path, self.thumb_dir_name)
         self.thumb_dir_path = os.path.join(str(self.path.parent()),
                                            self.thumb_dir_name)
 
-        #self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
+        # self.sizes = { 'tiny_o':'_t_o', 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l' }
         self.sizes = { 'tiny':'_t', 'small':'_s', 'medium':'_m', 'large':'_l', 'xlarge':'_xl'}
 
-        #parts = self.path.name.split('.')
-        #self.last_four = parts[-2][-4:]
+        # parts = self.path.name.split('.')
+        # self.last_four = parts[-2][-4:]
         self.last_four = self.path.name[-4:]
 
     def dimensions(self):
@@ -1000,39 +990,6 @@ class Image(File):
         """
         image = PILImage.open(str(self.path))
         return image.size
-
-    ## def size_name(self, size):
-    ##     """
-    ##     take a size and create the corresponding thumbnail filename
-
-    ##     *2012.08.18 11:24:30
-    ##     deprecated...
-    ##     seems like it's only used in self.size_path method
-    ##     simple enough to just include it there
-    ##     """
-    ##     #parts = self.name.split('.')
-    ##     #new_name = '.'.join(parts[:-1]) + self.sizes[size] + '.' + parts[-1]
-    ##     #new_name = self.path.name + self.sizes[size] + '.' +self.path.extension
-    ##     new_name = self.path.name + self.sizes[size] + self.path.extension
-    ##     return new_name
-
-
-    ## def get_size(self, size, relative=False):
-    ##     """
-    ##     when size_path() just isn't enough...
-
-    ##     accepts: tiny, small, medium, large
-    ##     """
-    ##     thumb_path = self.size_path(size)
-    ##     #if not os.path.isfile(thumb_path):
-    ##     if not thumb_path.exists():
-    ##         self.make_thumbs()
-
-    ##     if relative:
-    ##         #print self.path.relative_prefix
-    ##         #thmb = Path(thumb_path, relative_prefix=self.path.relative_prefix)
-    ##         thumb_path = thumb_path.to_relative()
-    ##     return thumb_path
 
     def move(self, destination, relative=False):
         """
@@ -1047,17 +1004,17 @@ class Image(File):
         import_media uses subprocess system level move commands
         which is not as cross platform
         """
-        #new_dir = os.path.join(image_dir, data)
+        # new_dir = os.path.join(image_dir, data)
         (new_dir, new_name) = os.path.split(destination)
 
-        #could also use os.renames()   note plural
+        # could also use os.renames()   note plural
         if not os.path.isdir(new_dir):
             os.mkdir(new_dir)
         os.rename(self.path, destination)
 
-        #move thumbnails
+        # move thumbnails
         new_image = Image(destination)
-        #self.make_thumb_dirs(os.path.join(new_dir, self.thumb_dir_name))
+        # self.make_thumb_dirs(os.path.join(new_dir, self.thumb_dir_name))
         new_image.make_thumb_dirs()
 
         for k in list(self.sizes.keys()):
@@ -1069,7 +1026,7 @@ class Image(File):
         """
         pass
 
-    def size_path(self, size, square=True):
+    def size_path(self, size, square=False):
         """
         take a size and create the corresponding thumbnail (local) path
 
@@ -1081,7 +1038,7 @@ class Image(File):
 
         """
         if size == 'tiny_o':
-            #can keep the different tiny versions together:
+            # can keep the different tiny versions together:
             size_dir = 'tiny'
         else:
             size_dir = size
@@ -1091,11 +1048,11 @@ class Image(File):
         else:
             size_name = self.path.name + self.sizes[size] + self.path.extension
 
-        #thumb_path = os.path.join(self.thumb_dir_path, size_dir, self.size_name(size))
+        # thumb_path = os.path.join(self.thumb_dir_path, size_dir, self.size_name(size))
         thumb_path = os.path.join(self.thumb_dir_path, size_dir, size_name)
         return Path(thumb_path, relative_prefix=self.path.relative_prefix)
 
-    def make_thumb_dirs(self, base=None):
+    def make_thumb_dirs(self, save_sizes, base=None):
         """
         if they don't already exist, create them
         """
@@ -1104,8 +1061,9 @@ class Image(File):
         if not os.path.isdir(base):
             os.mkdir(base)
 
-        #make separate directories for each thumbnail size
-        for k in list(self.sizes.keys()):
+        # make separate directories for each thumbnail size
+        # for k in list(self.sizes.keys()):
+        for k in save_sizes:
             if k != 'tiny_o':
                 size_path = os.path.join(base, k)
                 if not os.path.isdir(size_path):
@@ -1113,7 +1071,7 @@ class Image(File):
 
     def _square_image(self, destination):
         if destination.size[0] != destination.size[1]:
-            #lets make it a square:
+            # lets make it a square:
             if destination.size[0] > destination.size[1]:
                 bigger = destination.size[0]
                 smaller= destination.size[1]
@@ -1134,36 +1092,32 @@ class Image(File):
             destination = region.copy()
         return destination
 
-    def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny'], save_square=True, save_original=True):
+    # save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny'],
+    def make_thumbs(self, save_sizes=['medium'], save_square=False,
+                    save_original=True):
         """
         regenerate all specified thumbnails from original
         can use save_sizes to limit what is generated
         can use save_square and save_original
         to determine if those dimensions are generated
-        """
-        ## if config.has_key('thumb.l'):
-        ##     l = int(config['thumb.l'])
-        ##     m = int(config['thumb.m'])
-        ##     s = int(config['thumb.s'])
-        ##     t = int(config['thumb.t'])
-        ##     u = int(config['thumb.u'])
-        ## else:
 
-        #this is still big (maybe too big?)
-        #but might shrink file size some?
+        save_original refers to original dimensions / ratios
+        """
+        # this is still big (maybe too big?)
+        # but might shrink file size some?
         xl = 2880
-        #xl=1700
+        # xl=1700
         l = 1280
         m = 800
         s = 400
         t = 200
-        #u = 25
+        # u = 25
 
         # *2012.08.18 12:23:19
         # when rendering images for the web,
         # now it's a good idea to set dimensions to half the size
 
-        self.make_thumb_dirs()
+        self.make_thumb_dirs(save_sizes)
 
         try:
             # image = PILImage.open(str(self.path))
@@ -1171,101 +1125,79 @@ class Image(File):
         except:
             print("Error opening image: %s" % str(self.path))
         else:
-            #made it this far... start resizing
-            ## try:
+            # made it this far... start resizing
+            # try:
 
-            ## except:
-            ##     print "Error sizing image: %s" % str(self.path)
-            ##     exit()
-            ## else:
+            # except:
+            #     print "Error sizing image: %s" % str(self.path)
+            #     exit()
+            # else:
             if True:
                 if save_square:
-                    #print "making square"
-                    #keep a copy of original for squaring
+                    # print "making square"
+                    # keep a copy of original for squaring
                     try:
                         square = image.copy()
                         square = self._square_image(square)
-                        #print "square complete"
+                        # print "square complete"
                     except:
-                        #probably caused by:
-                        #IOError: image file is truncated (0 bytes not processed)
-                        #giving a few more details before exiting out...
-                        #this is a problem.
+                        # probably caused by:
+                        # IOError: image file is truncated (0 bytes not processed)
+                        # giving a few more details before exiting out...
+                        # this is a problem.
                         raise ValueError("Problem working with image: %s" % (self.path))
 
                 if 'xlarge' in save_sizes:
-                    image.thumbnail((xl,xl), PILImage.ANTIALIAS)                    #we've already resized to xl size:
+                    image.thumbnail((xl, xl), PILImage.ANTIALIAS)
+                    # we've already resized to xl size:
                     image.save(str(self.size_path('xlarge', square=False)), "JPEG")
 
-                    #xl_sq.save(str(self.size_path('xlarge')), "JPEG")
+                    # xl_sq.save(str(self.size_path('xlarge')), "JPEG")
 
                 if 'large' in save_sizes:
                     if save_original:
                         large = image.copy()
-                        large.thumbnail((l,l), PILImage.ANTIALIAS)
+                        large.thumbnail((l, l), PILImage.ANTIALIAS)
 
                         large.save(str(self.size_path('large', square=False)), "JPEG")
 
                     if save_square:
                         l_sq = square.copy()
-                        l_sq.thumbnail((l,l), PILImage.ANTIALIAS)
+                        l_sq.thumbnail((l, l), PILImage.ANTIALIAS)
 
                         l_sq.save(str(self.size_path('large')), "JPEG")
 
                 if 'medium' in save_sizes:
                     if save_original:
                         medium = image.copy()
-                        medium.thumbnail((m,m), PILImage.ANTIALIAS)
+                        medium.thumbnail((m, m), PILImage.ANTIALIAS)
                         medium.save(str(self.size_path('medium', square=False)), "JPEG")
                     if save_square:
                         m_sq = square.copy()
-                        m_sq.thumbnail((m,m), PILImage.ANTIALIAS)
+                        m_sq.thumbnail((m, m), PILImage.ANTIALIAS)
                         m_sq.save(str(self.size_path('medium')), "JPEG")
 
                 if 'small' in save_sizes:
                     if save_original:
                         small = image.copy()
-                        small.thumbnail((s,s), PILImage.ANTIALIAS)
+                        small.thumbnail((s, s), PILImage.ANTIALIAS)
                         small.save(str(self.size_path('small', square=False)), "JPEG")
 
                     if save_square:
                         s_sq = square.copy()
-                        s_sq.thumbnail((s,s), PILImage.ANTIALIAS)
+                        s_sq.thumbnail((s, s), PILImage.ANTIALIAS)
                         s_sq.save(str(self.size_path('small')), "JPEG")
 
                 if 'tiny' in save_sizes:
                     if save_original:
                         tiny = image.copy()
-                        tiny.thumbnail((t,t), PILImage.ANTIALIAS)
+                        tiny.thumbnail((t, t), PILImage.ANTIALIAS)
                         tiny.save(str(self.size_path('tiny', square=False)), "JPEG")
 
                     if save_square:
                         t_sq = square.copy()
-                        t_sq.thumbnail((t,t), PILImage.ANTIALIAS)
+                        t_sq.thumbnail((t, t), PILImage.ANTIALIAS)
                         t_sq.save(str(self.size_path('tiny')), "JPEG")
-
-
-
-
-                #make squared versions
-                #xl_sq = square.copy()
-                #xl_sq.thumbnail((xl,xl), PILImage.ANTIALIAS)
-
-                #l_sq = xl_sq.copy()
-
-
-
-                #o for original dimensions
-                #tiny_o = image.copy()
-                #we want to fix the width at t, not concerned about height
-                #tiny_o.thumbnail((t,1000), PILImage.ANTIALIAS)
-
-                #try:
-
-                #tiny_o.save(str(self.size_path('tiny_o')), "JPEG")
-                #except:
-                #    print "error generating thumbs for: %s" % self.path.name
-                ##     #pass
 
     ## def reset_stats(self):
     ##     """
@@ -1416,16 +1348,8 @@ class Directory(File):
 
         try:
             # self.listdir = os.listdir(str(self.path))
-            # sounds like scandir is faster
-            # but it only returns an iterator...
-            # will need to convert to a list to be compatible
-            # in this context
-            #self.listdir = os.scandir(str(self.path))
-            self.listdir = []
-            with os.scandir(str(self.path)) as it:
-                for entry in it:
-                    if not entry.name.startswith('.'):
-                        self.listdir.append(entry.name)
+            # sounds like scandir is faster ... try it out
+            self.listdir = os.scandir(str(self.path))
         except:
             # it's possible to get:
             # OSError: [Errno 13] Permission denied: '/some/path'
@@ -1735,15 +1659,18 @@ class Directory(File):
         return j
 
     # rename to generate_thumbnails?
+    # def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny']):
     def make_thumbs(self, save_sizes=['xlarge', 'large', 'medium', 'small', 'tiny']):
         """
         generate thumbnails for all images in this directory
         """
         self.scan_filetypes()
 
-        if len(self.images):
-            for i in self.images:
-                i.load().make_thumbs(save_sizes)
+        pool = Pool(8)
+        results = pool.map(thumb_helper, self.images)
+        # if len(self.images):
+        #     for i in self.images:
+        #         i.load().make_thumbs(save_sizes)
 
     def default_file(self):
         """
@@ -1763,21 +1690,12 @@ class Directory(File):
         helper to standardize the name + path for a sortable list
         sometimes need this before loading the sortable list (sortable_list())
         """
-        # DEPRECATED:
-        # standardize the name of this meta data file
-
         # print("sortable_list_path() called")
         list_file = self.path.name + ".list"
         # print("List file:", list_file)
         list_path = os.path.join(str(self.path), list_file)
         # print("List path:", list_path)
-        # *2018.09.01 16:29:42
-        # switching to using 'order.list' by default...
-        # makes it easier to rename directories and still have everything work
-        if os.path.exists(list_path):
-            return list_path
-        else:
-            return os.path.join(str(self.path), 'order.list')
+        return list_path
 
     def sortable_list(self, sl=None, create=False):
         """
