@@ -1,35 +1,10 @@
-# ----------------------------------------------------------------------------
-# moments
-# Copyright (c) 2009-2010, Charles Brandt
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-# ----------------------------------------------------------------------------
 """
-This module helps in interacting with the filesystem.  It provides an object oriented interface to your computer's local filesystem. It leverages python's native os and os.path libraries to give a higher level interface to the system.  Starting at the level of Paths on a filesystem, it works up to higher level objects such as Images.
+DEPRECATED!
+start migrating any references to use sortable.backend.path instead
 
-The main focus is on abstracting files and directories and paths.
+when it's time to test, move this file in the local directory to path.py.deprecated
 
-Path loads Files, Directories, etc.
-Files have a path associated with them.
-Directories are a collection of Paths (that link to other files and directories).
-
-There is a circular dependency with these objects, so they need to be kept in one file.
+Can re-enable easily in a pinch then
 """
 from __future__ import print_function
 from __future__ import absolute_import

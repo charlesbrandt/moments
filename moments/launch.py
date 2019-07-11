@@ -2,17 +2,17 @@
 # ----------------------------------------------------------------------------
 # moments
 # Copyright (c) 2009-2017, Charles Brandt
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -26,7 +26,7 @@
 # a collection of functions to assist with launching applications
 
 # By: Charles Brandt [code at contextiskey dot com]
-# On: *2009.07.10 11:54:55 
+# On: *2009.07.10 11:54:55
 # License:  MIT
 
 # TODO:
@@ -51,7 +51,8 @@ import os, sys, subprocess
 #from moments.timestamp import Timestamp
 #from moments.journal import Journal
 
-from moments.path import load_journal, load_instance, Path
+#from moments.path import load_journal, load_instance, Path
+from sortable.path import load_journal, load_instance, Path
 from moments.timestamp import Timestamp
 from moments.journal import Journal
 
@@ -72,7 +73,7 @@ def simple_launcher(command):
 
     #command = "gnome-terminal %s &" % args
 
-    
+
     process = subprocess.Popen(command, shell=True,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -90,9 +91,9 @@ def simple_launcher(command):
 
     #when process terminates, can finish printing the rest:
     print(process.stdout.read())
-        
+
     return command + "\n"
-    
+
 
 ############################################################
 # generic launchers
@@ -106,9 +107,9 @@ def edit_instance(args, instance='/c/instances.txt', editor="emacs"):
         file_string = ' '.join(files)
         edit(file_string, editor=editor)
         #echo(file_string)
-        print("Loading: %s" % arg)                
+        print("Loading: %s" % arg)
         #except:
-        #    print "Could not load instance: %s" % arg                
+        #    print "Could not load instance: %s" % arg
 
 #feel free to set the editor to any preferred default here
 #this should be the call to make any time an editor is needed
@@ -116,7 +117,7 @@ def edit(source='', editor="emacs"):
     if editor == "emacs":
         emacs(source)
     else:
-        print("Unknown editor: %s" % editor)    
+        print("Unknown editor: %s" % editor)
 
 def browse(urls=[], browser="firefox"):
     """
@@ -160,7 +161,7 @@ def file_browse(source=''):
             nautilus(source)
         elif check_which('exo-open'):
             file_manager(source)
-            
+
     elif sys.platform == "darwin":
         print("launch finder here")
     else:
@@ -204,7 +205,7 @@ def check_which(item=''):
     #if result has something, it exists
     #works as a binary test
     return result
-    
+
 
 ############################################################
 #application specific launchers
@@ -233,7 +234,7 @@ def rsync(source, destination, verbose=True):
     command = "rsync -av %s %s" % (source, destination)
     if verbose:
         print(command)
-    
+
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     output = process.communicate()[0]
@@ -311,8 +312,8 @@ def mount_iso(source, mount):
     output = process.communicate()[0]
     if output:
         print(output)
-    
-    
+
+
     command = "sudo mount %s %s -t iso9660 -o loop" % (source, mount)
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
@@ -328,7 +329,7 @@ def mount_iso_macosx(source):
     output = process.communicate()[0]
     if output:
         print(output)
-    
+
 def dvd_macosx(movie):
     command = r"/Applications/DVD\ Player.app/Contents/MacOS/DVD\ Player &"
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE,
@@ -371,13 +372,13 @@ def firefox(url=None, urls=[]):
 #############################################
 # main context launching functionality
 #############################################
-    
+
 class Context(object):
     """
     A context is essentially just a collection of files with some standard attributes
     a place to collect files for a certain task, project, etc
     the main requirement is an instances file (typically instances.txt)
-    
+
     see scripts/new_context.py
 
     todo:
@@ -399,7 +400,7 @@ class Context(object):
             #going to assume that if it's not a string, it's already one of us:
             self = context
 
-            
+
         #return [ self.instances, self.calendars, self.priorities, self.motd ]
 
 ## def check_context(context):
@@ -427,7 +428,7 @@ class Context(object):
 #following originally in launch.py
 #seems more related to watch
 def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority="/c/priority.txt", include_week=False, quotes="/c/yoga/golden_present.txt"):
-    """ 
+    """
     look through all calendar items for events coming up
     today (at minumum) and
     this week (optionally)
@@ -453,7 +454,7 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     #today_entries = check_calendar(calendars, include_week)
     #today_entries.extend(check_quotes(quotes))
     today_entries = []
-    
+
     #print today_entries
 
     #CREATE TODAY'S LOG:
@@ -468,7 +469,7 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
     today_j.update_many(today_entries)
     #for e in today_entries:
     #    today_j.update_entry(e, debug=True)
-        
+
     if include_week:
         today_j.make(flat, ['upcoming', 'this_week', 'delete'])
 
@@ -517,13 +518,13 @@ def assemble_today(calendars="/c/calendars", destination="/c/outgoing", priority
         else:
             print("No priorities found")
         print("")
-        
+
     return today
 
 def edit_today(context=None, instances=None, files=[], destination=None, priorities=None, calendars=None):
     if context and not instances:
         instances = context.instances
-        
+
     files = []
     if instances and not files:
         try:
@@ -557,7 +558,7 @@ def edit_today(context=None, instances=None, files=[], destination=None, priorit
     #print "Launcing Editor"
     #specifying an editor here is optional... will default to configured
     #edit(file_string, editor="emacs")
-    
+
     edit(file_string)
 
 def edit_journal(destination=None):
@@ -584,7 +585,7 @@ def launch(context='./', args=["now"], destination=None):
     look in the supplied context for an instances file
     load the instances supplied as args
     open those instances as desired
-    
+
     should be the python equivalent of calling the launch script from the command line
     somewhat simplified version of main since we don't need to deal with as many unknowns here
     """
@@ -599,7 +600,7 @@ def launch(context='./', args=["now"], destination=None):
         c = context
     else:
         raise ValueError("Unknown type: %s for context: %s" % (type(context), context))
-        
+
     if "now" in args:
         #now(c, files=files)
         edit_today(c, destination=destination)
@@ -613,7 +614,7 @@ def launch(context='./', args=["now"], destination=None):
     print(c.instances)
     #launch the rest:
     edit_instance(args, c.instances)
-    
+
     #*2010.11.05 17:25:10
     #I like the idea of motd
     #but it goes by so quick
@@ -666,7 +667,7 @@ if __name__ == '__main__':
         context = Context(options.context)
     else:
         context = Context("./")
-        
+
     #these will take precedence if specified separately:
     if options.instances:
         instances = options.instances
@@ -680,16 +681,16 @@ if __name__ == '__main__':
         #if we don't have a file with instance entries in it,
         #we can create a temporary instance here:
         local_instance = ""
-        
+
         if local_instance:
             print("Loading the local instance: %s" % local_instance)
             files = local_instance.splitlines()
             files = files[1:]
             #need option to generate and load now here too
-            #rather than adding files to now 
+            #rather than adding files to now
             #edit_today(files, destination, priorities, calendars)
             edit_today(context, instances, files=files)
-            
+
         else:
             #go with defaults instances to load if nothing is passed in
             #args = [ "now", "todo" ]

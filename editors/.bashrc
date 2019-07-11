@@ -107,6 +107,7 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 alias filemgr='exo-open --launch FileManager'
+alias search='/c/charles/search.py'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert

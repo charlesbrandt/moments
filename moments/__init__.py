@@ -9,9 +9,7 @@ __all__ = ["tag",
            "moment",
            "log",
            "journal",
-           "path",
            ]
 
 from .timestamp import Timestamp
 from .journal import Journal
-from .path import Path

@@ -3,17 +3,17 @@
 # ----------------------------------------------------------------------------
 # moments
 # Copyright (c) 2009-2011, Charles Brandt
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,8 +35,9 @@ import os, re
 import unicodedata, sys
 
 from moments.journal import Journal
-from moments.path import Path, check_ignore, load_journal
 from moments.timestamp import Timestamp
+
+from sortable.path import Path, check_ignore, load_journal
 
 def omit_date_tags(items):
     """
@@ -44,7 +45,7 @@ def omit_date_tags(items):
     leave out any that are a timestamp
     """
     new_list = []
-    months = [ "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" ] 
+    months = [ "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12" ]
     for item in items:
         try:
             t = Timestamp(item)
@@ -56,7 +57,7 @@ def omit_date_tags(items):
 def filter_list(items, ignores, search=False):
     """
     IF SEARCH IS NOT TRUE, IGNORES MUST BE AN EXACT MATCH
-    
+
     take a list of items
     take a list of itmes to ignore
     return a new list of items based on first, original, with ignores removed
@@ -107,7 +108,7 @@ def filter_log(path, filters, save=False):
     #j = Journal()
     #j.load(path)
     j = load_journal(path)
-    
+
     j.filter_entries(filters)
     if save:
         #when it's time to save:
@@ -122,7 +123,7 @@ def filter_logs(path, updates=[], save=False):
     for each entry
     apply filter
     """
-    
+
     add_tags = []
     ignore_dirs = [ ]
     log_check = re.compile('.*\.txt$')
@@ -131,11 +132,11 @@ def filter_logs(path, updates=[], save=False):
             for f in files:
                 if not log_check.search(f):
                     continue
-                
+
                 cur_file = os.path.join(root, f)
                 if not check_ignore(cur_file, ignore_dirs):
                     filter_log(cur_file, updates, save)
-                        
+
     elif os.path.isfile(path) and log_check.search(path):
         filter_log(path, updates, save)
     else:
@@ -161,7 +162,7 @@ def union(set1, set2):
     union the items in them
     """
     combined = set1[:]
-    count = 0 
+    count = 0
     for i in set2:
         if not i in combined:
             combined.append(i)
@@ -321,8 +322,8 @@ def flatten_first_lines(journal, separator=' '):
 def find_and_replace(items, updates):
     """
     aka find_and_replace
-    
-    apply all updates in updates list 
+
+    apply all updates in updates list
     to all items in items list
 
     updates consist of a list of lists
@@ -343,7 +344,7 @@ def find_and_replace(items, updates):
                 item = pattern.sub(replace_string, item)
                 # not sure if python replace is faster than re.sub:
                 #journal.replace(pu[0], pu[1])
-                
+
                 #print "     NEW ITEM: %s" % item
                 items.insert(index, item)
 
@@ -407,7 +408,7 @@ def extract_many(path, extractions, ignores=[], save=False, extract_type="inters
     if not os.path.isfile(path):
         raise ValueError("path must be a file, got: %s" % path)
     j = Journal()
-    
+
     #j.load(path, add_tags=these_tags)
     #can add tags to the export, but don't want to add them in here:
     has_entries = j.load(path)
@@ -452,7 +453,7 @@ def extract_tags(path, extractions=[], ignores=[], save=False,
 
     ignores is a list of tags to leave out of the found entries
     (good for filtering tags generated from the original file path)
-    
+
     this duplicates the logic for scanning all files from extract_tag
     it feels more readable to separate the two
 
@@ -469,9 +470,9 @@ def extract_tags(path, extractions=[], ignores=[], save=False,
     # saving them in a new separate file (or specified existing file)
 
     # adapted from pose.controllers.tags.extract
-    
+
     """
-    
+
     add_tags = []
     ignore_dirs = [ 'downloads', 'binaries' ]
     log_check = re.compile('.*\.txt$')
@@ -480,12 +481,12 @@ def extract_tags(path, extractions=[], ignores=[], save=False,
             for f in files:
                 if not log_check.search(f):
                     continue
-                
+
                 cur_file = os.path.join(root, f)
                 if not check_ignore(cur_file, ignore_dirs):
                     extract_many(cur_file, extractions, ignores, save,
                                  extract_type)
-                        
+
     elif os.path.isfile(path) and log_check.search(path):
         extract_many(path, extractions, ignores, save, extract_type)
     else:
@@ -525,7 +526,7 @@ class unaccented_map(dict):
     Maps a unicode character code (the key) to a replacement code
     (either a character code or a unicode string).
     """
-    
+
     def mapchar(self, key):
         ch = self.get(key)
         if ch is not None:
@@ -575,18 +576,18 @@ def test_ascii():
 
     text = u"""
 
-    "Jo, når'n da ha gått ett stôck te, så kommer'n te e å,
-    å i åa ä e ö."
+    "Jo, nï¿½r'n da ha gï¿½tt ett stï¿½ck te, sï¿½ kommer'n te e ï¿½,
+    ï¿½ i ï¿½a ï¿½ e ï¿½."
     "Vasa", sa'n.
-    "Å i åa ä e ö", sa ja.
-    "Men va i all ti ä dä ni säjer, a, o?", sa'n.
-    "D'ä e å, vett ja", skrek ja, för ja ble rasen, "å i åa
-    ä e ö, hörer han lite, d'ä e å, å i åa ä e ö."
-    "A, o, ö", sa'n å dämmä geck'en.
-    Jo, den va nôe te dum den.
+    "ï¿½ i ï¿½a ï¿½ e ï¿½", sa ja.
+    "Men va i all ti ï¿½ dï¿½ ni sï¿½jer, a, o?", sa'n.
+    "D'ï¿½ e ï¿½, vett ja", skrek ja, fï¿½r ja ble rasen, "ï¿½ i ï¿½a
+    ï¿½ e ï¿½, hï¿½rer han lite, d'ï¿½ e ï¿½, ï¿½ i ï¿½a ï¿½ e ï¿½."
+    "A, o, ï¿½", sa'n ï¿½ dï¿½mmï¿½ geck'en.
+    Jo, den va nï¿½e te dum den.
 
-    (taken from the short story "Dumt fôlk" in Gustaf Fröding's
-    "Räggler å paschaser på våra mål tå en bonne" (1895).
+    (taken from the short story "Dumt fï¿½lk" in Gustaf Frï¿½ding's
+    "Rï¿½ggler ï¿½ paschaser pï¿½ vï¿½ra mï¿½l tï¿½ en bonne" (1895).
 
     """
 
@@ -605,7 +606,7 @@ def test_ascii():
 
 def main():
     """
-    *2011.08.30 09:09:19 
+    *2011.08.30 09:09:19
     imported from filter_logs
     that might not be the main functionality of this module
     """
