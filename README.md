@@ -1,22 +1,20 @@
-Moments
-========
+# Moments
 
-Moments is a Python library that helps parse text based notes.  These notes are easy to create in a text editor, easy to read by a human and easy to parse with a computer.  These properties make it easy to sort and organize notes, and customize the sort process using this library.
+Moments is a Python library for parsing text based journals. The format is easy to create in a text editor, easy to read by a human and easy to parse with a computer. These features make it easier to sort and organize notes using this library.
 
 This project was started before Evernote and mobile apps emerged to help with keeping a personal journal.  Although this is a much lower level approach (and not as user friendly), I still use it as my primary means of keeping notes.
 
-EDITORS
--------------
-Just like with editing python, it helps to have the right editor so that you can work fluidly.
+## Making moments
+ 
+It helps to have the right text editor so that you can write fluidly. The main requirement is creating a timestamp with minimal effort.
 
-There are a lot of good ones that I've used, including:
+There are a lot of good editors that allow customization with modules, plugins or packages. Here are a few that assist with creating timestamps:
 
   - [Atom](editors/atom.md)
   - [Emacs](editors/emacs/emacs.md)
   - [vi](editors/vi/vi.md)
 
-DOCS
----------
+## Docs
 
 Full documentation is available here:
 
@@ -35,8 +33,7 @@ or:
 
    make html
 
-INSTALL:
-----------
+## Install
 
 see docs/installation.txt
 
@@ -45,8 +42,7 @@ and
 docs/_build/html/installation.html
 
 
-TEST:
-----------
+## Test
 
 cd /path/to/moments/moments
 python server.py /path/to/moments/tests/
@@ -55,10 +51,9 @@ python server.py /path/to/moments/tests/
 cd tests/
 nosetests
 
-ETC:
--------------
+## Etc
 
-Moments is available at bitbucket.org/cbrandt/moments.
+Moments is available at github.com/charlesbrandt/moments.
 Moments is free and open source software.
 Moments is released under the MIT license.  (See: LICENSE.txt)
 
